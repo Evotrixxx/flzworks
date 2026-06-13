@@ -1,9 +1,9 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { ChangeEvent, DragEvent, FormEvent, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Camera, Save } from "lucide-react";
+import { Camera, ImagePlus, Save, UploadCloud, X } from "lucide-react";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import {
   bodyTypeOptions,
@@ -364,28 +364,31 @@ export function ListingForm({
       </section>
 
       {initialListing?.photos.length ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {initialListing.photos.map((photo) => (
-            <Image
-              key={photo.path}
-              src={photoUrl(photo.path)}
-              alt=""
-              width={240}
-              height={180}
-              className="aspect-[4/3] rounded-lg border border-white/70 object-cover shadow-sm"
-            />
-          ))}
-        </div>
+        <section className="grid gap-3">
+          <h2 className="inline-flex items-center gap-2 text-base font-black text-slate-950">
+            <Camera className="h-4 w-4 text-cyan-700" aria-hidden="true" />
+            {locale === "hu" ? "Jelenlegi kepek" : "Current photos"}
+          </h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {initialListing.photos.map((photo, index) => (
+              <figure key={photo.path} className="glass-chip overflow-hidden rounded-lg p-1">
+                <Image
+                  src={photoUrl(photo.path)}
+                  alt=""
+                  width={240}
+                  height={180}
+                  className="aspect-[4/3] rounded-md object-cover"
+                />
+                <figcaption className="px-2 py-1 text-xs font-black text-slate-500">
+                  {index === 0 ? (locale === "hu" ? "Boritokep" : "Cover photo") : `${index + 1}`}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
       ) : null}
 
-      <label className="glass-chip grid gap-2 rounded-lg border-dashed p-4 text-sm font-semibold text-slate-700">
-        <span className="inline-flex items-center gap-2">
-          <Camera className="h-4 w-4 text-cyan-700" aria-hidden="true" />
-          {t.forms.photos}
-        </span>
-        <input name="photos" type="file" accept="image/png,image/jpeg,image/webp" multiple className="text-sm" />
-        <span className="text-xs font-semibold text-slate-500">{t.forms.photosHelp}</span>
-      </label>
+      <PhotoUploadField locale={locale} title={t.forms.photos} help={t.forms.photosHelp} />
 
       {error && <p className="rounded-lg bg-rose-50/80 px-3 py-2 text-sm font-semibold text-rose-700">{error}</p>}
 
@@ -399,6 +402,211 @@ export function ListingForm({
       </button>
     </form>
   );
+}
+
+type PhotoDraft = {
+  id: string;
+  file: File;
+  url: string;
+};
+
+function PhotoUploadField({
+  locale,
+  title,
+  help,
+}: {
+  locale: Locale;
+  title: string;
+  help: string;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const draftUrlsRef = useRef<string[]>([]);
+  const [drafts, setDrafts] = useState<PhotoDraft[]>([]);
+  const [dragging, setDragging] = useState(false);
+  const labels =
+    locale === "hu"
+      ? {
+          choose: "Kepek kivalasztasa",
+          drag: "Huzd ide a fotokat, vagy tallozz",
+          cover: "Boritokep",
+          remove: "Eltavolitas",
+          selected: "kivalasztva",
+          empty: "JPG, PNG vagy WebP, kepenkent legfeljebb 5 MB.",
+        }
+      : {
+          choose: "Choose photos",
+          drag: "Drop photos here, or browse",
+          cover: "Cover photo",
+          remove: "Remove",
+          selected: "selected",
+          empty: "JPG, PNG, or WebP, up to 5 MB each.",
+        };
+
+  useEffect(() => {
+    return () => {
+      for (const url of draftUrlsRef.current) {
+        URL.revokeObjectURL(url);
+      }
+    };
+  }, []);
+
+  function syncInput(nextDrafts: PhotoDraft[]) {
+    if (!inputRef.current) {
+      return;
+    }
+
+    const transfer = new DataTransfer();
+    for (const draft of nextDrafts) {
+      transfer.items.add(draft.file);
+    }
+    inputRef.current.files = transfer.files;
+  }
+
+  function addFiles(fileList: FileList | null) {
+    const files = Array.from(fileList ?? []).filter((file) => file.type.startsWith("image/"));
+
+    if (!files.length) {
+      return;
+    }
+
+    setDrafts((current) => {
+      const incoming = files.map((file) => {
+        const url = URL.createObjectURL(file);
+        draftUrlsRef.current.push(url);
+
+        return {
+          id: `${file.name}-${file.lastModified}-${crypto.randomUUID()}`,
+          file,
+          url,
+        };
+      });
+      const next = [...current, ...incoming];
+      syncInput(next);
+      return next;
+    });
+  }
+
+  function removeDraft(id: string) {
+    setDrafts((current) => {
+      const removed = current.find((draft) => draft.id === id);
+      if (removed) {
+        URL.revokeObjectURL(removed.url);
+        draftUrlsRef.current = draftUrlsRef.current.filter((url) => url !== removed.url);
+      }
+
+      const next = current.filter((draft) => draft.id !== id);
+      syncInput(next);
+      return next;
+    });
+  }
+
+  function onInputChange(event: ChangeEvent<HTMLInputElement>) {
+    addFiles(event.target.files);
+  }
+
+  function onDrop(event: DragEvent<HTMLLabelElement>) {
+    event.preventDefault();
+    setDragging(false);
+    addFiles(event.dataTransfer.files);
+  }
+
+  const totalSize = drafts.reduce((sum, draft) => sum + draft.file.size, 0);
+
+  return (
+    <section className="grid gap-3">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="inline-flex items-center gap-2 text-base font-black text-slate-950">
+            <ImagePlus className="h-5 w-5 text-cyan-700" aria-hidden="true" />
+            {title}
+          </h2>
+          <p className="mt-1 text-sm font-semibold text-slate-500">{help}</p>
+        </div>
+        {drafts.length > 0 && (
+          <p className="glass-chip w-fit rounded-full px-3 py-1 text-xs font-black text-slate-600">
+            {drafts.length} {labels.selected} · {formatBytes(totalSize)}
+          </p>
+        )}
+      </div>
+
+      <label
+        onDragEnter={() => setDragging(true)}
+        onDragOver={(event) => {
+          event.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={onDrop}
+        className={`glass-chip grid cursor-pointer place-items-center gap-3 rounded-lg border-2 border-dashed p-6 text-center transition ${
+          dragging ? "border-cyan-400 bg-cyan-50/70" : "border-white/70 hover:border-cyan-300 hover:bg-white/65"
+        }`}
+      >
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 via-emerald-500 to-slate-900 text-white shadow-[0_14px_30px_rgba(0,119,130,0.22)]">
+          <UploadCloud className="h-7 w-7" aria-hidden="true" />
+        </span>
+        <span className="grid gap-1">
+          <span className="text-sm font-black text-slate-950">{labels.drag}</span>
+          <span className="text-xs font-semibold text-slate-500">{labels.empty}</span>
+        </span>
+        <span className="liquid-button-secondary inline-flex h-10 items-center rounded-full px-4 text-sm font-black text-slate-700">
+          {labels.choose}
+        </span>
+        <input
+          ref={inputRef}
+          name="photos"
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          multiple
+          className="sr-only"
+          onChange={onInputChange}
+        />
+      </label>
+
+      {drafts.length > 0 && (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {drafts.map((draft, index) => (
+            <figure key={draft.id} className="glass-chip group overflow-hidden rounded-lg p-1">
+              <div className="relative">
+                <Image
+                  src={draft.url}
+                  alt=""
+                  width={320}
+                  height={240}
+                  unoptimized
+                  className="aspect-[4/3] rounded-md object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeDraft(draft.id)}
+                  aria-label={labels.remove}
+                  className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-950/70 text-white opacity-100 shadow-sm backdrop-blur transition hover:bg-rose-600 sm:opacity-0 sm:group-hover:opacity-100"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </button>
+                {index === 0 && (
+                  <span className="absolute bottom-2 left-2 rounded-full bg-white/80 px-2 py-1 text-xs font-black text-cyan-800 shadow-sm backdrop-blur">
+                    {labels.cover}
+                  </span>
+                )}
+              </div>
+              <figcaption className="grid gap-0.5 px-2 py-2">
+                <span className="truncate text-xs font-black text-slate-700">{draft.file.name}</span>
+                <span className="text-xs font-semibold text-slate-500">{formatBytes(draft.file.size)}</span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function formatBytes(bytes: number) {
+  if (bytes < 1024 * 1024) {
+    return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  }
+
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function DetailSection({ title, children }: { title: string; children: React.ReactNode }) {
