@@ -55,6 +55,10 @@ export function ListingPhotoGallery({
     });
   }, [selectedIndex, wrappedIndex]);
 
+  function moveSelected(direction: 1 | -1) {
+    setSelectedIndex((current) => wrappedIndex(current + direction));
+  }
+
   useEffect(() => {
     if (fullscreenIndex === null) {
       return;
@@ -83,12 +87,7 @@ export function ListingPhotoGallery({
 
   return (
     <section className="glass-panel overflow-hidden rounded-lg">
-      <button
-        type="button"
-        onClick={() => openFullscreen(selectedIndex)}
-        className="group relative block w-full bg-white/35 text-left"
-        aria-label={`${labels.open}: ${title}`}
-      >
+      <div className="group relative block w-full bg-white/35">
         <Image
           src={photoUrl(selectedPhoto.path)}
           alt={title}
@@ -97,11 +96,36 @@ export function ListingPhotoGallery({
           priority
           className="aspect-[16/10] w-full object-cover"
         />
-        <span className="absolute bottom-3 right-3 inline-flex h-10 items-center gap-2 rounded-full bg-slate-950/75 px-3 text-sm font-black text-white shadow-sm backdrop-blur transition group-hover:bg-cyan-800/85">
+        {galleryPhotos.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={() => moveSelected(-1)}
+              aria-label={labels.previous}
+              className="absolute left-3 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/60 text-slate-950 shadow-sm backdrop-blur transition hover:bg-white/85"
+            >
+              <ChevronLeft className="h-6 w-6" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={() => moveSelected(1)}
+              aria-label={labels.next}
+              className="absolute right-3 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/60 text-slate-950 shadow-sm backdrop-blur transition hover:bg-white/85"
+            >
+              <ChevronRight className="h-6 w-6" aria-hidden="true" />
+            </button>
+          </>
+        )}
+        <button
+          type="button"
+          onClick={() => openFullscreen(selectedIndex)}
+          className="absolute bottom-3 right-3 inline-flex h-10 items-center gap-2 rounded-full bg-slate-950/75 px-3 text-sm font-black text-white shadow-sm backdrop-blur transition hover:bg-cyan-800/85"
+          aria-label={`${labels.open}: ${title}`}
+        >
           <Expand className="h-4 w-4" aria-hidden="true" />
           {selectedIndex + 1} / {galleryPhotos.length}
-        </span>
-      </button>
+        </button>
+      </div>
 
       {galleryPhotos.length > 1 && (
         <div className="grid grid-cols-3 gap-2 p-3 sm:grid-cols-5 lg:grid-cols-7">
@@ -109,7 +133,7 @@ export function ListingPhotoGallery({
             <button
               key={photo.id}
               type="button"
-              onClick={() => openFullscreen(index)}
+              onClick={() => setSelectedIndex(index)}
               aria-label={`${labels.image} ${index + 1}`}
               className={`relative aspect-[4/3] overflow-hidden rounded-lg border bg-white/35 transition ${
                 index === selectedIndex

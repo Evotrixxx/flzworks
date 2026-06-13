@@ -1,4 +1,5 @@
 import { Search, SlidersHorizontal, X } from "lucide-react";
+import type { ReactNode } from "react";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import {
   bodyTypeOptions,
@@ -30,10 +31,25 @@ export function SearchPanel({ locale, t, params }: SearchPanelProps) {
     { name: "bodyType", label: t.filters.bodyType, options: bodyTypeOptions, labels: t.enums.bodyType },
     { name: "condition", label: t.filters.condition, options: conditionOptions, labels: t.enums.condition },
   ];
+  const groupLabels =
+    locale === "hu"
+      ? {
+          basics: "Alapok",
+          priceYear: "Ar es evjarat",
+          specs: "Jarmu adatok",
+          place: "Hely",
+        }
+      : {
+          basics: "Basics",
+          priceYear: "Price & year",
+          specs: "Vehicle specs",
+          place: "Location",
+        };
 
   return (
-    <form action="/" className="glass-panel space-y-4 rounded-lg p-4">
+    <form action="/" className="glass-panel space-y-5 rounded-lg p-4">
       <input type="hidden" name="lang" value={locale} />
+      {value(params, "view") === "list" && <input type="hidden" name="view" value="list" />}
       <div className="flex items-center justify-between gap-3">
         <h2 className="inline-flex items-center gap-2 text-base font-black text-slate-950">
           <SlidersHorizontal className="h-5 w-5 text-cyan-700" aria-hidden="true" />
@@ -48,100 +64,38 @@ export function SearchPanel({ locale, t, params }: SearchPanelProps) {
         </a>
       </div>
 
-      <div className="grid gap-3">
+      <FilterGroup title={groupLabels.basics}>
         <label className="grid gap-1 text-sm font-semibold text-slate-700">
           {t.filters.keyword}
-          <input
-            name="keyword"
-            defaultValue={value(params, "keyword")}
-            className="h-10 px-3 font-normal outline-none transition"
-          />
+          <input name="keyword" defaultValue={value(params, "keyword")} className="h-10 px-3 font-normal outline-none transition" />
         </label>
-
         <div className="grid grid-cols-2 gap-3">
           <label className="grid gap-1 text-sm font-semibold text-slate-700">
             {t.filters.make}
-            <input
-              name="make"
-              defaultValue={value(params, "make")}
-              className="h-10 px-3 font-normal outline-none transition"
-            />
+            <input name="make" defaultValue={value(params, "make")} className="h-10 px-3 font-normal outline-none transition" />
           </label>
           <label className="grid gap-1 text-sm font-semibold text-slate-700">
             {t.filters.model}
-            <input
-              name="model"
-              defaultValue={value(params, "model")}
-              className="h-10 px-3 font-normal outline-none transition"
-            />
+            <input name="model" defaultValue={value(params, "model")} className="h-10 px-3 font-normal outline-none transition" />
           </label>
         </div>
+      </FilterGroup>
 
+      <FilterGroup title={groupLabels.priceYear}>
         <div className="grid grid-cols-2 gap-3">
-          <label className="grid gap-1 text-sm font-semibold text-slate-700">
-            {t.filters.priceMin}
-            <input
-              name="priceMin"
-              type="number"
-              inputMode="numeric"
-              defaultValue={value(params, "priceMin")}
-              className="h-10 px-3 font-normal outline-none transition"
-            />
-          </label>
-          <label className="grid gap-1 text-sm font-semibold text-slate-700">
-            {t.filters.priceMax}
-            <input
-              name="priceMax"
-              type="number"
-              inputMode="numeric"
-              defaultValue={value(params, "priceMax")}
-              className="h-10 px-3 font-normal outline-none transition"
-            />
-          </label>
+          <NumberField name="priceMin" label={t.filters.priceMin} params={params} />
+          <NumberField name="priceMax" label={t.filters.priceMax} params={params} />
+          <NumberField name="yearMin" label={t.filters.yearMin} params={params} />
+          <NumberField name="yearMax" label={t.filters.yearMax} params={params} />
         </div>
+      </FilterGroup>
 
-        <div className="grid grid-cols-2 gap-3">
-          <label className="grid gap-1 text-sm font-semibold text-slate-700">
-            {t.filters.yearMin}
-            <input
-              name="yearMin"
-              type="number"
-              inputMode="numeric"
-              defaultValue={value(params, "yearMin")}
-              className="h-10 px-3 font-normal outline-none transition"
-            />
-          </label>
-          <label className="grid gap-1 text-sm font-semibold text-slate-700">
-            {t.filters.yearMax}
-            <input
-              name="yearMax"
-              type="number"
-              inputMode="numeric"
-              defaultValue={value(params, "yearMax")}
-              className="h-10 px-3 font-normal outline-none transition"
-            />
-          </label>
-        </div>
-
-        <label className="grid gap-1 text-sm font-semibold text-slate-700">
-          {t.filters.mileageMax}
-          <input
-            name="mileageMax"
-            type="number"
-            inputMode="numeric"
-            defaultValue={value(params, "mileageMax")}
-            className="h-10 px-3 font-normal outline-none transition"
-          />
-        </label>
-
+      <FilterGroup title={groupLabels.specs}>
+        <NumberField name="mileageMax" label={t.filters.mileageMax} params={params} />
         {selectGroups.map((group) => (
           <label key={group.name} className="grid gap-1 text-sm font-semibold text-slate-700">
             {group.label}
-            <select
-              name={group.name}
-              defaultValue={value(params, group.name)}
-              className="h-10 px-3 font-normal outline-none transition"
-            >
+            <select name={group.name} defaultValue={value(params, group.name)} className="h-10 px-3 font-normal outline-none transition">
               <option value="">{t.filters.any}</option>
               {group.options.map((option) => (
                 <option key={option} value={option}>
@@ -151,16 +105,14 @@ export function SearchPanel({ locale, t, params }: SearchPanelProps) {
             </select>
           </label>
         ))}
+      </FilterGroup>
 
+      <FilterGroup title={groupLabels.place}>
         <label className="grid gap-1 text-sm font-semibold text-slate-700">
           {t.filters.location}
-          <input
-            name="location"
-            defaultValue={value(params, "location")}
-            className="h-10 px-3 font-normal outline-none transition"
-          />
+          <input name="location" defaultValue={value(params, "location")} className="h-10 px-3 font-normal outline-none transition" />
         </label>
-      </div>
+      </FilterGroup>
 
       <button
         type="submit"
@@ -170,5 +122,37 @@ export function SearchPanel({ locale, t, params }: SearchPanelProps) {
         {t.filters.submit}
       </button>
     </form>
+  );
+}
+
+function FilterGroup({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <fieldset className="grid gap-3 border-t border-white/60 pt-4 first:border-t-0 first:pt-0">
+      <legend className="mb-3 text-xs font-black uppercase text-slate-500">{title}</legend>
+      {children}
+    </fieldset>
+  );
+}
+
+function NumberField({
+  name,
+  label,
+  params,
+}: {
+  name: string;
+  label: string;
+  params: SearchPanelProps["params"];
+}) {
+  return (
+    <label className="grid gap-1 text-sm font-semibold text-slate-700">
+      {label}
+      <input
+        name={name}
+        type="number"
+        inputMode="numeric"
+        defaultValue={value(params, name)}
+        className="h-10 px-3 font-normal outline-none transition"
+      />
+    </label>
   );
 }

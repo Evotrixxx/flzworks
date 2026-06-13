@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Mail, MapPin, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Calendar, ExternalLink, Fuel, Gauge, Mail, MapPin, ShieldCheck } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { dictionaries } from "@/lib/i18n";
@@ -125,6 +125,19 @@ export default async function CarDetailPage({
     [detailLabels.fields.frontTireSize, listing.frontTireSize],
     [detailLabels.fields.rearTireSize, listing.rearTireSize],
   ]);
+  const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(listing.location)}`;
+  const sidebarLabels =
+    locale === "hu"
+      ? {
+          overview: "Gyors attekintes",
+          map: "Megnyitas Google Maps-ben",
+          mapHint: "A terkep a hirdetes helysegere keres ra.",
+        }
+      : {
+          overview: "Quick overview",
+          map: "Open in Google Maps",
+          mapHint: "The map opens a search for the listing location.",
+        };
 
   return (
     <>
@@ -170,7 +183,20 @@ export default async function CarDetailPage({
           />
         </section>
 
-        <aside className="space-y-4">
+        <aside className="space-y-4 lg:sticky lg:top-36 lg:self-start">
+          <section className="glass-panel rounded-lg p-5">
+            <h2 className="text-lg font-black text-slate-950">{sidebarLabels.overview}</h2>
+            <p className="mt-3 text-3xl font-black text-cyan-800">{formatHuf(listing.price, locale)}</p>
+            {listing.priceEur && <p className="mt-1 text-sm font-semibold text-slate-500">{formatEur(listing.priceEur, locale)}</p>}
+            <dl className="mt-4 grid gap-2">
+              <SidebarFact icon={<Calendar className="h-4 w-4" aria-hidden="true" />} label={t.listing.year} value={listing.year} />
+              <SidebarFact icon={<Gauge className="h-4 w-4" aria-hidden="true" />} label={t.listing.mileage} value={formatKm(listing.mileage, locale)} />
+              <SidebarFact icon={<Fuel className="h-4 w-4" aria-hidden="true" />} label={t.listing.fuel} value={fuelLabel} />
+              <SidebarFact label={t.listing.transmission} value={transmissionLabel} />
+              <SidebarFact label={t.listing.condition} value={conditionLabel} />
+            </dl>
+          </section>
+
           <section className="glass-panel rounded-lg p-5">
             <h2 className="text-lg font-black text-slate-950">{t.listing.seller}</h2>
             <p className="mt-3 inline-flex items-center gap-2 font-black text-slate-900">
@@ -187,6 +213,25 @@ export default async function CarDetailPage({
             >
               <Mail className="h-4 w-4" aria-hidden="true" />
               {t.listing.contact}
+            </a>
+          </section>
+
+          <section className="glass-panel rounded-lg p-5">
+            <div className="glass-chip grid min-h-32 place-items-center rounded-lg p-4 text-center">
+              <MapPin className="h-8 w-8 text-cyan-700" aria-hidden="true" />
+              <div>
+                <p className="font-black text-slate-950">{listing.location}</p>
+                <p className="mt-1 text-xs font-semibold text-slate-500">{sidebarLabels.mapHint}</p>
+              </div>
+            </div>
+            <a
+              href={mapsHref}
+              target="_blank"
+              rel="noreferrer"
+              className="liquid-button-secondary mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full px-4 text-sm font-black text-slate-700 transition hover:text-cyan-800"
+            >
+              <ExternalLink className="h-4 w-4" aria-hidden="true" />
+              {sidebarLabels.map}
             </a>
           </section>
 
@@ -231,6 +276,26 @@ export default async function CarDetailPage({
       </div>
       </main>
     </>
+  );
+}
+
+function SidebarFact({
+  icon,
+  label,
+  value,
+}: {
+  icon?: ReactNode;
+  label: string;
+  value: ReactNode;
+}) {
+  return (
+    <div className="glass-chip flex items-center justify-between gap-3 rounded-lg px-3 py-2">
+      <dt className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500">
+        {icon}
+        {label}
+      </dt>
+      <dd className="text-right text-sm font-black text-slate-950">{value}</dd>
+    </div>
   );
 }
 

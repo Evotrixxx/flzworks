@@ -1,6 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
-import { ArrowLeft, ArrowRight, Search } from "lucide-react";
+import { ArrowLeft, ArrowRight, LayoutGrid, List } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { dictionaries } from "@/lib/i18n";
 import { getLocale } from "@/lib/i18n-server";
@@ -44,56 +43,81 @@ function hrefForPage(params: SearchParamsInput, page: number, locale: string) {
   return `/?${next.toString()}`;
 }
 
+function hrefForView(params: SearchParamsInput, view: "tile" | "list", locale: string) {
+  const next = new URLSearchParams();
+
+  for (const [key, raw] of Object.entries(params)) {
+    if (key === "view" || key === "page") {
+      continue;
+    }
+
+    const values = Array.isArray(raw) ? raw : raw ? [raw] : [];
+    for (const value of values) {
+      next.append(key, value);
+    }
+  }
+
+  next.set("lang", locale);
+  if (view !== "tile") {
+    next.set("view", view);
+  }
+
+  return `/?${next.toString()}`;
+}
+
+function selectedView(params: SearchParamsInput): "tile" | "list" {
+  const raw = Array.isArray(params.view) ? params.view[0] : params.view;
+  return raw === "list" ? "list" : "tile";
+}
+
 export default async function Home({ searchParams }: { searchParams: Promise<SearchParamsInput> }) {
   const params = await searchParams;
   const [user, locale] = await Promise.all([getCurrentUser(), getLocale(params)]);
   const t = dictionaries[locale];
   const result = await getListings(params, user?.id);
+  const view = selectedView(params);
+  const viewLabels =
+    locale === "hu"
+      ? { tile: "Kartyak", list: "Lista" }
+      : { tile: "Tiles", list: "List" };
 
   return (
     <>
       <Header locale={locale} />
       <main className="mx-auto grid w-full max-w-7xl flex-1 gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[320px_1fr] lg:px-8">
-      <aside className="hidden space-y-4 lg:block">
+      <aside className="hidden lg:block">
         <SearchPanel locale={locale} t={t} params={params} />
-        <section className="glass-panel rounded-lg p-4">
-          <p className="text-sm font-black text-slate-950">{t.home.promotionTitle}</p>
-          <p className="mt-2 text-sm leading-6 text-slate-600">{t.home.promotionBody}</p>
-        </section>
       </aside>
 
       <section className="min-w-0 space-y-5">
-        <div className="glass-surface rounded-lg">
-          <div className="grid md:grid-cols-[1fr_320px]">
-            <div className="p-5 sm:p-6">
-              <div className="glass-chip inline-flex items-center gap-2 rounded-full px-2 py-1 text-xs font-black uppercase text-cyan-800">
-                <Search className="h-3.5 w-3.5" aria-hidden="true" />
-                {t.brand}
-              </div>
-              <h1 className="mt-3 max-w-2xl text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">
-                {t.home.headline}
-              </h1>
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">{t.home.subhead}</p>
-            </div>
-            <Image
-              src="/seed/marketplace-cars.png"
-              alt=""
-              width={640}
-              height={360}
-              priority
-              className="hidden h-full min-h-48 w-full object-cover md:block"
-            />
-          </div>
-        </div>
-
-        <div className="glass-panel flex flex-col gap-3 rounded-lg p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
+        <div className="glass-panel flex flex-col gap-3 rounded-lg p-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex flex-wrap items-center gap-3">
             <MobileFilters label={t.home.mobileFilters}>
               <SearchPanel locale={locale} t={t} params={params} />
             </MobileFilters>
             <p className="text-sm font-black text-slate-950">
               {result.total} {t.home.resultCount}
             </p>
+            <div className="glass-chip inline-flex rounded-full p-1 text-sm font-black text-slate-600">
+              <Link
+                href={hrefForView(params, "tile", locale)}
+                className={`inline-flex h-9 items-center gap-2 rounded-full px-3 transition ${
+                  view === "tile" ? "bg-slate-950 text-white shadow-sm" : "hover:bg-white/70 hover:text-slate-950"
+                }`}
+              >
+                <LayoutGrid className="h-4 w-4" aria-hidden="true" />
+                {viewLabels.tile}
+              </Link>
+              <Link
+                href={hrefForView(params, "list", locale)}
+                className={`inline-flex h-9 items-center gap-2 rounded-full px-3 transition ${
+                  view === "list" ? "bg-slate-950 text-white shadow-sm" : "hover:bg-white/70 hover:text-slate-950"
+                }`}
+              >
+                <List className="h-4 w-4" aria-hidden="true" />
+                {viewLabels.list}
+              </Link>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -123,7 +147,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
         </div>
 
         {result.listings.length ? (
-          <div className="grid gap-4">
+          <div className={view === "tile" ? "grid gap-4 md:grid-cols-2 xl:grid-cols-3" : "grid gap-4"}>
             {result.listings.map((listing) => (
               <ListingCard
                 key={listing.id}
@@ -131,6 +155,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
                 locale={locale}
                 t={t}
                 isAuthenticated={Boolean(user)}
+                variant={view}
               />
             ))}
           </div>
