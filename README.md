@@ -17,7 +17,8 @@ Open [http://localhost:3000](http://localhost:3000).
 
 - Seller: `seller@autopiac.test`
 - Buyer: `buyer@autopiac.test`
-- Password for both: `autopiac123`
+- Seller password: `Lionessey`
+- Buyer password: `autopiac123`
 
 ## Useful Commands
 

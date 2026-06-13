@@ -179,15 +179,19 @@ const premiumDetails = {
 };
 
 async function main() {
-  const passwordHash = await bcrypt.hash("autopiac123", 12);
+  const buyerPasswordHash = await bcrypt.hash("autopiac123", 12);
+  const sellerPasswordHash = await bcrypt.hash("Lionessey", 12);
 
   const seller = await prisma.user.upsert({
     where: { email: "seller@autopiac.test" },
-    update: {},
+    update: {
+      name: "Pentagon Automotive Hungary",
+      passwordHash: sellerPasswordHash,
+    },
     create: {
       email: "seller@autopiac.test",
-      name: "AutoPiac Demo Kereskedo",
-      passwordHash,
+      name: "Pentagon Automotive Hungary",
+      passwordHash: sellerPasswordHash,
     },
   });
 
@@ -197,7 +201,7 @@ async function main() {
     create: {
       email: "buyer@autopiac.test",
       name: "AutoPiac Demo Vevo",
-      passwordHash,
+      passwordHash: buyerPasswordHash,
     },
   });
 

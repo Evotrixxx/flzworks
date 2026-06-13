@@ -117,7 +117,7 @@ export const dictionaries = {
       registerTitle: "AutoPiac fiok letrehozasa",
       loginCta: "Belepek",
       registerCta: "Regisztralok",
-      demo: "Demo jelszo: autopiac123",
+      demo: "Demo: elado Lionessey, vevo autopiac123",
       needLogin: "A muvelethez be kell lepni.",
     },
     saved: {
@@ -279,7 +279,7 @@ export const dictionaries = {
       registerTitle: "Create an AutoPiac account",
       loginCta: "Log in",
       registerCta: "Register",
-      demo: "Demo password: autopiac123",
+      demo: "Demo: seller Lionessey, buyer autopiac123",
       needLogin: "You need to log in for this action.",
     },
     saved: {
