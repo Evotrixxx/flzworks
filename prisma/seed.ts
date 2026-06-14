@@ -179,6 +179,15 @@ const premiumDetails = {
 };
 
 async function main() {
+  const resetSeedData = process.env.RESET_SEED_DATA === "true";
+  const productionResetAllowed = process.env.ALLOW_PRODUCTION_SEED_RESET === "true";
+
+  if (resetSeedData && process.env.NODE_ENV === "production" && !productionResetAllowed) {
+    throw new Error(
+      "Refusing to reset seed data in production. Set ALLOW_PRODUCTION_SEED_RESET=true only for an intentional emergency reset.",
+    );
+  }
+
   const buyerPasswordHash = await bcrypt.hash("autopiac123", 12);
   const sellerPasswordHash = await bcrypt.hash("Lionessey", 12);
 
@@ -205,10 +214,12 @@ async function main() {
     },
   });
 
-  await prisma.favorite.deleteMany({});
-  await prisma.savedSearch.deleteMany({});
-  await prisma.listingPhoto.deleteMany({});
-  await prisma.listing.deleteMany({});
+  if (resetSeedData) {
+    await prisma.favorite.deleteMany({});
+    await prisma.savedSearch.deleteMany({});
+    await prisma.listingPhoto.deleteMany({});
+    await prisma.listing.deleteMany({});
+  }
 
   const listings = [
     {
@@ -370,7 +381,16 @@ async function main() {
     },
   ];
 
-  for (const [index, listing] of listings.entries()) {
+  const sellerListingCount = await prisma.listing.count({ where: { sellerId: seller.id } });
+  const shouldCreateDemoListings = resetSeedData || sellerListingCount === 0;
+
+  if (!shouldCreateDemoListings) {
+    console.log(
+      `Seed kept ${sellerListingCount} existing seller listing(s). Set RESET_SEED_DATA=true for an intentional local reset.`,
+    );
+  }
+
+  for (const [index, listing] of shouldCreateDemoListings ? listings.entries() : []) {
     const created = await prisma.listing.create({
       data: {
         ...listing,
@@ -394,13 +414,22 @@ async function main() {
     }
   }
 
-  await prisma.savedSearch.create({
-    data: {
+  const savedSearch = await prisma.savedSearch.findFirst({
+    where: {
       userId: buyer.id,
       name: "Hibrid kombik 8M alatt",
-      query: "fuel=HYBRID&bodyType=WAGON&priceMax=8000000",
     },
   });
+
+  if (!savedSearch) {
+    await prisma.savedSearch.create({
+      data: {
+        userId: buyer.id,
+        name: "Hibrid kombik 8M alatt",
+        query: "fuel=HYBRID&bodyType=WAGON&priceMax=8000000",
+      },
+    });
+  }
 }
 
 main()

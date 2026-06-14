@@ -28,9 +28,15 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col text-slate-950">
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var p=localStorage.getItem("autopiac.palette")||"aqua";var g=localStorage.getItem("autopiac.glass")||"clear";document.documentElement.dataset.themePalette=p;document.documentElement.dataset.glass=g;}catch(e){}`,
+          }}
+        />
         {children}
       </body>
     </html>

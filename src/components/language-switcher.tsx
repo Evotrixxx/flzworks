@@ -29,7 +29,7 @@ export function LanguageSwitcher({
 
   return (
     <div className="glass-chip inline-flex h-9 items-center rounded-full p-1 text-xs font-semibold text-slate-600">
-      <Languages className="ml-1 mr-1 h-4 w-4 text-cyan-700" aria-hidden="true" />
+      <Languages className="ml-1 mr-1 h-4 w-4 text-[var(--accent-aqua)]" aria-hidden="true" />
       <span className="sr-only">{labels.language}</span>
       {locales.map((item) => (
         <button
@@ -37,7 +37,7 @@ export function LanguageSwitcher({
           type="button"
           onClick={() => switchTo(item)}
           className={`h-7 rounded-full px-2 transition ${
-            locale === item ? "bg-slate-950 text-white shadow-sm" : "hover:bg-white/70"
+            locale === item ? "theme-active-pill" : "hover:bg-white/70"
           }`}
         >
           {labels[item]}
