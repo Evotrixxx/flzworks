@@ -3,8 +3,8 @@ import { getCurrentUser } from "@/lib/auth";
 import { dictionaries } from "@/lib/i18n";
 import { getLocale } from "@/lib/i18n-server";
 import type { SearchParamsInput } from "@/lib/listings";
-import { ListingForm } from "@/components/listing-form";
 import { Header } from "@/components/header";
+import { SellTabs } from "@/components/sell-tabs";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +25,7 @@ export default async function SellPage({ searchParams }: { searchParams: Promise
         <div className="mb-5">
           <h1 className="text-2xl font-black text-slate-950">{t.forms.listingTitle}</h1>
         </div>
-        <ListingForm mode="create" locale={locale} t={t} />
+        <SellTabs locale={locale} t={t} />
       </div>
     </>
   );

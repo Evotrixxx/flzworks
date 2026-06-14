@@ -12,7 +12,6 @@ import {
   Sparkles,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import type { ReactNode } from "react";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import {
   bodyTypeOptions,
@@ -33,38 +32,69 @@ function value(params: SearchPanelProps["params"], key: string) {
 }
 
 export function SearchPanel({ locale, t, params }: SearchPanelProps) {
-  const selectGroups = [
-    { name: "fuel", label: t.filters.fuel, options: fuelOptions, labels: t.enums.fuel, icon: Fuel },
-    {
-      name: "transmission",
-      label: t.filters.transmission,
-      options: transmissionOptions,
-      labels: t.enums.transmission,
-      icon: Settings2,
-    },
-    { name: "bodyType", label: t.filters.bodyType, options: bodyTypeOptions, labels: t.enums.bodyType, icon: Car },
-    { name: "condition", label: t.filters.condition, options: conditionOptions, labels: t.enums.condition, icon: Sparkles },
-  ];
-  const groupLabels =
+  const help =
     locale === "hu"
       ? {
-          basics: "Alapok",
-          priceYear: "Ar es evjarat",
-          specs: "Jarmu adatok",
-          place: "Hely",
+          keyword: "Keres a markaban, modellben, kivitelben, leirasban es helysegben.",
+          make: "Reszleges markanev is eleg.",
+          model: "Reszleges modellnev is eleg.",
+          priceMin: "Csak ennel dragabb vagy pontosan ilyen aru autok.",
+          priceMax: "Csak ennel olcsobb vagy pontosan ilyen aru autok.",
+          yearMin: "Legalabb ilyen evjaratu autok.",
+          yearMax: "Legfeljebb ilyen evjaratu autok.",
+          mileageMax: "Legfeljebb ekkora futasteljesitmeny.",
+          fuel: "Pontosan erre az uzemanyag tipusra szur.",
+          transmission: "Pontosan erre a valto tipusra szur.",
+          bodyType: "Pontosan erre a karosszeria kivitelre szur.",
+          condition: "Pontosan erre az allapotra szur.",
+          location: "Reszleges helyseg vagy varosnev is eleg.",
         }
       : {
-          basics: "Basics",
-          priceYear: "Price & year",
-          specs: "Vehicle specs",
-          place: "Location",
+          keyword: "Searches make, model, trim, description, and location.",
+          make: "Partial make names are accepted.",
+          model: "Partial model names are accepted.",
+          priceMin: "Only cars at or above this HUF price.",
+          priceMax: "Only cars at or below this HUF price.",
+          yearMin: "Only cars from this year or newer.",
+          yearMax: "Only cars from this year or older.",
+          mileageMax: "Only cars with mileage at or below this value.",
+          fuel: "Filters by the exact fuel category.",
+          transmission: "Filters by the exact transmission category.",
+          bodyType: "Filters by the exact body category.",
+          condition: "Filters by the exact condition category.",
+          location: "Partial town or city names are accepted.",
         };
-  const groups = {
-    basics: { title: groupLabels.basics, icon: Search },
-    priceYear: { title: groupLabels.priceYear, icon: CircleDollarSign },
-    specs: { title: groupLabels.specs, icon: Gauge },
-    place: { title: groupLabels.place, icon: MapPin },
-  };
+  const fields: FilterField[] = [
+    { kind: "text", name: "keyword", label: t.filters.keyword, icon: Search, help: help.keyword },
+    { kind: "text", name: "make", label: t.filters.make, icon: Car, help: help.make },
+    { kind: "text", name: "model", label: t.filters.model, icon: Car, help: help.model },
+    { kind: "number", name: "priceMin", label: t.filters.priceMin, icon: CircleDollarSign, help: help.priceMin },
+    { kind: "number", name: "priceMax", label: t.filters.priceMax, icon: CircleDollarSign, help: help.priceMax },
+    { kind: "number", name: "yearMin", label: t.filters.yearMin, icon: Calendar, help: help.yearMin },
+    { kind: "number", name: "yearMax", label: t.filters.yearMax, icon: Calendar, help: help.yearMax },
+    { kind: "number", name: "mileageMax", label: t.filters.mileageMax, icon: Gauge, help: help.mileageMax },
+    { kind: "select", name: "fuel", label: t.filters.fuel, icon: Fuel, help: help.fuel, options: fuelOptions, labels: t.enums.fuel },
+    {
+      kind: "select",
+      name: "transmission",
+      label: t.filters.transmission,
+      icon: Settings2,
+      help: help.transmission,
+      options: transmissionOptions,
+      labels: t.enums.transmission,
+    },
+    { kind: "select", name: "bodyType", label: t.filters.bodyType, icon: Car, help: help.bodyType, options: bodyTypeOptions, labels: t.enums.bodyType },
+    {
+      kind: "select",
+      name: "condition",
+      label: t.filters.condition,
+      icon: Sparkles,
+      help: help.condition,
+      options: conditionOptions,
+      labels: t.enums.condition,
+    },
+    { kind: "text", name: "location", label: t.filters.location, icon: MapPin, help: help.location },
+  ];
 
   return (
     <form action="/" className="glass-panel space-y-5 rounded-lg p-4">
@@ -85,55 +115,11 @@ export function SearchPanel({ locale, t, params }: SearchPanelProps) {
         </a>
       </div>
 
-      <FilterGroup title={groups.basics.title} icon={groups.basics.icon}>
-        <label className="grid gap-1 text-sm font-semibold text-slate-700">
-          <FieldLabel icon={Search}>{t.filters.keyword}</FieldLabel>
-          <input name="keyword" defaultValue={value(params, "keyword")} className="h-10 px-3 font-normal outline-none transition" />
-        </label>
-        <div className="grid grid-cols-2 gap-3">
-          <label className="grid gap-1 text-sm font-semibold text-slate-700">
-            <FieldLabel icon={Car}>{t.filters.make}</FieldLabel>
-            <input name="make" defaultValue={value(params, "make")} className="h-10 px-3 font-normal outline-none transition" />
-          </label>
-          <label className="grid gap-1 text-sm font-semibold text-slate-700">
-            <FieldLabel icon={Car}>{t.filters.model}</FieldLabel>
-            <input name="model" defaultValue={value(params, "model")} className="h-10 px-3 font-normal outline-none transition" />
-          </label>
-        </div>
-      </FilterGroup>
-
-      <FilterGroup title={groups.priceYear.title} icon={groups.priceYear.icon}>
-        <div className="grid grid-cols-2 gap-3">
-          <NumberField name="priceMin" label={t.filters.priceMin} params={params} icon={CircleDollarSign} />
-          <NumberField name="priceMax" label={t.filters.priceMax} params={params} icon={CircleDollarSign} />
-          <NumberField name="yearMin" label={t.filters.yearMin} params={params} icon={Calendar} />
-          <NumberField name="yearMax" label={t.filters.yearMax} params={params} icon={Calendar} />
-        </div>
-      </FilterGroup>
-
-      <FilterGroup title={groups.specs.title} icon={groups.specs.icon}>
-        <NumberField name="mileageMax" label={t.filters.mileageMax} params={params} icon={Gauge} />
-        {selectGroups.map((group) => (
-          <label key={group.name} className="grid gap-1 text-sm font-semibold text-slate-700">
-            <FieldLabel icon={group.icon}>{group.label}</FieldLabel>
-            <select name={group.name} defaultValue={value(params, group.name)} className="h-10 px-3 font-normal outline-none transition">
-              <option value="">{t.filters.any}</option>
-              {group.options.map((option) => (
-                <option key={option} value={option}>
-                  {group.labels[option as keyof typeof group.labels]}
-                </option>
-              ))}
-            </select>
-          </label>
+      <div className="grid gap-3">
+        {fields.map((field) => (
+          <FilterControl key={field.name} field={field} params={params} anyLabel={t.filters.any} />
         ))}
-      </FilterGroup>
-
-      <FilterGroup title={groups.place.title} icon={groups.place.icon}>
-        <label className="grid gap-1 text-sm font-semibold text-slate-700">
-          <FieldLabel icon={MapPin}>{t.filters.location}</FieldLabel>
-          <input name="location" defaultValue={value(params, "location")} className="h-10 px-3 font-normal outline-none transition" />
-        </label>
-      </FilterGroup>
+      </div>
 
       <button
         type="submit"
@@ -146,50 +132,72 @@ export function SearchPanel({ locale, t, params }: SearchPanelProps) {
   );
 }
 
-function FilterGroup({ title, icon: Icon, children }: { title: string; icon: LucideIcon; children: ReactNode }) {
-  return (
-    <fieldset className="grid gap-3 border-t border-white/60 pt-4 first:border-t-0 first:pt-0">
-      <legend className="mb-3">
-        <span className="glass-chip inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-xs font-black uppercase text-slate-600">
-          <Icon className="h-3.5 w-3.5 text-[var(--accent-aqua)]" aria-hidden="true" />
-          {title}
-        </span>
-      </legend>
-      {children}
-    </fieldset>
-  );
-}
+type FilterField =
+  | {
+      kind: "text" | "number";
+      name: string;
+      label: string;
+      help: string;
+      icon: LucideIcon;
+    }
+  | {
+      kind: "select";
+      name: string;
+      label: string;
+      help: string;
+      icon: LucideIcon;
+      options: readonly string[];
+      labels: Record<string, string>;
+    };
 
-function FieldLabel({ icon: Icon, children }: { icon: LucideIcon; children: ReactNode }) {
-  return (
-    <span className="inline-flex items-center gap-1.5">
-      <Icon className="h-3.5 w-3.5 text-[var(--accent-aqua)]" aria-hidden="true" />
-      {children}
-    </span>
-  );
-}
-
-function NumberField({
-  name,
-  label,
+function FilterControl({
+  field,
   params,
-  icon,
+  anyLabel,
 }: {
-  name: string;
-  label: string;
+  field: FilterField;
   params: SearchPanelProps["params"];
-  icon: LucideIcon;
+  anyLabel: string;
 }) {
+  const Icon = field.icon;
+
   return (
-    <label className="grid gap-1 text-sm font-semibold text-slate-700">
-      <FieldLabel icon={icon}>{label}</FieldLabel>
-      <input
-        name={name}
-        type="number"
-        inputMode="numeric"
-        defaultValue={value(params, name)}
-        className="h-10 px-3 font-normal outline-none transition"
+    <label className="group relative block">
+      <span className="sr-only">{field.label}</span>
+      <Icon
+        className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--accent-aqua)]"
+        aria-hidden="true"
       />
+      {field.kind === "select" ? (
+        <select
+          name={field.name}
+          defaultValue={value(params, field.name)}
+          aria-label={field.label}
+          title={field.help}
+          className="h-10 w-full px-10 font-normal outline-none transition"
+        >
+          <option value="">{anyLabel}</option>
+          {field.options.map((option) => (
+            <option key={option} value={option}>
+              {field.labels[option]}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <input
+          name={field.name}
+          type={field.kind === "number" ? "number" : "text"}
+          inputMode={field.kind === "number" ? "numeric" : undefined}
+          defaultValue={value(params, field.name)}
+          placeholder={field.label}
+          aria-label={field.label}
+          title={field.help}
+          className="h-10 w-full px-10 font-normal outline-none transition"
+        />
+      )}
+      <span className="pointer-events-none absolute left-0 top-[calc(100%+0.35rem)] z-20 hidden max-w-[18rem] rounded-lg border border-white/70 bg-slate-950/90 px-3 py-2 text-xs font-semibold leading-5 text-white shadow-xl backdrop-blur group-focus-within:block group-hover:block">
+        {field.help}
+      </span>
     </label>
   );
 }

@@ -6,6 +6,7 @@ import { listingStatusOptions } from "@/lib/options";
 import { removeUploadedPhoto, saveUploadedPhotos } from "@/lib/uploads";
 import { normalizeLocale } from "@/lib/i18n";
 import { validateListingPayload } from "@/lib/listing-validation";
+import { resolvePhotoPlan } from "@/lib/photo-plan";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -26,7 +27,7 @@ function uploadEntries(formData: FormData) {
 async function findOwnedListing(id: string, userId: string) {
   return prisma.listing.findFirst({
     where: { id, sellerId: userId },
-    include: { photos: true },
+    include: { photos: { orderBy: { sortOrder: "asc" } } },
   });
 }
 
@@ -53,27 +54,50 @@ export async function PUT(request: Request, context: RouteContext) {
 
   const uploads = uploadEntries(formData);
   const savedPhotos = uploads.length ? await saveUploadedPhotos(uploads) : [];
-
-  const listing = await prisma.listing.update({
-    where: { id },
-    data: {
-      ...parsed.data,
-      photos: savedPhotos.length
-        ? {
-            deleteMany: {},
-            create: savedPhotos.map((path, index) => ({
-              path,
-              sortOrder: index,
-            })),
-          }
-        : undefined,
-    },
-    select: { id: true },
+  const photoPlan = resolvePhotoPlan({
+    planJson: raw.photoPlan,
+    existingPhotos: existing.photos,
+    savedPhotoPaths: savedPhotos,
   });
 
-  if (savedPhotos.length) {
-    await Promise.all(existing.photos.map((photo) => removeUploadedPhoto(photo.path)));
-  }
+  const listing = await prisma.$transaction(async (tx) => {
+    const updated = await tx.listing.update({
+      where: { id },
+      data: parsed.data,
+      select: { id: true },
+    });
+
+    if (photoPlan.removed.length) {
+      await tx.listingPhoto.deleteMany({
+        where: {
+          id: {
+            in: photoPlan.removed.map((photo) => photo.id),
+          },
+        },
+      });
+    }
+
+    for (const photo of photoPlan.ordered) {
+      if (photo.type === "existing") {
+        await tx.listingPhoto.update({
+          where: { id: photo.id },
+          data: { sortOrder: photo.sortOrder },
+        });
+      } else {
+        await tx.listingPhoto.create({
+          data: {
+            listingId: id,
+            path: photo.path,
+            sortOrder: photo.sortOrder,
+          },
+        });
+      }
+    }
+
+    return updated;
+  });
+
+  await Promise.all(photoPlan.removed.map((photo) => removeUploadedPhoto(photo.path)));
 
   return NextResponse.json(listing);
 }

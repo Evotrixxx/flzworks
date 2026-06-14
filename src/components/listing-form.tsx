@@ -3,7 +3,7 @@
 import { ChangeEvent, DragEvent, FormEvent, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Camera, ImagePlus, Save, UploadCloud, X } from "lucide-react";
+import { GripVertical, ImagePlus, Save, Star, UploadCloud, X } from "lucide-react";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import {
   bodyTypeOptions,
@@ -34,7 +34,7 @@ type InitialListing = {
   location: string;
   description: string;
   status: string;
-  photos: { path: string }[];
+  photos: { id: string; path: string }[];
 };
 
 export function ListingForm({
@@ -363,32 +363,12 @@ export function ListingForm({
         </div>
       </section>
 
-      {initialListing?.photos.length ? (
-        <section className="grid gap-3">
-          <h2 className="inline-flex items-center gap-2 text-base font-black text-slate-950">
-            <Camera className="h-4 w-4 text-cyan-700" aria-hidden="true" />
-            {locale === "hu" ? "Jelenlegi kepek" : "Current photos"}
-          </h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {initialListing.photos.map((photo, index) => (
-              <figure key={photo.path} className="glass-chip overflow-hidden rounded-lg p-1">
-                <Image
-                  src={photoUrl(photo.path)}
-                  alt=""
-                  width={240}
-                  height={180}
-                  className="aspect-[4/3] rounded-md object-cover"
-                />
-                <figcaption className="px-2 py-1 text-xs font-black text-slate-500">
-                  {index === 0 ? (locale === "hu" ? "Boritokep" : "Cover photo") : `${index + 1}`}
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      <PhotoUploadField locale={locale} title={t.forms.photos} help={t.forms.photosHelp} />
+      <PhotoManagerField
+        locale={locale}
+        title={t.forms.photos}
+        help={t.forms.photosHelp}
+        initialPhotos={initialListing?.photos ?? []}
+      />
 
       {error && <p className="rounded-lg bg-rose-50/80 px-3 py-2 text-sm font-semibold text-rose-700">{error}</p>}
 
@@ -405,31 +385,47 @@ export function ListingForm({
 }
 
 type PhotoDraft = {
+  type: "new";
   id: string;
   file: File;
   url: string;
 };
 
-function PhotoUploadField({
+type ExistingPhotoDraft = {
+  type: "existing";
+  id: string;
+  path: string;
+};
+
+type PhotoItem = ExistingPhotoDraft | PhotoDraft;
+
+function PhotoManagerField({
   locale,
   title,
   help,
+  initialPhotos,
 }: {
   locale: Locale;
   title: string;
   help: string;
+  initialPhotos: { id: string; path: string }[];
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const draftUrlsRef = useRef<string[]>([]);
-  const [drafts, setDrafts] = useState<PhotoDraft[]>([]);
+  const [items, setItems] = useState<PhotoItem[]>(() =>
+    initialPhotos.map((photo) => ({ type: "existing", id: photo.id, path: photo.path })),
+  );
   const [dragging, setDragging] = useState(false);
+  const [draggedId, setDraggedId] = useState<string | null>(null);
   const labels =
     locale === "hu"
       ? {
           choose: "Kepek kivalasztasa",
           drag: "Huzd ide a fotokat, vagy tallozz",
           cover: "Boritokep",
+          makeCover: "Legyen boritokep",
           remove: "Eltavolitas",
+          reorder: "Huzd az atrendezeshez",
           selected: "kivalasztva",
           empty: "JPG, PNG vagy WebP, kepenkent legfeljebb 5 MB.",
         }
@@ -437,7 +433,9 @@ function PhotoUploadField({
           choose: "Choose photos",
           drag: "Drop photos here, or browse",
           cover: "Cover photo",
+          makeCover: "Make cover photo",
           remove: "Remove",
+          reorder: "Drag to reorder",
           selected: "selected",
           empty: "JPG, PNG, or WebP, up to 5 MB each.",
         };
@@ -450,14 +448,16 @@ function PhotoUploadField({
     };
   }, []);
 
-  function syncInput(nextDrafts: PhotoDraft[]) {
+  function syncInput(nextItems: PhotoItem[]) {
     if (!inputRef.current) {
       return;
     }
 
     const transfer = new DataTransfer();
-    for (const draft of nextDrafts) {
-      transfer.items.add(draft.file);
+    for (const item of nextItems) {
+      if (item.type === "new") {
+        transfer.items.add(item.file);
+      }
     }
     inputRef.current.files = transfer.files;
   }
@@ -469,12 +469,13 @@ function PhotoUploadField({
       return;
     }
 
-    setDrafts((current) => {
+    setItems((current) => {
       const incoming = files.map((file) => {
         const url = URL.createObjectURL(file);
         draftUrlsRef.current.push(url);
 
         return {
+          type: "new" as const,
           id: `${file.name}-${file.lastModified}-${crypto.randomUUID()}`,
           file,
           url,
@@ -486,15 +487,52 @@ function PhotoUploadField({
     });
   }
 
-  function removeDraft(id: string) {
-    setDrafts((current) => {
-      const removed = current.find((draft) => draft.id === id);
-      if (removed) {
+  function removeItem(id: string) {
+    setItems((current) => {
+      const removed = current.find((item) => item.id === id);
+      if (removed?.type === "new") {
         URL.revokeObjectURL(removed.url);
         draftUrlsRef.current = draftUrlsRef.current.filter((url) => url !== removed.url);
       }
 
-      const next = current.filter((draft) => draft.id !== id);
+      const next = current.filter((item) => item.id !== id);
+      syncInput(next);
+      return next;
+    });
+  }
+
+  function makeCover(id: string) {
+    setItems((current) => {
+      const selected = current.find((item) => item.id === id);
+      if (!selected) {
+        return current;
+      }
+
+      const next = [selected, ...current.filter((item) => item.id !== id)];
+      syncInput(next);
+      return next;
+    });
+  }
+
+  function reorder(targetId: string) {
+    if (!draggedId || draggedId === targetId) {
+      return;
+    }
+
+    setItems((current) => {
+      const dragged = current.find((item) => item.id === draggedId);
+      if (!dragged) {
+        return current;
+      }
+
+      const withoutDragged = current.filter((item) => item.id !== draggedId);
+      const targetIndex = withoutDragged.findIndex((item) => item.id === targetId);
+
+      if (targetIndex === -1) {
+        return current;
+      }
+
+      const next = [...withoutDragged.slice(0, targetIndex), dragged, ...withoutDragged.slice(targetIndex)];
       syncInput(next);
       return next;
     });
@@ -510,21 +548,24 @@ function PhotoUploadField({
     addFiles(event.dataTransfer.files);
   }
 
-  const totalSize = drafts.reduce((sum, draft) => sum + draft.file.size, 0);
+  const totalSize = items.reduce((sum, item) => sum + (item.type === "new" ? item.file.size : 0), 0);
+  const photoPlan = JSON.stringify(items.map((item) => ({ type: item.type, id: item.id })));
 
   return (
     <section className="grid gap-3">
+      <input type="hidden" name="photoPlan" value={photoPlan} />
       <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="inline-flex items-center gap-2 text-base font-black text-slate-950">
-            <ImagePlus className="h-5 w-5 text-cyan-700" aria-hidden="true" />
+            <ImagePlus className="h-5 w-5 text-[var(--accent-aqua)]" aria-hidden="true" />
             {title}
           </h2>
           <p className="mt-1 text-sm font-semibold text-slate-500">{help}</p>
         </div>
-        {drafts.length > 0 && (
+        {items.length > 0 && (
           <p className="glass-chip w-fit rounded-full px-3 py-1 text-xs font-black text-slate-600">
-            {drafts.length} {labels.selected} · {formatBytes(totalSize)}
+            {items.length} {labels.selected}
+            {totalSize > 0 ? ` · ${formatBytes(totalSize)}` : ""}
           </p>
         )}
       </div>
@@ -541,7 +582,10 @@ function PhotoUploadField({
           dragging ? "border-cyan-400 bg-cyan-50/70" : "border-white/70 hover:border-cyan-300 hover:bg-white/65"
         }`}
       >
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 via-emerald-500 to-slate-900 text-white shadow-[0_14px_30px_rgba(0,119,130,0.22)]">
+        <span
+          className="flex h-14 w-14 items-center justify-center rounded-full text-white shadow-[0_14px_30px_rgba(0,119,130,0.22)]"
+          style={{ background: "var(--liquid-primary)" }}
+        >
           <UploadCloud className="h-7 w-7" aria-hidden="true" />
         </span>
         <span className="grid gap-1">
@@ -562,36 +606,64 @@ function PhotoUploadField({
         />
       </label>
 
-      {drafts.length > 0 && (
+      {items.length > 0 && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {drafts.map((draft, index) => (
-            <figure key={draft.id} className="glass-chip group overflow-hidden rounded-lg p-1">
+          {items.map((item, index) => (
+            <figure
+              key={item.id}
+              draggable
+              onDragStart={() => setDraggedId(item.id)}
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={(event) => {
+                event.preventDefault();
+                reorder(item.id);
+                setDraggedId(null);
+              }}
+              onDragEnd={() => setDraggedId(null)}
+              className="glass-chip group overflow-hidden rounded-lg p-1"
+              title={labels.reorder}
+            >
               <div className="relative">
                 <Image
-                  src={draft.url}
+                  src={item.type === "new" ? item.url : photoUrl(item.path)}
                   alt=""
                   width={320}
                   height={240}
-                  unoptimized
+                  unoptimized={item.type === "new"}
                   className="aspect-[4/3] rounded-md object-cover"
                 />
+                <span className="absolute left-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-950/65 text-white shadow-sm backdrop-blur">
+                  <GripVertical className="h-4 w-4" aria-hidden="true" />
+                </span>
                 <button
                   type="button"
-                  onClick={() => removeDraft(draft.id)}
+                  onClick={() => removeItem(item.id)}
                   aria-label={labels.remove}
                   className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-950/70 text-white opacity-100 shadow-sm backdrop-blur transition hover:bg-rose-600 sm:opacity-0 sm:group-hover:opacity-100"
                 >
                   <X className="h-4 w-4" aria-hidden="true" />
                 </button>
-                {index === 0 && (
-                  <span className="absolute bottom-2 left-2 rounded-full bg-white/80 px-2 py-1 text-xs font-black text-cyan-800 shadow-sm backdrop-blur">
-                    {labels.cover}
-                  </span>
-                )}
+                <button
+                  type="button"
+                  onClick={() => makeCover(item.id)}
+                  aria-label={index === 0 ? labels.cover : labels.makeCover}
+                  className={`absolute bottom-2 left-2 inline-flex h-8 items-center gap-1 rounded-full px-2 text-xs font-black shadow-sm backdrop-blur transition ${
+                    index === 0
+                      ? "bg-white/85 text-[var(--accent-aqua)]"
+                      : "bg-slate-950/70 text-white hover:bg-white/85 hover:text-[var(--accent-aqua)]"
+                  }`}
+                >
+                  <Star className="h-3.5 w-3.5" aria-hidden="true" />
+                  {index === 0 ? labels.cover : index + 1}
+                </button>
               </div>
               <figcaption className="grid gap-0.5 px-2 py-2">
-                <span className="truncate text-xs font-black text-slate-700">{draft.file.name}</span>
-                <span className="text-xs font-semibold text-slate-500">{formatBytes(draft.file.size)}</span>
+                <span className="truncate text-xs font-black text-slate-700">
+                  {item.type === "new" ? item.file.name : item.path}
+                </span>
+                <span className="text-xs font-semibold text-slate-500">
+                  {item.type === "new" ? formatBytes(item.file.size) : `${index + 1}`}
+                </span>
               </figcaption>
             </figure>
           ))}

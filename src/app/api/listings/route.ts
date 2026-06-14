@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { saveUploadedPhotos } from "@/lib/uploads";
 import { normalizeLocale } from "@/lib/i18n";
 import { validateListingPayload } from "@/lib/listing-validation";
+import { resolvePhotoPlan } from "@/lib/photo-plan";
 
 function stringEntries(formData: FormData) {
   return Object.fromEntries(
@@ -33,18 +34,24 @@ export async function POST(request: Request) {
   }
 
   const savedPhotos = await saveUploadedPhotos(uploadEntries(formData));
-  const photoPaths = savedPhotos.length ? savedPhotos : ["/seed/marketplace-cars.png"];
+  const photoPlan = resolvePhotoPlan({
+    planJson: raw.photoPlan,
+    existingPhotos: [],
+    savedPhotoPaths: savedPhotos,
+  });
 
   const listing = await prisma.listing.create({
     data: {
       ...parsed.data,
       sellerId: user.id,
-      photos: {
-        create: photoPaths.map((path, index) => ({
-          path,
-          sortOrder: index,
-        })),
-      },
+      photos: photoPlan.ordered.length
+        ? {
+            create: photoPlan.ordered.map((photo) => ({
+              path: photo.path,
+              sortOrder: photo.sortOrder,
+            })),
+          }
+        : undefined,
     },
     select: { id: true },
   });
