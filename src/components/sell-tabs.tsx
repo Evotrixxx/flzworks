@@ -1,12 +1,21 @@
-"use client";
-
-import { useState } from "react";
 import type { Dictionary, Locale } from "@/lib/i18n";
+import type { ListingTextExportData } from "@/lib/listing-text-import";
 import { ListingForm } from "@/components/listing-form";
 import { TextImportForm } from "@/components/text-import-form";
 
-export function SellTabs({ locale, t }: { locale: Locale; t: Dictionary }) {
-  const [tab, setTab] = useState<"single" | "import">("single");
+export function SellTabs({
+  locale,
+  t,
+  activeTab,
+  templateId,
+  initialDraftValues,
+}: {
+  locale: Locale;
+  t: Dictionary;
+  activeTab: "single" | "import";
+  templateId?: string;
+  initialDraftValues?: Partial<ListingTextExportData>;
+}) {
   const labels =
     locale === "hu"
       ? {
@@ -17,27 +26,33 @@ export function SellTabs({ locale, t }: { locale: Locale; t: Dictionary }) {
           single: "Single listing",
           import: "Text import",
         };
+  const singleHref = templateId
+    ? `/sell?template=${encodeURIComponent(templateId)}&lang=${locale}`
+    : `/sell?lang=${locale}`;
+  const importHref = `/sell?tab=import&lang=${locale}`;
 
   return (
     <div className="grid gap-5">
       <div className="glass-chip grid w-full grid-cols-2 rounded-full p-1 text-sm font-black text-slate-600 sm:w-fit">
-        <button
-          type="button"
-          onClick={() => setTab("single")}
-          className={`h-10 rounded-full px-4 transition ${tab === "single" ? "theme-active-pill" : "hover:bg-white/70 hover:text-slate-950"}`}
+        <a
+          href={singleHref}
+          className={`inline-flex h-10 items-center justify-center rounded-full px-4 transition ${activeTab === "single" ? "theme-active-pill" : "hover:bg-white/70 hover:text-slate-950"}`}
         >
           {labels.single}
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("import")}
-          className={`h-10 rounded-full px-4 transition ${tab === "import" ? "theme-active-pill" : "hover:bg-white/70 hover:text-slate-950"}`}
+        </a>
+        <a
+          href={importHref}
+          className={`inline-flex h-10 items-center justify-center rounded-full px-4 transition ${activeTab === "import" ? "theme-active-pill" : "hover:bg-white/70 hover:text-slate-950"}`}
         >
           {labels.import}
-        </button>
+        </a>
       </div>
 
-      {tab === "single" ? <ListingForm mode="create" locale={locale} t={t} /> : <TextImportForm locale={locale} />}
+      {activeTab === "single" ? (
+        <ListingForm mode="create" locale={locale} t={t} initialDraftValues={initialDraftValues} />
+      ) : (
+        <TextImportForm locale={locale} />
+      )}
     </div>
   );
 }

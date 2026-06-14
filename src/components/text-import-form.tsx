@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import Link from "next/link";
-import { ClipboardList, Eye, FilePlus2, Loader2 } from "lucide-react";
+import { ClipboardList, Eye, FilePlus2, Loader2, UploadCloud } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { listingImportTemplate, type ListingImportPreview } from "@/lib/listing-text-import";
 import type { Locale } from "@/lib/i18n";
@@ -20,6 +20,7 @@ export function TextImportForm({ locale }: { locale: Locale }) {
           help: "Toltsd ki a mintat. A hirdetesek piszkozatkent jonnek letre, kepeket kesobb tudsz feltolteni.",
           preview: "Ellenorzes",
           create: "Piszkozatok letrehozasa",
+          upload: "TXT betoltes",
           valid: "ervenyes",
           invalid: "hibas",
           warnings: "Figyelmeztetesek",
@@ -33,6 +34,7 @@ export function TextImportForm({ locale }: { locale: Locale }) {
           help: "Fill the template. Listings are created as drafts, and photos can be added later.",
           preview: "Preview",
           create: "Create drafts",
+          upload: "Load TXT",
           valid: "valid",
           invalid: "invalid",
           warnings: "Warnings",
@@ -102,6 +104,23 @@ export function TextImportForm({ locale }: { locale: Locale }) {
           {copy.dashboard}
         </Link>
       </div>
+
+      <label className="liquid-button-secondary inline-flex h-10 w-fit cursor-pointer items-center justify-center gap-2 rounded-full px-4 text-sm font-black text-slate-700">
+        <UploadCloud className="h-4 w-4" aria-hidden="true" />
+        {copy.upload}
+        <input
+          type="file"
+          accept=".txt,text/plain"
+          className="sr-only"
+          onChange={async (event) => {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            setText(await file.text());
+            setPreview(null);
+            setMessage("");
+          }}
+        />
+      </label>
 
       <textarea
         value={text}

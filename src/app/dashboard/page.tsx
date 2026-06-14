@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PlusCircle } from "lucide-react";
+import { Download, PlusCircle } from "lucide-react";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
@@ -54,6 +54,13 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             <PlusCircle className="h-4 w-4" aria-hidden="true" />
             {t.dashboard.newListing}
           </Link>
+          <a
+            href={`/api/listings/export-text?lang=${locale}`}
+            className="liquid-button-secondary inline-flex h-10 items-center justify-center gap-2 rounded-full px-4 text-sm font-black text-slate-700 transition"
+          >
+            <Download className="h-4 w-4" aria-hidden="true" />
+            {locale === "hu" ? "Osszes letoltese" : "Download all"}
+          </a>
         </div>
 
         {listings.length ? (
@@ -71,7 +78,14 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                   <DashboardActions
                     id={listing.id}
                     status={listing.status}
-                    labels={{ publish: t.forms.publish, save: t.forms.save, delete: t.forms.delete }}
+                    locale={locale}
+                    labels={{
+                      publish: t.forms.publish,
+                      save: t.forms.save,
+                      delete: t.forms.delete,
+                      downloadText: locale === "hu" ? "Szoveg letoltese" : "Download text",
+                      useTemplate: locale === "hu" ? "Sablonkent hasznal" : "Use as template",
+                    }}
                   />
                 </div>
               </div>

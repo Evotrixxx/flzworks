@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseListingText } from "@/lib/listing-text-import";
+import { parseListingText, serializeListingsToText, serializeListingToText } from "@/lib/listing-text-import";
 
 const validBlock = `Make: Porsche
 Model: Panamera
@@ -76,5 +76,96 @@ describe("listing text import", () => {
     if (result.items[0].ok) {
       expect(result.items[0].data.status).toBe("DRAFT");
     }
+  });
+
+  it("serializes one listing and parses it back into equivalent fields", () => {
+    const text = serializeListingToText(
+      {
+        make: "Porsche",
+        model: "Panamera",
+        trim: "Turbo S E-Hybrid Sport Turismo",
+        year: 2025,
+        yearMonth: "2025/9",
+        price: 44990000,
+        priceEur: 127037,
+        mileage: 6730,
+        fuel: "HYBRID",
+        transmission: "AUTOMATIC",
+        bodyType: "WAGON",
+        condition: "LIKE_NEW",
+        location: "Budapest",
+        description: "Line one with enough listing detail\nLine two with enough listing detail",
+        color: "Sarga",
+        trunkVolumeLiters: 418,
+        vatDeductible: true,
+        availableImmediately: false,
+        status: "PUBLISHED",
+      },
+      "en",
+    );
+    const result = parseListingText(text, "en");
+
+    expect(result.validCount).toBe(1);
+    expect(result.items[0].ok).toBe(true);
+    if (result.items[0].ok) {
+      expect(result.items[0].data).toMatchObject({
+        make: "Porsche",
+        model: "Panamera",
+        trim: "Turbo S E-Hybrid Sport Turismo",
+        year: 2025,
+        yearMonth: "2025/9",
+        price: 44990000,
+        priceEur: 127037,
+        mileage: 6730,
+        fuel: "HYBRID",
+        transmission: "AUTOMATIC",
+        bodyType: "WAGON",
+        condition: "LIKE_NEW",
+        location: "Budapest",
+        color: "Sarga",
+        trunkVolumeLiters: 418,
+        vatDeductible: true,
+        availableImmediately: false,
+        status: "DRAFT",
+      });
+      expect(result.items[0].data.description).toContain("Line two");
+    }
+  });
+
+  it("exports multiple listings separated by block markers", () => {
+    const text = serializeListingsToText(
+      [
+        {
+          make: "Porsche",
+          model: "Panamera",
+          year: 2025,
+          price: 44990000,
+          mileage: 6730,
+          fuel: "HYBRID",
+          transmission: "AUTOMATIC",
+          bodyType: "WAGON",
+          condition: "LIKE_NEW",
+          location: "Budapest",
+          description: "First listing with enough detail.",
+        },
+        {
+          make: "Toyota",
+          model: "Corolla",
+          year: 2021,
+          price: 7390000,
+          mileage: 64200,
+          fuel: "HYBRID",
+          transmission: "AUTOMATIC",
+          bodyType: "WAGON",
+          condition: "WELL_KEPT",
+          location: "Budapest XI.",
+          description: "Second listing with enough detail.",
+        },
+      ],
+      "en",
+    );
+
+    expect(text).toContain("\n---\n");
+    expect(parseListingText(text, "en").validCount).toBe(2);
   });
 });

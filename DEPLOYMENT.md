@@ -35,6 +35,8 @@ UPLOAD_DIR=/data/uploads
 AUTH_SECRET=<a-long-random-secret>
 ```
 
+The app refuses to start in production unless `DATABASE_URL` points inside `/data/` and `UPLOAD_DIR` starts with `/data/`. This prevents Railway from silently creating a fresh empty SQLite database on ephemeral storage.
+
 Generate `AUTH_SECRET` locally with:
 
 ```bash
@@ -60,3 +62,11 @@ Start command: npm run start
 6. Wait for verification and SSL.
 
 Do not buy extra Name.com hosting, website builder, email, or SSL for this app unless you specifically need those products.
+
+## Back up listing data
+
+Sellers can download listing text from the dashboard:
+
+- Use `Download text` on one listing to save a reusable `.txt` template.
+- Use `Download all` to export all of your listings into one text file separated by `---`.
+- Upload a `.txt` file on the single-listing sell form to prefill a new listing without creating it immediately.

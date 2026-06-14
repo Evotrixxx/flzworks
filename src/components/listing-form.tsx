@@ -3,7 +3,7 @@
 import { ChangeEvent, DragEvent, FormEvent, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { GripVertical, ImagePlus, Save, Star, UploadCloud, X } from "lucide-react";
+import { FileText, GripVertical, ImagePlus, Save, Star, UploadCloud, X } from "lucide-react";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import {
   bodyTypeOptions,
@@ -15,25 +15,14 @@ import {
 import { photoUrl } from "@/lib/format";
 import { getListingDetailLabels } from "@/lib/listing-detail-labels";
 import { isElectrifiedFuel, type FieldErrors } from "@/lib/listing-validation";
+import { parseListingText, type ListingTextExportData } from "@/lib/listing-text-import";
 
-type InitialListing = {
+type ListingFormValues = ListingTextExportData & {
   [key: string]: unknown;
+};
+
+type InitialListing = ListingFormValues & {
   id: string;
-  make: string;
-  model: string;
-  trim: string | null;
-  yearMonth: string | null;
-  year: number;
-  price: number;
-  priceEur: number | null;
-  mileage: number;
-  fuel: string;
-  transmission: string;
-  bodyType: string;
-  condition: string;
-  location: string;
-  description: string;
-  status: string;
   photos: { id: string; path: string }[];
 };
 
@@ -42,17 +31,23 @@ export function ListingForm({
   locale,
   t,
   initialListing,
+  initialDraftValues,
 }: {
   mode: "create" | "edit";
   locale: Locale;
   t: Dictionary;
   initialListing?: InitialListing;
+  initialDraftValues?: Partial<ListingFormValues>;
 }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [selectedFuel, setSelectedFuel] = useState(initialListing?.fuel ?? fuelOptions[0]);
+  const [draftValues, setDraftValues] = useState<Partial<ListingFormValues> | undefined>(initialDraftValues);
+  const [formVersion, setFormVersion] = useState(0);
+  const currentValues = draftValues ?? initialListing;
+  const [selectedFuel, setSelectedFuel] = useState(currentValues?.fuel ?? fuelOptions[0]);
+  const [prefillMessage, setPrefillMessage] = useState("");
   const detailLabels = getListingDetailLabels(locale);
   const showBatteryFields = isElectrifiedFuel(selectedFuel);
 
@@ -91,13 +86,40 @@ export function ListingForm({
     { name: "condition", label: t.listing.condition, options: conditionOptions, labels: t.enums.condition },
   ];
 
+  async function importTextFile(file: File | null) {
+    if (!file) {
+      return;
+    }
+
+    const text = await file.text();
+    const parsed = parseListingText(text, locale);
+    const firstValid = parsed.items.find((item) => item.ok);
+
+    if (!firstValid?.ok) {
+      const firstInvalid = parsed.items.find((item) => !item.ok);
+      setError(firstInvalid && !firstInvalid.ok ? firstInvalid.error : t.forms.error);
+      setFieldErrors(firstInvalid && !firstInvalid.ok ? firstInvalid.fieldErrors : {});
+      return;
+    }
+
+    setDraftValues({
+      ...firstValid.data,
+      status: "DRAFT",
+    });
+    setSelectedFuel(firstValid.data.fuel);
+    setFieldErrors({});
+    setError("");
+    setPrefillMessage(locale === "hu" ? "A szoveges fajl betoltve. Ellenorizd az adatokat mentes elott." : "Text file loaded. Review the details before saving.");
+    setFormVersion((value) => value + 1);
+  }
+
   function getDefaultValue(name: string) {
-    const value = initialListing?.[name];
+    const value = currentValues?.[name];
     return typeof value === "string" || typeof value === "number" ? value : "";
   }
 
   function getDefaultChecked(name: string, defaultValue = false) {
-    const value = initialListing?.[name];
+    const value = currentValues?.[name];
     return typeof value === "boolean" ? value : defaultValue;
   }
 
@@ -106,31 +128,58 @@ export function ListingForm({
   }
 
   return (
-    <form onSubmit={submit} className="glass-panel grid gap-5 rounded-lg p-5">
+    <form key={formVersion} onSubmit={submit} className="glass-panel grid gap-5 rounded-lg p-5">
       <input type="hidden" name="lang" value={locale} />
 
+      {mode === "create" && (
+        <section className="glass-chip flex flex-col gap-3 rounded-lg p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="inline-flex items-center gap-2 text-sm font-black text-slate-950">
+              <FileText className="h-4 w-4 text-[var(--accent-aqua)]" aria-hidden="true" />
+              {locale === "hu" ? "Szoveges fajl betoltese" : "Upload text file"}
+            </h2>
+            <p className="mt-1 text-xs font-semibold text-slate-500">
+              {locale === "hu"
+                ? "Tolts fel egy korabban letoltott .txt hirdetest, es kitolti ezt az urlapot."
+                : "Upload a previously downloaded .txt listing and it will fill this form."}
+            </p>
+            {prefillMessage && <p className="mt-2 text-xs font-black text-emerald-700">{prefillMessage}</p>}
+          </div>
+          <label className="liquid-button-secondary inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-full px-4 text-sm font-black text-slate-700">
+            <UploadCloud className="h-4 w-4" aria-hidden="true" />
+            {locale === "hu" ? "TXT feltoltes" : "Upload TXT"}
+            <input
+              type="file"
+              accept=".txt,text/plain"
+              className="sr-only"
+              onChange={(event) => importTextFile(event.target.files?.[0] ?? null)}
+            />
+          </label>
+        </section>
+      )}
+
       <DetailSection title={t.forms.listingTitle}>
-        <Field label={t.forms.make} name="make" defaultValue={initialListing?.make} error={fieldError("make")} required />
-        <Field label={t.forms.model} name="model" defaultValue={initialListing?.model} error={fieldError("model")} required />
-        <Field label={t.forms.trim} name="trim" defaultValue={initialListing?.trim ?? ""} error={fieldError("trim")} />
-        <Field label={t.forms.location} name="location" defaultValue={initialListing?.location} error={fieldError("location")} required />
-        <Field label={detailLabels.fields.yearMonth} name="yearMonth" defaultValue={initialListing?.yearMonth} error={fieldError("yearMonth")} />
-        <Field label={t.forms.year} name="year" type="number" defaultValue={initialListing?.year} error={fieldError("year")} required />
-        <Field label={t.forms.price} name="price" type="number" defaultValue={initialListing?.price} error={fieldError("price")} required />
+        <Field label={t.forms.make} name="make" defaultValue={currentValues?.make} error={fieldError("make")} required />
+        <Field label={t.forms.model} name="model" defaultValue={currentValues?.model} error={fieldError("model")} required />
+        <Field label={t.forms.trim} name="trim" defaultValue={currentValues?.trim ?? ""} error={fieldError("trim")} />
+        <Field label={t.forms.location} name="location" defaultValue={currentValues?.location} error={fieldError("location")} required />
+        <Field label={detailLabels.fields.yearMonth} name="yearMonth" defaultValue={currentValues?.yearMonth} error={fieldError("yearMonth")} />
+        <Field label={t.forms.year} name="year" type="number" defaultValue={currentValues?.year} error={fieldError("year")} required />
+        <Field label={t.forms.price} name="price" type="number" defaultValue={currentValues?.price} error={fieldError("price")} required />
         <Field
           label={detailLabels.fields.purchasePriceEur}
           name="priceEur"
           type="number"
-          defaultValue={initialListing?.priceEur}
+          defaultValue={currentValues?.priceEur}
           error={fieldError("priceEur")}
         />
-        <Field label={t.forms.mileage} name="mileage" type="number" defaultValue={initialListing?.mileage} error={fieldError("mileage")} required />
+        <Field label={t.forms.mileage} name="mileage" type="number" defaultValue={currentValues?.mileage} error={fieldError("mileage")} required />
 
         <label className="grid gap-1 text-sm font-semibold text-slate-700">
           {t.forms.status}
           <select
             name="status"
-            defaultValue={initialListing?.status ?? "PUBLISHED"}
+            defaultValue={currentValues?.status ?? "PUBLISHED"}
             className="h-11 px-3 font-normal outline-none transition"
           >
             {listingStatusOptions.map((option) => (
@@ -147,7 +196,7 @@ export function ListingForm({
             {group.label}
             <select
               name={group.name}
-              defaultValue={(initialListing?.[group.name as keyof InitialListing] as string | undefined) ?? group.options[0]}
+              defaultValue={(currentValues?.[group.name as keyof ListingFormValues] as string | undefined) ?? group.options[0]}
               onChange={group.name === "fuel" ? (event) => setSelectedFuel(event.target.value) : undefined}
               className="h-11 px-3 font-normal outline-none transition"
             >
@@ -168,7 +217,7 @@ export function ListingForm({
           name="description"
           required
           rows={7}
-          defaultValue={initialListing?.description}
+          defaultValue={currentValues?.description}
           className="px-3 py-2 font-normal leading-6 outline-none transition"
         />
         {fieldError("description") && <span className="text-xs font-semibold text-rose-700">{fieldError("description")}</span>}
