@@ -30,7 +30,10 @@ export default async function SellPage({ searchParams }: { searchParams: Promise
     });
 
     if (template) {
-      initialDraftValues = listingToTemplateValues(template) as Partial<ListingTextExportData>;
+      initialDraftValues = {
+        ...(listingToTemplateValues(template) as Partial<ListingTextExportData>),
+        status: "PUBLISHED",
+      };
     }
   }
 
