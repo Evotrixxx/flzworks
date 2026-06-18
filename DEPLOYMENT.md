@@ -33,9 +33,11 @@ Set these variables on the Railway service:
 DATABASE_URL=file:/data/prod.db
 UPLOAD_DIR=/data/uploads
 AUTH_SECRET=<a-long-random-secret>
-APP_BASE_URL=https://flz.works
+APP_BASE_URL=https://www.flz.works
 INTRANET_ACCESS_SECRET=<another-long-random-secret>
 INTRANET_HOST_EMAIL=floszbeni@gmail.com
+RESEND_API_KEY=<resend-api-key>
+RESEND_FROM=FLZ Works <noreply@flz.works>
 GMAIL_SMTP_USER=<gmail-address>
 GMAIL_SMTP_APP_PASSWORD=<gmail-app-password>
 GMAIL_SMTP_FROM=<gmail-address>
@@ -53,6 +55,8 @@ Generate `AUTH_SECRET` locally with:
 ```bash
 node -e "console.log(crypto.randomUUID() + crypto.randomUUID())"
 ```
+
+Railway Free, Trial, and Hobby plans do not allow SMTP email delivery. Use `RESEND_API_KEY` and `RESEND_FROM` for the intranet approval emails on those plans. The Gmail SMTP variables are only a fallback for hosts or Railway plans where outbound SMTP is available.
 
 ### 5. Build and start commands
 
