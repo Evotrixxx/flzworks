@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { ArrowRight, ExternalLink, Radio } from "lucide-react";
 import { portfolioFocuses, portfolioSocials, type PortfolioFocusId } from "@/lib/portfolio";
 import type { InstagramMediaItem } from "@/lib/instagram";
+import { ThemeSwitcher } from "./theme-switcher";
 
 export function PortfolioOnepager({ instagramMedia }: { instagramMedia: InstagramMediaItem[] }) {
   const [activeId, setActiveId] = useState<PortfolioFocusId>("godot");
@@ -39,6 +40,7 @@ export function PortfolioOnepager({ instagramMedia }: { instagramMedia: Instagra
               </button>
             ))}
           </nav>
+          <ThemeSwitcher />
         </header>
 
         <div className="grid min-h-0 items-center gap-8 py-8 lg:grid-cols-[0.88fr_1.12fr]">
@@ -67,7 +69,7 @@ export function PortfolioOnepager({ instagramMedia }: { instagramMedia: Instagra
                         FLZ <span className="text-zinc-500">|</span>{" "}
                         <span className="portfolio-title-sheen">{focus.label}</span>
                       </h1>
-                      <p className="mt-6 max-w-2xl text-base font-medium leading-7 text-zinc-300 sm:text-lg">
+                      <p className="mt-6 max-w-2xl text-base font-medium leading-relaxed text-zinc-300 sm:text-lg">
                         {focus.summary}
                       </p>
                     </article>
@@ -118,11 +120,11 @@ export function PortfolioOnepager({ instagramMedia }: { instagramMedia: Instagra
                 </div>
                 <ActiveIcon className="h-6 w-6 text-cyan-100" aria-hidden="true" />
               </div>
-              <div className="scrollbar-none flex snap-x gap-4 overflow-x-auto pb-3">
+              <div className="scrollbar-none flex snap-x gap-4 overflow-x-auto pb-6 pt-2">
                 {active.works.map((work, index) => (
                   <article
                     key={work.title}
-                    className="portfolio-work-card min-w-[260px] snap-start rounded-lg p-5 sm:min-w-[330px]"
+                    className="portfolio-work-card min-w-[260px] snap-start rounded-lg p-5 sm:min-w-[330px] transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:shadow-2xl hover:z-10 cursor-default"
                   >
                     <div className="portfolio-work-visual mb-5 flex aspect-[4/3] items-end rounded-lg p-4">
                       <span className="rounded-full bg-black/35 px-3 py-1 text-xs font-black text-white backdrop-blur-xl">
@@ -146,14 +148,14 @@ export function PortfolioOnepager({ instagramMedia }: { instagramMedia: Instagra
                 <ArrowRight className="h-5 w-5 text-zinc-500" aria-hidden="true" />
               </div>
               {instagramMedia.length ? (
-                <div className="scrollbar-none flex gap-4 overflow-x-auto pb-2">
+                <div className="scrollbar-none flex gap-4 overflow-x-auto pb-4 pt-2">
                   {instagramMedia.map((item) => (
                     <a
                       key={item.id}
                       href={item.permalink}
                       target="_blank"
                       rel="noreferrer"
-                      className="portfolio-social-card grid min-w-[220px] gap-3 rounded-lg p-3"
+                      className="portfolio-social-card grid min-w-[220px] gap-3 rounded-lg p-3 transition-all duration-300 hover:-translate-y-1 hover:scale-[1.03] hover:shadow-xl"
                     >
                       <div className="relative aspect-square overflow-hidden rounded-lg bg-zinc-900">
                         {(item.thumbnail_url || item.media_url) && (

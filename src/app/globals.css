@@ -295,8 +295,8 @@ select[aria-invalid="true"] {
     isolation: isolate;
     background:
       linear-gradient(120deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px 100%),
-      linear-gradient(155deg, rgba(8, 145, 178, 0.16), transparent 34%),
-      linear-gradient(28deg, transparent 48%, rgba(148, 163, 184, 0.1) 58%, transparent 72%),
+      linear-gradient(155deg, var(--ambient-a), transparent 34%),
+      linear-gradient(28deg, transparent 48%, var(--ambient-b) 58%, transparent 72%),
       linear-gradient(180deg, #08090b 0%, #101318 46%, #030405 100%);
     background-size: 72px 72px, auto, auto, auto;
   }
