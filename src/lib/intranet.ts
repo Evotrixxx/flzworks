@@ -14,7 +14,6 @@ import {
 export type IntranetGateState =
   | { status: "allowed" }
   | { status: "blocked"; expiresAt: Date }
-  | { status: "approved-unclaimed" }
   | { status: "needs-request" };
 
 export function getClientIpFromHeaders(headerSource: Headers) {
@@ -69,22 +68,6 @@ export async function getIntranetGateState(
     return { status: "blocked", expiresAt: block.expiresAt };
   }
 
-  const approved = await prisma.intranetAccessRequest.findFirst({
-    where: {
-      module,
-      ipAddress,
-      status: "APPROVED",
-      accessedAt: null,
-      expiresAt: { gt: new Date() },
-    },
-    orderBy: { approvedAt: "desc" },
-    select: { id: true },
-  });
-
-  if (approved) {
-    return { status: "approved-unclaimed" };
-  }
-
   return { status: "needs-request" };
 }
 
@@ -98,37 +81,6 @@ export function setIntranetAccessCookie(response: NextResponse, requestId: strin
   });
 }
 
-export async function createIntranetAccessResponse(
-  ipAddress: string,
-  requestUrl: string,
-  module: IntranetModule = AUTOPIAC_INTRANET_MODULE,
-  redirectPath = AUTOPIAC_BASE_PATH,
-) {
-  const approved = await prisma.intranetAccessRequest.findFirst({
-    where: {
-      module,
-      ipAddress,
-      status: "APPROVED",
-      accessedAt: null,
-      expiresAt: { gt: new Date() },
-    },
-    orderBy: { approvedAt: "desc" },
-    select: { id: true },
-  });
-
-  if (!approved) {
-    return NextResponse.redirect(new URL(`${AUTOPIAC_BASE_PATH}/request`, requestUrl));
-  }
-
-  await prisma.intranetAccessRequest.update({
-    where: { id: approved.id },
-    data: { accessedAt: new Date() },
-  });
-
-  const response = NextResponse.redirect(new URL(redirectPath, requestUrl));
-  setIntranetAccessCookie(response, approved.id, module);
-  return response;
-}
 
 export async function requireIntranetApiAccess(
   request: NextRequest,

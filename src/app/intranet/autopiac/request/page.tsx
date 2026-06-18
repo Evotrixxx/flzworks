@@ -14,10 +14,6 @@ export default async function AutoPiacAccessRequestPage() {
     redirect(AUTOPIAC_BASE_PATH);
   }
 
-  if (gate.status === "approved-unclaimed") {
-    redirect(`${AUTOPIAC_BASE_PATH}/access`);
-  }
-
   return (
     <main className="portfolio-shell grid min-h-screen place-items-center overflow-hidden bg-black px-4 py-10 text-zinc-50">
       <section className="relative z-10 grid w-full max-w-xl gap-5">

@@ -11,10 +11,6 @@ export default async function AutoPiacProtectedLayout({
 }) {
   const gate = await getIntranetGateState();
 
-  if (gate.status === "approved-unclaimed") {
-    redirect(`${AUTOPIAC_BASE_PATH}/access`);
-  }
-
   if (gate.status !== "allowed") {
     redirect(`${AUTOPIAC_BASE_PATH}/request`);
   }

@@ -11,10 +11,6 @@ export default async function GuidePrototypeProtectedLayout({
 }) {
   const gate = await getIntranetGateState(GUIDE_PROTOTYPE_INTRANET_MODULE);
 
-  if (gate.status === "approved-unclaimed") {
-    redirect(`${GUIDE_PROTOTYPE_BASE_PATH}/access`);
-  }
-
   if (gate.status !== "allowed") {
     redirect(`${GUIDE_PROTOTYPE_BASE_PATH}/request`);
   }

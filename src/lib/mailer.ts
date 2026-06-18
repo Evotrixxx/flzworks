@@ -108,6 +108,73 @@ function buildAccessRequestEmail(
   };
 }
 
+export async function sendMagicLinkEmail(email: string, name: string, claimUrl: string, module: string) {
+  const request = { to: email, name, claimUrl, module };
+
+  if (resendConfigReady()) {
+    await sendWithResend(buildMagicLinkEmail(request, process.env.RESEND_FROM?.trim()));
+    return { sent: true };
+  }
+
+  if (!smtpConfigReady()) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("Email delivery is not configured.");
+    }
+    console.info("Intranet magic link email skipped because email delivery is not configured.", { claimUrl });
+    return { sent: false };
+  }
+
+  const smtpUser = process.env.GMAIL_SMTP_USER?.trim();
+  const smtpPassword = process.env.GMAIL_SMTP_APP_PASSWORD?.replace(/\s+/g, "");
+  const smtpFrom = process.env.GMAIL_SMTP_FROM?.trim() || smtpUser;
+  const smtpHost = await resolveGmailSmtpIpv4Host();
+  const builtEmail = buildMagicLinkEmail(request, smtpFrom);
+
+  const transporter = nodemailer.createTransport({
+    host: smtpHost,
+    port: 465,
+    secure: true,
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
+    tls: { servername: "smtp.gmail.com" },
+    auth: { user: smtpUser, pass: smtpPassword },
+  });
+
+  await transporter.sendMail(builtEmail);
+  return { sent: true };
+}
+
+function buildMagicLinkEmail(
+  request: { to: string; name: string; claimUrl: string; module: string },
+  from: string | undefined,
+): BuiltAccessRequestEmail {
+  return {
+    from,
+    to: request.to,
+    subject: `Your Intranet Access is Approved`,
+    text: [
+      `Hello ${request.name},`,
+      "",
+      `Your request to access the ${request.module} intranet module has been approved.`,
+      "Click the link below to securely log in. This link can only be used once.",
+      "",
+      `Login: ${request.claimUrl}`,
+    ].join("\n"),
+    html: `
+      <div style="font-family:Arial,sans-serif;line-height:1.5;color:#111827">
+        <h1 style="font-size:20px">Your Intranet Access is Approved</h1>
+        <p>Hello ${escapeHtml(request.name)},</p>
+        <p>Your request to access the <strong>${escapeHtml(request.module)}</strong> intranet module has been approved.</p>
+        <p>Click the button below to securely log in. This link can only be used once.</p>
+        <p style="margin-top:24px">
+          <a href="${request.claimUrl}" style="display:inline-block;padding:12px 20px;border-radius:999px;background:#111827;color:#fff;text-decoration:none;font-weight:bold">Secure Login</a>
+        </p>
+      </div>
+    `,
+  };
+}
+
 async function sendWithResend(email: BuiltAccessRequestEmail) {
   const apiKey = process.env.RESEND_API_KEY?.trim();
   if (!apiKey || !email.from) {

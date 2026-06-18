@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { setIntranetAccessCookie } from "@/lib/intranet";
 import { prisma } from "@/lib/prisma";
-import { hashOpaqueToken } from "@/lib/intranet-token";
+import { hashOpaqueToken, createOpaqueToken } from "@/lib/intranet-token";
 import {
   AUTOPIAC_BASE_PATH,
   GUIDE_PROTOTYPE_BASE_PATH,
@@ -39,19 +39,38 @@ export async function GET(request: NextRequest) {
     return htmlResponse("Approval unavailable", "This approval link targets an unsupported intranet module.", 400);
   }
 
-  const approvedRequest = await prisma.intranetAccessRequest.update({
+  const claimToken = createOpaqueToken();
+
+  await prisma.intranetAccessRequest.update({
     where: { id: accessRequest.id },
     data: {
       status: "APPROVED",
       approvedAt: new Date(),
-      accessedAt: new Date(),
-      expiresAt: new Date(Date.now() + 1000 * 60 * 60), // 1 hour access limit
+      claimTokenHash: hashOpaqueToken(claimToken),
+      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24), // 24 hours to claim the magic link
     },
     select: { id: true },
   });
 
-  const redirectPath = accessRequest.module === "guide_prototype" ? GUIDE_PROTOTYPE_BASE_PATH : AUTOPIAC_BASE_PATH;
-  const response = NextResponse.redirect(new URL(redirectPath, request.url));
-  setIntranetAccessCookie(response, approvedRequest.id, accessRequest.module as IntranetModule);
-  return response;
+  const baseUrl = process.env.APP_BASE_URL || request.nextUrl.origin;
+  const claimUrl = `${baseUrl}/api/intranet/access-requests/claim?token=${claimToken}`;
+
+  const { sendMagicLinkEmail } = await import("@/lib/mailer");
+  
+  try {
+    await sendMagicLinkEmail(accessRequest.email, accessRequest.name, claimUrl, accessRequest.module);
+  } catch (error) {
+    console.error("Magic link email failed.", error);
+    return htmlResponse(
+      "Approval successful, but email failed",
+      "The request was approved, but the system failed to email the magic link to the requester.",
+      503
+    );
+  }
+
+  return htmlResponse(
+    "Access Request Approved",
+    `You have successfully approved the request for ${accessRequest.name} (${accessRequest.email}). They have been sent a secure login link.`,
+    200
+  );
 }

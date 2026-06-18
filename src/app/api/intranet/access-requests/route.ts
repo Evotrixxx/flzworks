@@ -37,8 +37,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Access from this IP is blocked." }, { status: 403 });
   }
 
+  const oneHourAgo = new Date(Date.now() - 1000 * 60 * 60);
+  const recentRequests = await prisma.intranetAccessRequest.count({
+    where: {
+      ipAddress,
+      createdAt: { gt: oneHourAgo },
+    },
+  });
+
+  if (recentRequests >= 5) {
+    return NextResponse.json(
+      { error: "Too many access requests from this IP. Please try again later." },
+      { status: 429 },
+    );
+  }
+
   const approveToken = createOpaqueToken();
   const denyToken = createOpaqueToken();
+  const claimToken = createOpaqueToken();
   const expiresAt = new Date(Date.now() + REQUEST_TTL_MS);
 
   await prisma.intranetAccessRequest.create({
@@ -49,6 +65,7 @@ export async function POST(request: NextRequest) {
       ipAddress,
       approveTokenHash: hashOpaqueToken(approveToken),
       denyTokenHash: hashOpaqueToken(denyToken),
+      claimTokenHash: hashOpaqueToken(claimToken),
       expiresAt,
     },
   });

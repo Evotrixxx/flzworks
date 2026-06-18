@@ -133,6 +133,7 @@ model IntranetAccessRequest {
   status           String    @default("PENDING")
   approveTokenHash String    @unique
   denyTokenHash    String    @unique
+  claimTokenHash   String?   @unique
   approvedAt       DateTime?
   deniedAt         DateTime?
   accessedAt       DateTime?
