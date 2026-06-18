@@ -38,8 +38,8 @@ export async function sendAccessRequestEmail(request: AccessRequestEmail) {
 
     const transporter = nodemailer.createTransport({
       host: smtpHost,
-      port: 465,
-      secure: true,
+      port: 587,
+      secure: false, // upgrade later with STARTTLS
       connectionTimeout: 10000,
       greetingTimeout: 10000,
       socketTimeout: 15000,
@@ -114,8 +114,8 @@ export async function sendMagicLinkEmail(email: string, name: string, claimUrl: 
 
     const transporter = nodemailer.createTransport({
       host: smtpHost,
-      port: 465,
-      secure: true,
+      port: 587,
+      secure: false,
       connectionTimeout: 10000,
       greetingTimeout: 10000,
       socketTimeout: 15000,
