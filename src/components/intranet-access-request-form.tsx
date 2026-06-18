@@ -24,7 +24,7 @@ export function IntranetAccessRequestForm() {
     const payload = (await response.json().catch(() => null)) as { message?: string; error?: string } | null;
 
     if (!response.ok) {
-      setError(payload?.error ?? "Access request failed.");
+      setError(payload?.error ?? "Access request failed. Check the host email configuration and try again.");
       setPending(false);
       return;
     }

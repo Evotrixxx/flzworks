@@ -3,10 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ArrowRight, ExternalLink, LockKeyhole, Radio } from "lucide-react";
+import { ArrowRight, ExternalLink, Radio } from "lucide-react";
 import { portfolioFocuses, portfolioSocials, type PortfolioFocusId } from "@/lib/portfolio";
 import type { InstagramMediaItem } from "@/lib/instagram";
-import { autopiacPath } from "@/lib/routes";
 
 export function PortfolioOnepager({ instagramMedia }: { instagramMedia: InstagramMediaItem[] }) {
   const [activeId, setActiveId] = useState<PortfolioFocusId>("godot");
@@ -107,13 +106,6 @@ export function PortfolioOnepager({ instagramMedia }: { instagramMedia: Instagra
                   Social links are ready for Instagram, Facebook, and Pinterest URLs.
                 </div>
               )}
-              <Link
-                href={autopiacPath()}
-                className="portfolio-liquid-button inline-flex h-11 items-center gap-2 rounded-full px-4 text-sm font-black text-zinc-200"
-              >
-                <LockKeyhole className="h-4 w-4" aria-hidden="true" />
-                AutoPiac intranet
-              </Link>
             </div>
           </section>
 

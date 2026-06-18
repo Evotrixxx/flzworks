@@ -50,13 +50,26 @@ export async function POST(request: NextRequest) {
   const approveUrl = `${baseUrl}/api/intranet/access-requests/approve?token=${approveToken}`;
   const denyUrl = `${baseUrl}/api/intranet/access-requests/deny?token=${denyToken}`;
 
-  const emailResult = await sendAccessRequestEmail({
-    name: parsed.data.name,
-    email: parsed.data.email,
-    ipAddress,
-    approveUrl,
-    denyUrl,
-  });
+  let emailResult: { sent: boolean };
+
+  try {
+    emailResult = await sendAccessRequestEmail({
+      name: parsed.data.name,
+      email: parsed.data.email,
+      ipAddress,
+      approveUrl,
+      denyUrl,
+    });
+  } catch (error) {
+    console.error("Intranet access request email failed.", error);
+    return NextResponse.json(
+      {
+        error:
+          "Access request was saved, but the approval email could not be sent. Check Gmail SMTP settings and try again.",
+      },
+      { status: 503 },
+    );
+  }
 
   return NextResponse.json({
     message: emailResult.sent
