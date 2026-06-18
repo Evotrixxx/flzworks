@@ -27,18 +27,25 @@ export async function sendAccessRequestEmail(request: AccessRequestEmail) {
     return { sent: false };
   }
 
+  const smtpUser = process.env.GMAIL_SMTP_USER?.trim();
+  const smtpPassword = process.env.GMAIL_SMTP_APP_PASSWORD?.replace(/\s+/g, "");
+  const smtpFrom = process.env.GMAIL_SMTP_FROM?.trim() || smtpUser;
+
   const transporter = nodemailer.createTransport({
     service: "gmail",
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
     auth: {
-      user: process.env.GMAIL_SMTP_USER,
-      pass: process.env.GMAIL_SMTP_APP_PASSWORD,
+      user: smtpUser,
+      pass: smtpPassword,
     },
   });
 
   const hostEmail = process.env.INTRANET_HOST_EMAIL ?? "floszbeni@gmail.com";
 
   await transporter.sendMail({
-    from: process.env.GMAIL_SMTP_FROM ?? process.env.GMAIL_SMTP_USER,
+    from: smtpFrom,
     to: hostEmail,
     subject: `AutoPiac intranet access request: ${request.name}`,
     text: [

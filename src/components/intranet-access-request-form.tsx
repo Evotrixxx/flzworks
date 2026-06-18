@@ -15,11 +15,25 @@ export function IntranetAccessRequestForm() {
     setError("");
 
     const formData = new FormData(event.currentTarget);
-    const response = await fetch("/api/intranet/access-requests", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(Object.fromEntries(formData.entries())),
-    });
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 25000);
+    let response: Response;
+
+    try {
+      response = await fetch("/api/intranet/access-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.fromEntries(formData.entries())),
+        signal: controller.signal,
+      });
+    } catch {
+      setError("Access request timed out. Check Gmail SMTP settings and try again.");
+      setPending(false);
+      window.clearTimeout(timeout);
+      return;
+    }
+
+    window.clearTimeout(timeout);
 
     const payload = (await response.json().catch(() => null)) as { message?: string; error?: string } | null;
 
