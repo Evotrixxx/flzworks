@@ -43,8 +43,13 @@ export async function GET(request: NextRequest) {
     select: { id: true },
   });
 
-  const redirectPath = accessRequest.module === "guide_prototype" ? GUIDE_PROTOTYPE_BASE_PATH : AUTOPIAC_BASE_PATH;
-  const response = NextResponse.redirect(new URL(redirectPath, request.url));
+  const baseUrl = process.env.APP_BASE_URL || request.nextUrl.origin;
+  
+  let redirectPath = AUTOPIAC_BASE_PATH;
+  if (accessRequest.module === "guide_prototype") redirectPath = GUIDE_PROTOTYPE_BASE_PATH;
+  if (accessRequest.module === "tree_prototype") redirectPath = "/intranet/tree_prototype";
+
+  const response = NextResponse.redirect(new URL(redirectPath, baseUrl));
   setIntranetAccessCookie(response, claimedRequest.id, accessRequest.module as IntranetModule);
   return response;
 }
