@@ -29,48 +29,42 @@ function smtpConfigReady() {
 }
 
 export async function sendAccessRequestEmail(request: AccessRequestEmail) {
+  if (smtpConfigReady()) {
+    const smtpUser = process.env.GMAIL_SMTP_USER?.trim();
+    const smtpPassword = process.env.GMAIL_SMTP_APP_PASSWORD?.replace(/\s+/g, "");
+    const smtpFrom = process.env.GMAIL_SMTP_FROM?.trim() || smtpUser;
+    const smtpHost = await resolveGmailSmtpIpv4Host();
+    const email = buildAccessRequestEmail(request, smtpFrom);
+
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: 465,
+      secure: true,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
+      tls: { servername: "smtp.gmail.com" },
+      auth: { user: smtpUser, pass: smtpPassword },
+    });
+
+    await transporter.sendMail(email);
+    return { sent: true };
+  }
+
   if (resendConfigReady()) {
     await sendWithResend(buildAccessRequestEmail(request, process.env.RESEND_FROM?.trim()));
     return { sent: true };
   }
 
-  if (!smtpConfigReady()) {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("Email delivery is not configured.");
-    }
-
-    console.info("Intranet access email skipped because email delivery is not configured.", {
-      approveUrl: request.approveUrl,
-      denyUrl: request.denyUrl,
-    });
-    return { sent: false };
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("Email delivery is not configured.");
   }
 
-  const smtpUser = process.env.GMAIL_SMTP_USER?.trim();
-  const smtpPassword = process.env.GMAIL_SMTP_APP_PASSWORD?.replace(/\s+/g, "");
-  const smtpFrom = process.env.GMAIL_SMTP_FROM?.trim() || smtpUser;
-  const smtpHost = await resolveGmailSmtpIpv4Host();
-  const email = buildAccessRequestEmail(request, smtpFrom);
-
-  const transporter = nodemailer.createTransport({
-    host: smtpHost,
-    port: 465,
-    secure: true,
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 15000,
-    tls: {
-      servername: "smtp.gmail.com",
-    },
-    auth: {
-      user: smtpUser,
-      pass: smtpPassword,
-    },
+  console.info("Intranet access email skipped because email delivery is not configured.", {
+    approveUrl: request.approveUrl,
+    denyUrl: request.denyUrl,
   });
-
-  await transporter.sendMail(email);
-
-  return { sent: true };
+  return { sent: false };
 }
 
 function buildAccessRequestEmail(
@@ -111,38 +105,40 @@ function buildAccessRequestEmail(
 export async function sendMagicLinkEmail(email: string, name: string, claimUrl: string, module: string) {
   const request = { to: email, name, claimUrl, module };
 
+  if (smtpConfigReady()) {
+    const smtpUser = process.env.GMAIL_SMTP_USER?.trim();
+    const smtpPassword = process.env.GMAIL_SMTP_APP_PASSWORD?.replace(/\s+/g, "");
+    const smtpFrom = process.env.GMAIL_SMTP_FROM?.trim() || smtpUser;
+    const smtpHost = await resolveGmailSmtpIpv4Host();
+    const builtEmail = buildMagicLinkEmail(request, smtpFrom);
+
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: 465,
+      secure: true,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
+      tls: { servername: "smtp.gmail.com" },
+      auth: { user: smtpUser, pass: smtpPassword },
+    });
+
+    await transporter.sendMail(builtEmail);
+    return { sent: true };
+  }
+
   if (resendConfigReady()) {
     await sendWithResend(buildMagicLinkEmail(request, process.env.RESEND_FROM?.trim()));
     return { sent: true };
   }
 
-  if (!smtpConfigReady()) {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("Email delivery is not configured.");
-    }
-    console.info("Intranet magic link email skipped because email delivery is not configured.", { claimUrl });
-    return { sent: false };
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("Email delivery is not configured.");
   }
+  console.info("Intranet magic link email skipped because email delivery is not configured.", { claimUrl: request.claimUrl });
+  return { sent: false };
 
-  const smtpUser = process.env.GMAIL_SMTP_USER?.trim();
-  const smtpPassword = process.env.GMAIL_SMTP_APP_PASSWORD?.replace(/\s+/g, "");
-  const smtpFrom = process.env.GMAIL_SMTP_FROM?.trim() || smtpUser;
-  const smtpHost = await resolveGmailSmtpIpv4Host();
-  const builtEmail = buildMagicLinkEmail(request, smtpFrom);
 
-  const transporter = nodemailer.createTransport({
-    host: smtpHost,
-    port: 465,
-    secure: true,
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 15000,
-    tls: { servername: "smtp.gmail.com" },
-    auth: { user: smtpUser, pass: smtpPassword },
-  });
-
-  await transporter.sendMail(builtEmail);
-  return { sent: true };
 }
 
 function buildMagicLinkEmail(
