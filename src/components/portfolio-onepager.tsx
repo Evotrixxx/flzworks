@@ -26,14 +26,14 @@ export function PortfolioOnepager({ instagramMedia }: { instagramMedia: Instagra
           <Link href="/" className="text-sm font-black tracking-[0.24em] text-white">
             FLZ
           </Link>
-          <nav className="scrollbar-none flex min-w-0 items-center gap-2 overflow-x-auto">
+          <nav className="scrollbar-none flex min-w-0 items-center gap-2 overflow-x-auto whitespace-nowrap px-1 py-1">
             {portfolioFocuses.map((focus) => (
               <button
                 key={focus.id}
                 type="button"
                 onClick={() => setActiveId(focus.id)}
-                className={`portfolio-liquid-button h-9 shrink-0 rounded-full px-3 text-xs font-bold transition ${
-                  focus.id === active.id ? "portfolio-liquid-button-active" : "text-zinc-300"
+                className={`portfolio-liquid-button h-9 shrink-0 rounded-full px-4 text-xs font-bold transition-all duration-300 ${
+                  focus.id === active.id ? "portfolio-liquid-button-active shadow-md" : "text-zinc-300 hover:text-white"
                 }`}
               >
                 {focus.label}
@@ -87,7 +87,7 @@ export function PortfolioOnepager({ instagramMedia }: { instagramMedia: Instagra
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              {enabledSocials.length ? (
+              {enabledSocials.length > 0 && (
                 enabledSocials.map((social) => {
                   const Icon = social.icon;
                   return (
@@ -96,17 +96,13 @@ export function PortfolioOnepager({ instagramMedia }: { instagramMedia: Instagra
                       href={social.href}
                       target="_blank"
                       rel="noreferrer"
-                      className="portfolio-liquid-button portfolio-liquid-button-active inline-flex h-11 items-center gap-2 rounded-full px-4 text-sm font-black"
+                      className="portfolio-liquid-button portfolio-liquid-button-active inline-flex h-11 items-center gap-2 rounded-full px-4 text-sm font-black transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:scale-105 active:scale-95"
                     >
                       <Icon className="h-4 w-4" aria-hidden="true" />
                       {social.label}
                     </a>
                   );
                 })
-              ) : (
-                <div className="portfolio-glass-panel rounded-lg px-4 py-3 text-sm font-semibold text-zinc-400">
-                  Social links are ready for Instagram, Facebook, and Pinterest URLs.
-                </div>
               )}
             </div>
           </section>
@@ -124,9 +120,9 @@ export function PortfolioOnepager({ instagramMedia }: { instagramMedia: Instagra
                 {active.works.map((work, index) => (
                   <article
                     key={work.title}
-                    className="portfolio-work-card min-w-[260px] snap-start rounded-lg p-5 sm:min-w-[330px] transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:shadow-2xl hover:z-10 cursor-default"
+                    className="portfolio-work-card min-w-[260px] snap-start rounded-xl p-5 sm:min-w-[330px] transition-all duration-500 ease-out hover:-translate-y-2 hover:scale-[1.03] hover:shadow-2xl hover:z-10 hover:border-white/20 cursor-default"
                   >
-                    <div className="portfolio-work-visual mb-5 flex aspect-[4/3] items-end rounded-lg p-4">
+                    <div className="portfolio-work-visual mb-5 flex aspect-[4/3] items-end rounded-lg p-4 transition-transform duration-500 ease-out group-hover:scale-[1.02]">
                       <span className="rounded-full bg-black/35 px-3 py-1 text-xs font-black text-white backdrop-blur-xl">
                         {String(index + 1).padStart(2, "0")}
                       </span>
@@ -147,7 +143,7 @@ export function PortfolioOnepager({ instagramMedia }: { instagramMedia: Instagra
                 </div>
                 <ArrowRight className="h-5 w-5 text-zinc-500" aria-hidden="true" />
               </div>
-              {instagramMedia.length ? (
+              {instagramMedia.length > 0 && (
                 <div className="scrollbar-none flex gap-4 overflow-x-auto pb-4 pt-2">
                   {instagramMedia.map((item) => (
                     <a
@@ -155,7 +151,7 @@ export function PortfolioOnepager({ instagramMedia }: { instagramMedia: Instagra
                       href={item.permalink}
                       target="_blank"
                       rel="noreferrer"
-                      className="portfolio-social-card grid min-w-[220px] gap-3 rounded-lg p-3 transition-all duration-300 hover:-translate-y-1 hover:scale-[1.03] hover:shadow-xl"
+                      className="portfolio-social-card grid min-w-[220px] gap-3 rounded-xl p-3 transition-all duration-500 ease-out hover:-translate-y-1 hover:scale-[1.04] hover:shadow-2xl hover:border-white/20"
                     >
                       <div className="relative aspect-square overflow-hidden rounded-lg bg-zinc-900">
                         {(item.thumbnail_url || item.media_url) && (
@@ -164,22 +160,17 @@ export function PortfolioOnepager({ instagramMedia }: { instagramMedia: Instagra
                             alt={item.caption || "Instagram post"}
                             fill
                             sizes="220px"
-                            className="object-cover"
+                            className="object-cover transition-transform duration-700 ease-out hover:scale-110"
                             unoptimized
                           />
                         )}
                       </div>
-                      <span className="inline-flex items-center gap-2 text-xs font-bold text-zinc-300">
+                      <span className="inline-flex items-center gap-2 text-xs font-bold text-zinc-300 group-hover:text-white">
                         Open post <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
                       </span>
                     </a>
                   ))}
                 </div>
-              ) : (
-                <p className="rounded-lg border border-white/10 bg-white/[0.03] px-4 py-5 text-sm font-semibold leading-6 text-zinc-400">
-                  Instagram automation is configured for the official Meta path. Add `INSTAGRAM_ACCESS_TOKEN`
-                  and `INSTAGRAM_USER_ID` to show recent posts here.
-                </p>
               )}
             </div>
           </section>
