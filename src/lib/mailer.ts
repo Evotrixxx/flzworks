@@ -1,6 +1,5 @@
 import "server-only";
 
-import { resolve4 } from "node:dns/promises";
 
 import nodemailer from "nodemailer";
 
@@ -33,11 +32,10 @@ export async function sendAccessRequestEmail(request: AccessRequestEmail) {
     const smtpUser = process.env.GMAIL_SMTP_USER?.trim();
     const smtpPassword = process.env.GMAIL_SMTP_APP_PASSWORD?.replace(/\s+/g, "");
     const smtpFrom = process.env.GMAIL_SMTP_FROM?.trim() || smtpUser;
-    const smtpHost = await resolveGmailSmtpIpv4Host();
     const email = buildAccessRequestEmail(request, smtpFrom);
 
     const transporter = nodemailer.createTransport({
-      host: smtpHost,
+      host: "smtp.gmail.com",
       port: 587,
       secure: false, // upgrade later with STARTTLS
       connectionTimeout: 10000,
@@ -109,11 +107,10 @@ export async function sendMagicLinkEmail(email: string, name: string, claimUrl: 
     const smtpUser = process.env.GMAIL_SMTP_USER?.trim();
     const smtpPassword = process.env.GMAIL_SMTP_APP_PASSWORD?.replace(/\s+/g, "");
     const smtpFrom = process.env.GMAIL_SMTP_FROM?.trim() || smtpUser;
-    const smtpHost = await resolveGmailSmtpIpv4Host();
     const builtEmail = buildMagicLinkEmail(request, smtpFrom);
 
     const transporter = nodemailer.createTransport({
-      host: smtpHost,
+      host: "smtp.gmail.com",
       port: 587,
       secure: false,
       connectionTimeout: 10000,
@@ -198,13 +195,6 @@ async function sendWithResend(email: BuiltAccessRequestEmail) {
   }
 }
 
-async function resolveGmailSmtpIpv4Host() {
-  const [address] = await resolve4("smtp.gmail.com");
-  if (!address) {
-    throw new Error("Gmail SMTP IPv4 address could not be resolved.");
-  }
-  return address;
-}
 
 function escapeHtml(value: string) {
   return value
