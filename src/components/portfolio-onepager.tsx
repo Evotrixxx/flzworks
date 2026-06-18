@@ -1,181 +1,141 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import { useMemo, useState } from "react";
-import { ArrowRight, ExternalLink, Radio } from "lucide-react";
-import { portfolioFocuses, portfolioSocials, type PortfolioFocusId } from "@/lib/portfolio";
+import { ArrowUpRight } from "lucide-react";
+import { portfolioFocuses, portfolioSocials } from "@/lib/portfolio";
 import type { InstagramMediaItem } from "@/lib/instagram";
 import { ThemeSwitcher } from "./theme-switcher";
+import Image from "next/image";
 
 export function PortfolioOnepager({ instagramMedia }: { instagramMedia: InstagramMediaItem[] }) {
-  const [activeId, setActiveId] = useState<PortfolioFocusId>("godot");
-  const activeIndex = portfolioFocuses.findIndex((focus) => focus.id === activeId);
-  const active = portfolioFocuses[activeIndex] ?? portfolioFocuses[0];
-  const ActiveIcon = active.icon;
-
-  const enabledSocials = useMemo(
-    () => portfolioSocials.filter((social) => social.href.trim().length > 0),
-    [],
-  );
+  const enabledSocials = portfolioSocials.filter((s) => s.href);
 
   return (
-    <main className="portfolio-shell min-h-screen overflow-hidden bg-black text-zinc-50">
-      <section className="relative mx-auto grid min-h-screen w-full max-w-7xl grid-rows-[auto_1fr] px-4 py-5 sm:px-6 lg:px-8">
-        <header className="portfolio-glass-panel z-20 flex items-center justify-between gap-4 rounded-full px-4 py-3">
-          <Link href="/" className="text-sm font-black tracking-[0.24em] text-white">
-            FLZ
-          </Link>
-          <nav className="scrollbar-none flex min-w-0 items-center gap-2 overflow-x-auto whitespace-nowrap px-1 py-1">
-            {portfolioFocuses.map((focus) => (
-              <button
-                key={focus.id}
-                type="button"
-                onClick={() => setActiveId(focus.id)}
-                className={`portfolio-liquid-button h-9 shrink-0 rounded-full px-4 text-xs font-bold transition-all duration-300 ${
-                  focus.id === active.id ? "portfolio-liquid-button-active shadow-md" : "text-zinc-300 hover:text-white"
-                }`}
-              >
-                {focus.label}
-              </button>
-            ))}
-          </nav>
-          <ThemeSwitcher />
-        </header>
+    <div className="neo-bg min-h-screen text-white font-sans overflow-x-hidden selection:bg-white selection:text-black">
+      {/* Marquee Header */}
+      <div className="w-full border-b border-white/10 bg-black py-2 overflow-hidden flex items-center">
+        <div className="flex whitespace-nowrap animate-marquee">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <span key={i} className="text-xs font-black uppercase tracking-widest text-zinc-500 mx-4">
+              FLZ // DESIGN // ENGINEERING // MACHINE EXPERIENCE // 2026 //
+            </span>
+          ))}
+        </div>
+      </div>
 
-        <div className="grid min-h-0 items-center gap-8 py-8 lg:grid-cols-[0.88fr_1.12fr]">
-          <section className="relative z-10 grid content-center gap-7">
-            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-bold uppercase tracking-[0.22em] text-zinc-300 backdrop-blur-xl">
-              <Radio className="h-3.5 w-3.5 text-cyan-200" aria-hidden="true" />
-              personal work index
+      <div className="max-w-7xl mx-auto px-4 py-12 md:py-24 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        {/* Intro / Hero Bento (Spans 8 cols) */}
+        <div className="neo-bento-card p-8 lg:col-span-8 flex flex-col justify-between min-h-[400px]">
+          <header className="flex justify-between items-start mb-12">
+            <div>
+              <h1 className="text-7xl md:text-8xl font-black uppercase tracking-tighter leading-none mb-4">
+                FLZ<br />
+                <span className="neo-text-outline">WORKS</span>
+              </h1>
+              <p className="text-zinc-400 font-mono text-sm max-w-md">
+                Systems architecture, high-performance web, and prototype engineering.
+              </p>
             </div>
+            <ThemeSwitcher />
+          </header>
+          
+          <div className="flex flex-wrap gap-3 mt-auto">
+            {enabledSocials.map((social) => {
+              const Icon = social.icon;
+              return (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="neo-button flex items-center gap-2 px-6 py-3 text-sm"
+                >
+                  <Icon className="h-4 w-4" />
+                  {social.label}
+                </a>
+              );
+            })}
+          </div>
+        </div>
 
-            <div className="portfolio-focus-window">
-              <div
-                className="portfolio-focus-track"
-                style={{ transform: `translateY(-${activeIndex * 100}%)` }}
-              >
-                {portfolioFocuses.map((focus) => {
-                  const Icon = focus.icon;
-                  return (
-                    <article key={focus.id} className="portfolio-focus-slide" aria-hidden={focus.id !== active.id}>
-                      <div className="flex items-center gap-3 text-zinc-400">
-                        <span className="portfolio-icon-glass flex h-12 w-12 items-center justify-center rounded-lg">
-                          <Icon className="h-6 w-6" aria-hidden="true" />
-                        </span>
-                        <span className="text-sm font-semibold">{focus.eyebrow}</span>
-                      </div>
-                      <h1 className="mt-5 max-w-3xl text-5xl font-black leading-[0.95] text-white sm:text-6xl lg:text-7xl">
-                        FLZ <span className="text-zinc-500">|</span>{" "}
-                        <span className="portfolio-title-sheen">{focus.label}</span>
-                      </h1>
-                      <p className="mt-6 max-w-2xl text-base font-medium leading-relaxed text-zinc-300 sm:text-lg">
-                        {focus.summary}
-                      </p>
-                    </article>
-                  );
-                })}
+        {/* Index Bento (Spans 4 cols) */}
+        <div className="neo-bento-card p-8 lg:col-span-4 flex flex-col">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-500 mb-6 border-b border-white/10 pb-4">
+            Index Focus
+          </h2>
+          <div className="flex flex-col gap-6 flex-1 justify-center">
+            {portfolioFocuses.map((focus, i) => (
+              <div key={focus.id} className="flex flex-col group cursor-default">
+                <span className="text-xs font-mono text-zinc-600 mb-1">0{i+1}</span>
+                <h3 className="text-2xl lg:text-3xl font-black uppercase tracking-tight group-hover:neo-accent-text transition-colors">
+                  {focus.label}
+                </h3>
               </div>
-            </div>
+            ))}
+          </div>
+        </div>
 
-            <div className="flex flex-wrap gap-2">
-              {active.metrics.map((metric) => (
-                <span key={metric} className="portfolio-glass-chip rounded-full px-3 py-2 text-xs font-bold text-zinc-200">
-                  {metric}
-                </span>
+        {/* Works Bento Grid */}
+        <div className="lg:col-span-12 mt-8">
+          <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter neo-text-outline mb-6">Archive</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {portfolioFocuses.flatMap(focus => focus.works).map((work, i) => (
+              <a 
+                key={work.title} 
+                href={work.href}
+                target="_blank"
+                rel="noreferrer"
+                className="neo-bento-card p-6 flex flex-col justify-between group h-64"
+              >
+                <div className="flex justify-between items-start">
+                  <span className="text-xs font-mono text-zinc-500">#{String(i+1).padStart(3, "0")}</span>
+                  <ArrowUpRight className="h-6 w-6 text-zinc-600 group-hover:neo-accent-text transition-colors" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-black uppercase tracking-tight mb-2 leading-none group-hover:text-white text-zinc-200 transition-colors">
+                    {work.title}
+                  </h3>
+                  <p className="text-xs font-mono text-zinc-500 uppercase tracking-widest">Execute _</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+
+        {/* Instagram Grid */}
+        {instagramMedia.length > 0 && (
+          <div className="lg:col-span-12 mt-12">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 border-b border-white/10 pb-4">
+              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">Transmission Log</h2>
+              <p className="text-xs font-mono text-zinc-500 mt-2 md:mt-0">LIVE FEED // IG</p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {instagramMedia.map((item) => (
+                <a
+                  key={item.id}
+                  href={item.permalink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="neo-bento-card aspect-square relative group"
+                >
+                  {(item.thumbnail_url || item.media_url) && (
+                    <Image
+                      src={item.thumbnail_url || item.media_url || ""}
+                      alt={item.caption || "Instagram post"}
+                      fill
+                      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 25vw, 20vw"
+                      className="object-cover opacity-50 group-hover:opacity-100 transition-all duration-300 grayscale group-hover:grayscale-0"
+                      unoptimized
+                    />
+                  )}
+                  <div className="absolute inset-0 border-[4px] border-transparent group-hover:border-white transition-colors" />
+                </a>
               ))}
             </div>
+          </div>
+        )}
 
-            <div className="flex flex-wrap items-center gap-3">
-              {enabledSocials.length > 0 && (
-                enabledSocials.map((social) => {
-                  const Icon = social.icon;
-                  return (
-                    <a
-                      key={social.label}
-                      href={social.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="portfolio-liquid-button portfolio-liquid-button-active inline-flex h-11 items-center gap-2 rounded-full px-4 text-sm font-black transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:scale-105 active:scale-95"
-                    >
-                      <Icon className="h-4 w-4" aria-hidden="true" />
-                      {social.label}
-                    </a>
-                  );
-                })
-              )}
-            </div>
-          </section>
-
-          <section className="relative z-10 min-w-0">
-            <div className="portfolio-glass-panel rounded-lg p-4 sm:p-5">
-              <div className="mb-4 flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.24em] text-zinc-500">Chronological work</p>
-                  <h2 className="mt-1 text-xl font-black text-white">{active.label}</h2>
-                </div>
-                <ActiveIcon className="h-6 w-6 text-cyan-100" aria-hidden="true" />
-              </div>
-              <div className="scrollbar-none flex snap-x gap-4 overflow-x-auto pb-6 pt-2">
-                {active.works.map((work, index) => (
-                  <article
-                    key={work.title}
-                    className="portfolio-work-card min-w-[260px] snap-start rounded-xl p-5 sm:min-w-[330px] transition-all duration-500 ease-out hover:-translate-y-2 hover:scale-[1.03] hover:shadow-2xl hover:z-10 hover:border-white/20 cursor-default"
-                  >
-                    <div className="portfolio-work-visual mb-5 flex aspect-[4/3] items-end rounded-lg p-4 transition-transform duration-500 ease-out group-hover:scale-[1.02]">
-                      <span className="rounded-full bg-black/35 px-3 py-1 text-xs font-black text-white backdrop-blur-xl">
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-                    </div>
-                    <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-100">{work.year}</p>
-                    <h3 className="mt-3 text-2xl font-black text-white">{work.title}</h3>
-                    <p className="mt-3 text-sm leading-6 text-zinc-400">{work.description}</p>
-                  </article>
-                ))}
-              </div>
-            </div>
-
-            <div className="portfolio-glass-panel mt-4 rounded-lg p-4 sm:p-5">
-              <div className="mb-4 flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.24em] text-zinc-500">Social stream</p>
-                  <h2 className="mt-1 text-xl font-black text-white">Instagram journal</h2>
-                </div>
-                <ArrowRight className="h-5 w-5 text-zinc-500" aria-hidden="true" />
-              </div>
-              {instagramMedia.length > 0 && (
-                <div className="scrollbar-none flex gap-4 overflow-x-auto pb-4 pt-2">
-                  {instagramMedia.map((item) => (
-                    <a
-                      key={item.id}
-                      href={item.permalink}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="portfolio-social-card grid min-w-[220px] gap-3 rounded-xl p-3 transition-all duration-500 ease-out hover:-translate-y-1 hover:scale-[1.04] hover:shadow-2xl hover:border-white/20"
-                    >
-                      <div className="relative aspect-square overflow-hidden rounded-lg bg-zinc-900">
-                        {(item.thumbnail_url || item.media_url) && (
-                          <Image
-                            src={item.thumbnail_url || item.media_url || ""}
-                            alt={item.caption || "Instagram post"}
-                            fill
-                            sizes="220px"
-                            className="object-cover transition-transform duration-700 ease-out hover:scale-110"
-                            unoptimized
-                          />
-                        )}
-                      </div>
-                      <span className="inline-flex items-center gap-2 text-xs font-bold text-zinc-300 group-hover:text-white">
-                        Open post <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-                      </span>
-                    </a>
-                  ))}
-                </div>
-              )}
-            </div>
-          </section>
-        </div>
-      </section>
-    </main>
+      </div>
+    </div>
   );
 }
