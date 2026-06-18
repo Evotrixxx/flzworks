@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import { Mail, Send, User } from "lucide-react";
 
-export function IntranetAccessRequestForm() {
+export function IntranetAccessRequestForm({ module = "autopiac" }: { module?: string }) {
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -50,6 +50,7 @@ export function IntranetAccessRequestForm() {
 
   return (
     <form onSubmit={submit} className="portfolio-glass-panel grid gap-4 rounded-lg p-5">
+      <input type="hidden" name="module" value={module} />
       <label className="grid gap-2 text-sm font-bold text-zinc-200">
         Name
         <span className="relative">

@@ -32,6 +32,7 @@ export const authSchema = z.object({
 export const intranetAccessRequestSchema = z.object({
   name: z.string().trim().min(2).max(100),
   email: z.string().email().max(180).transform((value) => value.toLowerCase().trim()),
+  module: z.string().trim().min(1).max(50).optional(),
 });
 
 export const intranetActionTokenSchema = z.object({

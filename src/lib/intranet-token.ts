@@ -2,7 +2,7 @@ import { createHmac, randomBytes, timingSafeEqual } from "crypto";
 import type { IntranetModule } from "@/lib/routes";
 
 export const INTRANET_ACCESS_COOKIE = "flz_intranet_access_v2";
-export const INTRANET_ACCESS_MAX_AGE_SECONDS = 60 * 60 * 12;
+export const INTRANET_ACCESS_MAX_AGE_SECONDS = 60 * 60; // 1 hour
 
 export type IntranetAccessPayload = {
   requestId: string;

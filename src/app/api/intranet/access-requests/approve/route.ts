@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { setIntranetAccessCookie } from "@/lib/intranet";
 import { prisma } from "@/lib/prisma";
 import { hashOpaqueToken } from "@/lib/intranet-token";
-import { AUTOPIAC_BASE_PATH, AUTOPIAC_INTRANET_MODULE } from "@/lib/routes";
+import {
+  AUTOPIAC_BASE_PATH,
+  GUIDE_PROTOTYPE_BASE_PATH,
+  ALLOWED_INTRANET_MODULES,
+  type IntranetModule,
+} from "@/lib/routes";
 import { intranetActionTokenSchema } from "@/lib/validation";
 
 function htmlResponse(title: string, body: string, status = 200) {
@@ -30,7 +35,7 @@ export async function GET(request: NextRequest) {
     return htmlResponse("Approval unavailable", "This approval link is expired, invalid, or already used.", 410);
   }
 
-  if (accessRequest.module !== AUTOPIAC_INTRANET_MODULE) {
+  if (!ALLOWED_INTRANET_MODULES.includes(accessRequest.module as any)) {
     return htmlResponse("Approval unavailable", "This approval link targets an unsupported intranet module.", 400);
   }
 
@@ -40,11 +45,13 @@ export async function GET(request: NextRequest) {
       status: "APPROVED",
       approvedAt: new Date(),
       accessedAt: new Date(),
+      expiresAt: new Date(Date.now() + 1000 * 60 * 60), // 1 hour access limit
     },
     select: { id: true },
   });
 
-  const response = NextResponse.redirect(new URL(AUTOPIAC_BASE_PATH, request.url));
-  setIntranetAccessCookie(response, approvedRequest.id, AUTOPIAC_INTRANET_MODULE);
+  const redirectPath = accessRequest.module === "guide_prototype" ? GUIDE_PROTOTYPE_BASE_PATH : AUTOPIAC_BASE_PATH;
+  const response = NextResponse.redirect(new URL(redirectPath, request.url));
+  setIntranetAccessCookie(response, approvedRequest.id, accessRequest.module as IntranetModule);
   return response;
 }

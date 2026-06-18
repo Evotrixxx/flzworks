@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getClientIpFromHeaders } from "@/lib/intranet";
 import { createOpaqueToken, hashOpaqueToken } from "@/lib/intranet-token";
 import { sendAccessRequestEmail } from "@/lib/mailer";
-import { AUTOPIAC_INTRANET_MODULE } from "@/lib/routes";
+import { AUTOPIAC_INTRANET_MODULE, ALLOWED_INTRANET_MODULES } from "@/lib/routes";
 import { intranetAccessRequestSchema } from "@/lib/validation";
 
 const REQUEST_TTL_MS = 1000 * 60 * 60 * 24;
@@ -17,6 +17,11 @@ export async function POST(request: NextRequest) {
 
   if (!parsed.success) {
     return NextResponse.json({ error: "Enter a valid name and email." }, { status: 400 });
+  }
+
+  const requestModule = parsed.data.module || AUTOPIAC_INTRANET_MODULE;
+  if (!ALLOWED_INTRANET_MODULES.includes(requestModule as any)) {
+    return NextResponse.json({ error: "Invalid module specified." }, { status: 400 });
   }
 
   const ipAddress = getClientIpFromHeaders(request.headers);
@@ -38,7 +43,7 @@ export async function POST(request: NextRequest) {
 
   await prisma.intranetAccessRequest.create({
     data: {
-      module: AUTOPIAC_INTRANET_MODULE,
+      module: requestModule,
       name: parsed.data.name,
       email: parsed.data.email,
       ipAddress,
