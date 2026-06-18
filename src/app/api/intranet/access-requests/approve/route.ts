@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { setIntranetAccessCookie } from "@/lib/intranet";
 import { prisma } from "@/lib/prisma";
 import { hashOpaqueToken } from "@/lib/intranet-token";
+import { AUTOPIAC_BASE_PATH, AUTOPIAC_INTRANET_MODULE } from "@/lib/routes";
 import { intranetActionTokenSchema } from "@/lib/validation";
 
 function htmlResponse(title: string, body: string, status = 200) {
@@ -28,16 +30,21 @@ export async function GET(request: NextRequest) {
     return htmlResponse("Approval unavailable", "This approval link is expired, invalid, or already used.", 410);
   }
 
-  await prisma.intranetAccessRequest.update({
+  if (accessRequest.module !== AUTOPIAC_INTRANET_MODULE) {
+    return htmlResponse("Approval unavailable", "This approval link targets an unsupported intranet module.", 400);
+  }
+
+  const approvedRequest = await prisma.intranetAccessRequest.update({
     where: { id: accessRequest.id },
     data: {
       status: "APPROVED",
       approvedAt: new Date(),
+      accessedAt: new Date(),
     },
+    select: { id: true },
   });
 
-  return htmlResponse(
-    "AutoPiac access approved",
-    "The requester can now return to /intranet/autopiac from the same IP address to receive one-time intranet access.",
-  );
+  const response = NextResponse.redirect(new URL(AUTOPIAC_BASE_PATH, request.url));
+  setIntranetAccessCookie(response, approvedRequest.id, AUTOPIAC_INTRANET_MODULE);
+  return response;
 }

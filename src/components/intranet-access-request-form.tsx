@@ -27,7 +27,7 @@ export function IntranetAccessRequestForm() {
         signal: controller.signal,
       });
     } catch {
-      setError("Access request timed out. Check Gmail SMTP settings and try again.");
+      setError("Access request timed out. Check email delivery settings and try again.");
       setPending(false);
       window.clearTimeout(timeout);
       return;

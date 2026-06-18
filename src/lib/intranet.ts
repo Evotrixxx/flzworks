@@ -3,7 +3,7 @@ import "server-only";
 import { cookies, headers } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { AUTOPIAC_BASE_PATH } from "@/lib/routes";
+import { AUTOPIAC_BASE_PATH, AUTOPIAC_INTRANET_MODULE, type IntranetModule } from "@/lib/routes";
 import {
   INTRANET_ACCESS_COOKIE,
   INTRANET_ACCESS_MAX_AGE_SECONDS,
@@ -27,15 +27,16 @@ export function getClientIpFromHeaders(headerSource: Headers) {
   );
 }
 
-export async function hasValidIntranetCookie(cookieValue?: string) {
+export async function hasValidIntranetCookie(cookieValue?: string, module: IntranetModule = AUTOPIAC_INTRANET_MODULE) {
   const payload = verifyIntranetAccessToken(cookieValue);
-  if (!payload) {
+  if (!payload || payload.module !== module) {
     return false;
   }
 
   const request = await prisma.intranetAccessRequest.findFirst({
     where: {
       id: payload.requestId,
+      module,
       status: "APPROVED",
       expiresAt: { gt: new Date() },
     },
@@ -45,11 +46,13 @@ export async function hasValidIntranetCookie(cookieValue?: string) {
   return Boolean(request);
 }
 
-export async function getIntranetGateState(): Promise<IntranetGateState> {
+export async function getIntranetGateState(
+  module: IntranetModule = AUTOPIAC_INTRANET_MODULE,
+): Promise<IntranetGateState> {
   const [cookieStore, headerStore] = await Promise.all([cookies(), headers()]);
   const ipAddress = getClientIpFromHeaders(headerStore);
 
-  if (await hasValidIntranetCookie(cookieStore.get(INTRANET_ACCESS_COOKIE)?.value)) {
+  if (await hasValidIntranetCookie(cookieStore.get(INTRANET_ACCESS_COOKIE)?.value, module)) {
     return { status: "allowed" };
   }
 
@@ -68,6 +71,7 @@ export async function getIntranetGateState(): Promise<IntranetGateState> {
 
   const approved = await prisma.intranetAccessRequest.findFirst({
     where: {
+      module,
       ipAddress,
       status: "APPROVED",
       accessedAt: null,
@@ -84,9 +88,25 @@ export async function getIntranetGateState(): Promise<IntranetGateState> {
   return { status: "needs-request" };
 }
 
-export async function createIntranetAccessResponse(ipAddress: string, requestUrl: string) {
+export function setIntranetAccessCookie(response: NextResponse, requestId: string, module: IntranetModule) {
+  response.cookies.set(INTRANET_ACCESS_COOKIE, createIntranetAccessToken(requestId, module), {
+    httpOnly: true,
+    maxAge: INTRANET_ACCESS_MAX_AGE_SECONDS,
+    path: "/",
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+  });
+}
+
+export async function createIntranetAccessResponse(
+  ipAddress: string,
+  requestUrl: string,
+  module: IntranetModule = AUTOPIAC_INTRANET_MODULE,
+  redirectPath = AUTOPIAC_BASE_PATH,
+) {
   const approved = await prisma.intranetAccessRequest.findFirst({
     where: {
+      module,
       ipAddress,
       status: "APPROVED",
       accessedAt: null,
@@ -105,18 +125,15 @@ export async function createIntranetAccessResponse(ipAddress: string, requestUrl
     data: { accessedAt: new Date() },
   });
 
-  const response = NextResponse.redirect(new URL(AUTOPIAC_BASE_PATH, requestUrl));
-  response.cookies.set(INTRANET_ACCESS_COOKIE, createIntranetAccessToken(approved.id), {
-    httpOnly: true,
-    maxAge: INTRANET_ACCESS_MAX_AGE_SECONDS,
-    path: AUTOPIAC_BASE_PATH,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-  });
+  const response = NextResponse.redirect(new URL(redirectPath, requestUrl));
+  setIntranetAccessCookie(response, approved.id, module);
   return response;
 }
 
-export async function requireIntranetApiAccess(request: NextRequest) {
+export async function requireIntranetApiAccess(
+  request: NextRequest,
+  module: IntranetModule = AUTOPIAC_INTRANET_MODULE,
+) {
   const ipAddress = getClientIpFromHeaders(request.headers);
 
   const block = await prisma.intranetIpBlock.findFirst({
@@ -131,7 +148,7 @@ export async function requireIntranetApiAccess(request: NextRequest) {
     return NextResponse.json({ error: "Intranet access is blocked for this IP." }, { status: 403 });
   }
 
-  const allowed = await hasValidIntranetCookie(request.cookies.get(INTRANET_ACCESS_COOKIE)?.value);
+  const allowed = await hasValidIntranetCookie(request.cookies.get(INTRANET_ACCESS_COOKIE)?.value, module);
   if (!allowed) {
     return NextResponse.json({ error: "Intranet access required." }, { status: 403 });
   }

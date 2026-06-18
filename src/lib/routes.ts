@@ -1,4 +1,7 @@
 export const AUTOPIAC_BASE_PATH = "/intranet/autopiac";
+export const AUTOPIAC_INTRANET_MODULE = "autopiac";
+
+export type IntranetModule = typeof AUTOPIAC_INTRANET_MODULE;
 
 export function autopiacPath(path = "") {
   if (!path || path === "/") {

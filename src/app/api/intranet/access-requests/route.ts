@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getClientIpFromHeaders } from "@/lib/intranet";
 import { createOpaqueToken, hashOpaqueToken } from "@/lib/intranet-token";
 import { sendAccessRequestEmail } from "@/lib/mailer";
+import { AUTOPIAC_INTRANET_MODULE } from "@/lib/routes";
 import { intranetAccessRequestSchema } from "@/lib/validation";
 
 const REQUEST_TTL_MS = 1000 * 60 * 60 * 24;
@@ -37,6 +38,7 @@ export async function POST(request: NextRequest) {
 
   await prisma.intranetAccessRequest.create({
     data: {
+      module: AUTOPIAC_INTRANET_MODULE,
       name: parsed.data.name,
       email: parsed.data.email,
       ipAddress,
@@ -65,7 +67,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error:
-          "Access request was saved, but the approval email could not be sent. Check Gmail SMTP settings and try again.",
+          "Access request was saved, but the approval email could not be sent. Check email delivery settings and try again.",
       },
       { status: 503 },
     );

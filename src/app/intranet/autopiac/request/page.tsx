@@ -32,8 +32,8 @@ export default async function AutoPiacAccessRequestPage() {
             <div>
               <h1 className="text-3xl font-black text-white">AutoPiac intranet access</h1>
               <p className="mt-2 text-sm font-semibold leading-6 text-zinc-400">
-                Request one-time access. The host receives an approval email and your browser will unlock this
-                module after approval from the same IP address.
+                Request one-time access. The host receives an approval email, and approved access is scoped to
+                this intranet module.
               </p>
             </div>
           </div>

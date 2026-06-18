@@ -126,6 +126,7 @@ model SavedSearch {
 
 model IntranetAccessRequest {
   id               String    @id @default(cuid())
+  module           String    @default("autopiac")
   name             String
   email            String
   ipAddress        String
@@ -138,7 +139,7 @@ model IntranetAccessRequest {
   expiresAt        DateTime
   createdAt        DateTime  @default(now())
 
-  @@index([ipAddress, status, expiresAt])
+  @@index([module, ipAddress, status, expiresAt])
   @@index([email, createdAt])
 }
 
