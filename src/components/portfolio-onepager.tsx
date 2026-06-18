@@ -1,6 +1,5 @@
 "use client";
 
-import { ArrowUpRight } from "lucide-react";
 import { portfolioFocuses, portfolioSocials } from "@/lib/portfolio";
 import type { InstagramMediaItem } from "@/lib/instagram";
 import { ThemeSwitcher } from "./theme-switcher";
@@ -80,24 +79,21 @@ export function PortfolioOnepager({ instagramMedia }: { instagramMedia: Instagra
           <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter neo-text-outline mb-6">Archive</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {portfolioFocuses.flatMap(focus => focus.works).map((work, i) => (
-              <a 
-                key={work.title} 
-                href={work.href}
-                target="_blank"
-                rel="noreferrer"
-                className="neo-bento-card p-6 flex flex-col justify-between group h-64"
+              <div 
+                key={work.title + i} 
+                className="neo-bento-card p-6 flex flex-col justify-between group h-64 cursor-default"
               >
                 <div className="flex justify-between items-start">
                   <span className="text-xs font-mono text-zinc-500">#{String(i+1).padStart(3, "0")}</span>
-                  <ArrowUpRight className="h-6 w-6 text-zinc-600 group-hover:neo-accent-text transition-colors" />
+                  <span className="text-xs font-mono text-zinc-600">{work.year}</span>
                 </div>
                 <div>
                   <h3 className="text-2xl font-black uppercase tracking-tight mb-2 leading-none group-hover:text-white text-zinc-200 transition-colors">
                     {work.title}
                   </h3>
-                  <p className="text-xs font-mono text-zinc-500 uppercase tracking-widest">Execute _</p>
+                  <p className="text-sm text-zinc-500 leading-relaxed">{work.description}</p>
                 </div>
-              </a>
+              </div>
             ))}
           </div>
         </div>
