@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { normalizeLocale } from "@/lib/i18n";
 import { serializeListingToText } from "@/lib/listing-text-import";
 import { prisma } from "@/lib/prisma";
+import { requireIntranetApiAccess } from "@/lib/intranet";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -18,7 +19,10 @@ function filenamePart(value: string) {
     .slice(0, 80);
 }
 
-export async function GET(request: Request, context: RouteContext) {
+export async function GET(request: NextRequest, context: RouteContext) {
+  const intranetError = await requireIntranetApiAccess(request);
+  if (intranetError) return intranetError;
+
   const [{ id }, user] = await Promise.all([context.params, getCurrentUser()]);
 
   if (!user) {

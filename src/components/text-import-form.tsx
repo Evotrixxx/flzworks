@@ -6,6 +6,7 @@ import { ClipboardList, Eye, FilePlus2, Loader2, UploadCloud } from "lucide-reac
 import { useRouter } from "next/navigation";
 import { listingImportTemplate, type ListingImportPreview } from "@/lib/listing-text-import";
 import type { Locale } from "@/lib/i18n";
+import { autopiacPath } from "@/lib/routes";
 
 export function TextImportForm({ locale }: { locale: Locale }) {
   const router = useRouter();
@@ -98,7 +99,7 @@ export function TextImportForm({ locale }: { locale: Locale }) {
           <p className="mt-1 max-w-2xl text-sm font-semibold leading-6 text-slate-500">{copy.help}</p>
         </div>
         <Link
-          href={`/dashboard?lang=${locale}`}
+          href={`${autopiacPath("/dashboard")}?lang=${locale}`}
           className="liquid-button-secondary inline-flex h-10 items-center justify-center rounded-full px-4 text-sm font-black text-slate-700"
         >
           {copy.dashboard}

@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { normalizeLocale } from "@/lib/i18n";
 import { serializeListingsToText } from "@/lib/listing-text-import";
 import { prisma } from "@/lib/prisma";
+import { requireIntranetApiAccess } from "@/lib/intranet";
 
 function downloadResponse(text: string, filename: string) {
   return new Response(text, {
@@ -13,7 +14,10 @@ function downloadResponse(text: string, filename: string) {
   });
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  const intranetError = await requireIntranetApiAccess(request);
+  if (intranetError) return intranetError;
+
   const user = await getCurrentUser();
 
   if (!user) {

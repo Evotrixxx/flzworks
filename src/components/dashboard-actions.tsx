@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, Download, FilePlus2, PauseCircle, Trash2 } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
+import { autopiacPath } from "@/lib/routes";
 
 export function DashboardActions({
   id,
@@ -62,7 +63,7 @@ export function DashboardActions({
         {labels.downloadText}
       </a>
       <Link
-        href={`/sell?template=${id}&lang=${locale}`}
+        href={`${autopiacPath("/sell")}?template=${id}&lang=${locale}`}
         className="liquid-button-secondary inline-flex h-9 items-center gap-2 rounded-full px-3 text-xs font-black text-slate-700 transition hover:text-cyan-800"
       >
         <FilePlus2 className="h-4 w-4" aria-hidden="true" />

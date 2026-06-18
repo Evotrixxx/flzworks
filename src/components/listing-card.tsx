@@ -5,6 +5,7 @@ import type { Dictionary, Locale } from "@/lib/i18n";
 import type { ListingCardData } from "@/lib/listings";
 import { formatHuf, formatKm, listingTitle, photoUrl } from "@/lib/format";
 import { FavoriteButton } from "@/components/favorite-button";
+import { autopiacPath } from "@/lib/routes";
 
 function cleanCardDescription(description: string) {
   return description
@@ -29,7 +30,7 @@ export function ListingCard({
   variant?: "tile" | "list";
 }) {
   const title = listingTitle(listing);
-  const href = `/cars/${listing.id}?lang=${locale}`;
+  const href = `${autopiacPath(`/cars/${listing.id}`)}?lang=${locale}`;
   const badges = [
     listing.mileage === 0 ? "0 km" : null,
     listing.vatDeductible ? "ÁFA" : null,

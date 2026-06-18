@@ -1,0 +1,23 @@
+import { redirect } from "next/navigation";
+import { getIntranetGateState } from "@/lib/intranet";
+import { AUTOPIAC_BASE_PATH } from "@/lib/routes";
+
+export const dynamic = "force-dynamic";
+
+export default async function AutoPiacProtectedLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const gate = await getIntranetGateState();
+
+  if (gate.status === "approved-unclaimed") {
+    redirect(`${AUTOPIAC_BASE_PATH}/access`);
+  }
+
+  if (gate.status !== "allowed") {
+    redirect(`${AUTOPIAC_BASE_PATH}/request`);
+  }
+
+  return children;
+}

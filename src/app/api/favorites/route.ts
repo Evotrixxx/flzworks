@@ -1,13 +1,17 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireIntranetApiAccess } from "@/lib/intranet";
 
 const favoriteSchema = z.object({
   listingId: z.string().min(1),
 });
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const intranetError = await requireIntranetApiAccess(request);
+  if (intranetError) return intranetError;
+
   const user = await getCurrentUser();
 
   if (!user) {
@@ -37,7 +41,10 @@ export async function POST(request: Request) {
   return NextResponse.json({ ok: true });
 }
 
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
+  const intranetError = await requireIntranetApiAccess(request);
+  if (intranetError) return intranetError;
+
   const user = await getCurrentUser();
 
   if (!user) {

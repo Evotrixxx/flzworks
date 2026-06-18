@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -7,6 +7,7 @@ import { removeUploadedPhoto, saveUploadedPhotos } from "@/lib/uploads";
 import { normalizeLocale } from "@/lib/i18n";
 import { validateListingPayload } from "@/lib/listing-validation";
 import { resolvePhotoPlan } from "@/lib/photo-plan";
+import { requireIntranetApiAccess } from "@/lib/intranet";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -31,7 +32,10 @@ async function findOwnedListing(id: string, userId: string) {
   });
 }
 
-export async function PUT(request: Request, context: RouteContext) {
+export async function PUT(request: NextRequest, context: RouteContext) {
+  const intranetError = await requireIntranetApiAccess(request);
+  if (intranetError) return intranetError;
+
   const [{ id }, user] = await Promise.all([context.params, getCurrentUser()]);
 
   if (!user) {
@@ -102,7 +106,10 @@ export async function PUT(request: Request, context: RouteContext) {
   return NextResponse.json(listing);
 }
 
-export async function PATCH(request: Request, context: RouteContext) {
+export async function PATCH(request: NextRequest, context: RouteContext) {
+  const intranetError = await requireIntranetApiAccess(request);
+  if (intranetError) return intranetError;
+
   const [{ id }, user] = await Promise.all([context.params, getCurrentUser()]);
 
   if (!user) {
@@ -130,7 +137,10 @@ export async function PATCH(request: Request, context: RouteContext) {
   return NextResponse.json(listing);
 }
 
-export async function DELETE(_: Request, context: RouteContext) {
+export async function DELETE(request: NextRequest, context: RouteContext) {
+  const intranetError = await requireIntranetApiAccess(request);
+  if (intranetError) return intranetError;
+
   const [{ id }, user] = await Promise.all([context.params, getCurrentUser()]);
 
   if (!user) {

@@ -16,6 +16,7 @@ import { photoUrl } from "@/lib/format";
 import { getListingDetailLabels } from "@/lib/listing-detail-labels";
 import { isElectrifiedFuel, type FieldErrors } from "@/lib/listing-validation";
 import { parseListingText, type ListingTextExportData } from "@/lib/listing-text-import";
+import { autopiacPath } from "@/lib/routes";
 
 type ListingFormValues = ListingTextExportData & {
   [key: string]: unknown;
@@ -75,7 +76,7 @@ export function ListingForm({
     }
 
     const payload = (await response.json()) as { id: string };
-    router.push(`/cars/${payload.id}?lang=${locale}`);
+    router.push(`${autopiacPath(`/cars/${payload.id}`)}?lang=${locale}`);
     router.refresh();
   }
 

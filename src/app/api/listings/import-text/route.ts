@@ -1,9 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { normalizeLocale } from "@/lib/i18n";
 import { parseListingText } from "@/lib/listing-text-import";
 import { prisma } from "@/lib/prisma";
+import { requireIntranetApiAccess } from "@/lib/intranet";
 
 const importRequestSchema = z.object({
   action: z.enum(["preview", "create"]),
@@ -11,7 +12,10 @@ const importRequestSchema = z.object({
   locale: z.enum(["hu", "en"]).optional(),
 });
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const intranetError = await requireIntranetApiAccess(request);
+  if (intranetError) return intranetError;
+
   const user = await getCurrentUser();
 
   if (!user) {

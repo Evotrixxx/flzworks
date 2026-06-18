@@ -1,10 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { saveUploadedPhotos } from "@/lib/uploads";
 import { normalizeLocale } from "@/lib/i18n";
 import { validateListingPayload } from "@/lib/listing-validation";
 import { resolvePhotoPlan } from "@/lib/photo-plan";
+import { requireIntranetApiAccess } from "@/lib/intranet";
 
 function stringEntries(formData: FormData) {
   return Object.fromEntries(
@@ -18,7 +19,10 @@ function uploadEntries(formData: FormData) {
     .filter((entry): entry is File => typeof entry === "object" && "arrayBuffer" in entry && entry.size > 0);
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const intranetError = await requireIntranetApiAccess(request);
+  if (intranetError) return intranetError;
+
   const user = await getCurrentUser();
 
   if (!user) {

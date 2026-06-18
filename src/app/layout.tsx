@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AutoPiac | Used car marketplace",
-  description: "A bilingual used-car marketplace MVP with search, listings, favorites, and seller tools.",
+  title: "FLZ | Portfolio",
+  description: "Portfolio and private AutoPiac intranet by FLZ.",
 };
 
 export default async function RootLayout({

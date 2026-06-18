@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BookmarkPlus, Check } from "lucide-react";
+import { autopiacPath } from "@/lib/routes";
 
 export function SaveSearchButton({
   isAuthenticated,
@@ -18,7 +19,7 @@ export function SaveSearchButton({
 
   async function saveSearch() {
     if (!isAuthenticated) {
-      router.push("/login");
+      router.push(`/login?redirect=${encodeURIComponent(autopiacPath())}`);
       return;
     }
 

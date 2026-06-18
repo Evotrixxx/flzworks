@@ -29,6 +29,15 @@ export const authSchema = z.object({
   name: z.string().trim().min(2).max(100).optional(),
 });
 
+export const intranetAccessRequestSchema = z.object({
+  name: z.string().trim().min(2).max(100),
+  email: z.string().email().max(180).transform((value) => value.toLowerCase().trim()),
+});
+
+export const intranetActionTokenSchema = z.object({
+  token: z.string().min(32).max(300),
+});
+
 export const listingSchema = z.object({
   make: z.string().trim().min(1).max(80),
   model: z.string().trim().min(1).max(80),

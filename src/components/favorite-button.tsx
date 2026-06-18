@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
+import { autopiacPath } from "@/lib/routes";
 
 export function FavoriteButton({
   listingId,
@@ -27,7 +28,7 @@ export function FavoriteButton({
 
   async function toggleFavorite() {
     if (!isAuthenticated) {
-      router.push("/login");
+      router.push(`/login?redirect=${encodeURIComponent(autopiacPath())}`);
       return;
     }
 

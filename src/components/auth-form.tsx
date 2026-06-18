@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Lock, Mail, User } from "lucide-react";
 import type { Dictionary, Locale } from "@/lib/i18n";
+import { autopiacPath } from "@/lib/routes";
 
 export function AuthForm({
   mode,
@@ -37,7 +38,7 @@ export function AuthForm({
       return;
     }
 
-    const redirectTo = searchParams.get("redirect") ?? "/dashboard";
+    const redirectTo = searchParams.get("redirect") ?? autopiacPath("/dashboard");
     router.push(`${redirectTo}${redirectTo.includes("?") ? "&" : "?"}lang=${locale}`);
     router.refresh();
   }

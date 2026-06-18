@@ -2,6 +2,7 @@ import type { Dictionary, Locale } from "@/lib/i18n";
 import type { ListingTextExportData } from "@/lib/listing-text-import";
 import { ListingForm } from "@/components/listing-form";
 import { TextImportForm } from "@/components/text-import-form";
+import { autopiacPath } from "@/lib/routes";
 
 export function SellTabs({
   locale,
@@ -27,9 +28,9 @@ export function SellTabs({
           import: "Text import",
         };
   const singleHref = templateId
-    ? `/sell?template=${encodeURIComponent(templateId)}&lang=${locale}`
-    : `/sell?lang=${locale}`;
-  const importHref = `/sell?tab=import&lang=${locale}`;
+    ? `${autopiacPath("/sell")}?template=${encodeURIComponent(templateId)}&lang=${locale}`
+    : `${autopiacPath("/sell")}?lang=${locale}`;
+  const importHref = `${autopiacPath("/sell")}?tab=import&lang=${locale}`;
 
   return (
     <div className="grid gap-5">

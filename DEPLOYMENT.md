@@ -33,6 +33,17 @@ Set these variables on the Railway service:
 DATABASE_URL=file:/data/prod.db
 UPLOAD_DIR=/data/uploads
 AUTH_SECRET=<a-long-random-secret>
+APP_BASE_URL=https://flz.works
+INTRANET_ACCESS_SECRET=<another-long-random-secret>
+INTRANET_HOST_EMAIL=floszbeni@gmail.com
+GMAIL_SMTP_USER=<gmail-address>
+GMAIL_SMTP_APP_PASSWORD=<gmail-app-password>
+GMAIL_SMTP_FROM=<gmail-address>
+INSTAGRAM_ACCESS_TOKEN=<meta-instagram-token>
+INSTAGRAM_USER_ID=<instagram-user-id-or-me>
+NEXT_PUBLIC_SOCIAL_INSTAGRAM=<instagram-profile-url>
+NEXT_PUBLIC_SOCIAL_FACEBOOK=<facebook-profile-url>
+NEXT_PUBLIC_SOCIAL_PINTEREST=<pinterest-profile-url>
 ```
 
 The app refuses to start in production unless `DATABASE_URL` points inside `/data/` and `UPLOAD_DIR` starts with `/data/`. This prevents Railway from silently creating a fresh empty SQLite database on ephemeral storage.

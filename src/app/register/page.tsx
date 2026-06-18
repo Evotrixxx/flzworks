@@ -6,6 +6,7 @@ import { getLocale } from "@/lib/i18n-server";
 import type { SearchParamsInput } from "@/lib/listings";
 import { AuthForm } from "@/components/auth-form";
 import { Header } from "@/components/header";
+import { autopiacPath } from "@/lib/routes";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,7 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
   const [user, locale] = await Promise.all([getCurrentUser(), getLocale(params)]);
 
   if (user) {
-    redirect(`/dashboard?lang=${locale}`);
+    redirect(`${autopiacPath("/dashboard")}?lang=${locale}`);
   }
 
   const t = dictionaries[locale];

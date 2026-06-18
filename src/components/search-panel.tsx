@@ -19,6 +19,7 @@ import {
   fuelOptions,
   transmissionOptions,
 } from "@/lib/options";
+import { AUTOPIAC_BASE_PATH } from "@/lib/routes";
 
 type SearchPanelProps = {
   locale: Locale;
@@ -97,7 +98,7 @@ export function SearchPanel({ locale, t, params }: SearchPanelProps) {
   ];
 
   return (
-    <form action="/" className="glass-panel space-y-5 rounded-lg p-4">
+    <form action={AUTOPIAC_BASE_PATH} className="glass-panel space-y-5 rounded-lg p-4">
       <input type="hidden" name="lang" value={locale} />
       {value(params, "view") === "list" && <input type="hidden" name="view" value="list" />}
       <div className="flex items-center justify-between gap-3">
@@ -106,7 +107,7 @@ export function SearchPanel({ locale, t, params }: SearchPanelProps) {
           {t.filters.title}
         </h2>
         <a
-          href={`/?lang=${locale}`}
+          href={`${AUTOPIAC_BASE_PATH}?lang=${locale}`}
           className="liquid-button-secondary inline-flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold text-slate-500 transition hover:text-slate-900"
           aria-label={t.home.resetFilters}
           title={t.home.resetFilters}

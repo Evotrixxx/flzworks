@@ -123,3 +123,31 @@ model SavedSearch {
 
   @@index([userId, createdAt])
 }
+
+model IntranetAccessRequest {
+  id               String    @id @default(cuid())
+  name             String
+  email            String
+  ipAddress        String
+  status           String    @default("PENDING")
+  approveTokenHash String    @unique
+  denyTokenHash    String    @unique
+  approvedAt       DateTime?
+  deniedAt         DateTime?
+  accessedAt       DateTime?
+  expiresAt        DateTime
+  createdAt        DateTime  @default(now())
+
+  @@index([ipAddress, status, expiresAt])
+  @@index([email, createdAt])
+}
+
+model IntranetIpBlock {
+  id        String   @id @default(cuid())
+  ipAddress String
+  reason    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([ipAddress, expiresAt])
+}

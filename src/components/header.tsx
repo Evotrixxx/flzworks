@@ -4,23 +4,24 @@ import { getCurrentUser } from "@/lib/auth";
 import { dictionaries, type Locale } from "@/lib/i18n";
 import { LogoutButton } from "@/components/logout-button";
 import { SiteSettings } from "@/components/site-settings";
+import { autopiacPath } from "@/lib/routes";
 
 export async function Header({ locale }: { locale: Locale }) {
   const user = await getCurrentUser();
   const t = dictionaries[locale];
 
   const navItems = [
-    { href: "/", label: t.nav.search, icon: Search },
-    { href: "/sell", label: t.nav.sell, icon: PlusCircle },
-    { href: "/dashboard", label: t.nav.dashboard, icon: Gauge },
-    { href: "/favorites", label: t.nav.favorites, icon: Heart },
+    { href: autopiacPath(), label: t.nav.search, icon: Search },
+    { href: autopiacPath("/sell"), label: t.nav.sell, icon: PlusCircle },
+    { href: autopiacPath("/dashboard"), label: t.nav.dashboard, icon: Gauge },
+    { href: autopiacPath("/favorites"), label: t.nav.favorites, icon: Heart },
   ];
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/50 bg-white/45 shadow-[0_12px_34px_rgba(15,23,42,0.08)] backdrop-blur-2xl">
       <div className="mx-auto flex max-w-7xl items-center gap-2 px-3 py-3 sm:px-6 lg:px-8">
         <Link
-          href="/"
+          href={autopiacPath()}
           className="inline-flex shrink-0 items-center gap-2 text-lg font-black text-slate-950"
           aria-label={t.brand}
           title={t.brand}
@@ -56,7 +57,7 @@ export async function Header({ locale }: { locale: Locale }) {
             {user ? (
               <>
                 <Link
-                  href="/saved-searches"
+                  href={autopiacPath("/saved-searches")}
                   className="liquid-button-secondary inline-flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold text-slate-700 transition hover:text-[var(--accent-aqua)]"
                   aria-label={t.nav.savedSearches}
                   title={t.nav.savedSearches}
