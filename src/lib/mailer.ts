@@ -1,5 +1,7 @@
 import "server-only";
 
+import { resolve4 } from "node:dns/promises";
+
 import nodemailer from "nodemailer";
 
 type AccessRequestEmail = {
@@ -30,14 +32,12 @@ export async function sendAccessRequestEmail(request: AccessRequestEmail) {
   const smtpUser = process.env.GMAIL_SMTP_USER?.trim();
   const smtpPassword = process.env.GMAIL_SMTP_APP_PASSWORD?.replace(/\s+/g, "");
   const smtpFrom = process.env.GMAIL_SMTP_FROM?.trim() || smtpUser;
+  const smtpHost = await resolveGmailSmtpIpv4Host();
 
   const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
+    host: smtpHost,
     port: 465,
     secure: true,
-    // Railway can resolve Gmail SMTP to IPv6 addresses that are not routable
-    // from the container. Force IPv4 so requests do not hang on ENETUNREACH.
-    family: 4,
     connectionTimeout: 10000,
     greetingTimeout: 10000,
     socketTimeout: 15000,
@@ -48,7 +48,7 @@ export async function sendAccessRequestEmail(request: AccessRequestEmail) {
       user: smtpUser,
       pass: smtpPassword,
     },
-  } as Parameters<typeof nodemailer.createTransport>[0] & { family: 4 });
+  });
 
   const hostEmail = process.env.INTRANET_HOST_EMAIL ?? "floszbeni@gmail.com";
 
@@ -81,6 +81,14 @@ export async function sendAccessRequestEmail(request: AccessRequestEmail) {
   });
 
   return { sent: true };
+}
+
+async function resolveGmailSmtpIpv4Host() {
+  const [address] = await resolve4("smtp.gmail.com");
+  if (!address) {
+    throw new Error("Gmail SMTP IPv4 address could not be resolved.");
+  }
+  return address;
 }
 
 function escapeHtml(value: string) {
