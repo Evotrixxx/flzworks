@@ -20,6 +20,10 @@ type BuiltAccessRequestEmail = {
   html: string;
 };
 
+function brevoConfigReady() {
+  return Boolean(process.env.BREVO_API_KEY);
+}
+
 function resendConfigReady() {
   return Boolean(process.env.RESEND_API_KEY && process.env.RESEND_FROM);
 }
@@ -29,6 +33,12 @@ function smtpConfigReady() {
 }
 
 export async function sendAccessRequestEmail(request: AccessRequestEmail) {
+  if (brevoConfigReady()) {
+    const fromEmail = process.env.BREVO_FROM?.trim() || "noreply@flz.works";
+    await sendWithBrevo(buildAccessRequestEmail(request, fromEmail));
+    return { sent: true };
+  }
+
   if (smtpConfigReady()) {
     const smtpUser = process.env.GMAIL_SMTP_USER?.trim();
     const smtpPassword = process.env.GMAIL_SMTP_APP_PASSWORD?.replace(/\s+/g, "");
@@ -104,6 +114,12 @@ function buildAccessRequestEmail(
 
 export async function sendMagicLinkEmail(email: string, name: string, claimUrl: string, module: string) {
   const request = { to: email, name, claimUrl, module };
+
+  if (brevoConfigReady()) {
+    const fromEmail = process.env.BREVO_FROM?.trim() || "noreply@flz.works";
+    await sendWithBrevo(buildMagicLinkEmail(request, fromEmail));
+    return { sent: true };
+  }
 
   if (smtpConfigReady()) {
     const smtpUser = process.env.GMAIL_SMTP_USER?.trim();
@@ -195,6 +211,32 @@ async function sendWithResend(email: BuiltAccessRequestEmail) {
   if (!response.ok) {
     const body = await response.text();
     throw new Error(`Resend email failed with ${response.status}: ${body.slice(0, 500)}`);
+  }
+}
+
+async function sendWithBrevo(email: BuiltAccessRequestEmail) {
+  const apiKey = process.env.BREVO_API_KEY;
+  if (!apiKey) throw new Error("Missing BREVO_API_KEY");
+
+  const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      "api-key": apiKey,
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      sender: { email: email.from || "noreply@flz.works", name: "AutoPiac Intranet" },
+      to: [{ email: email.to }],
+      subject: email.subject,
+      htmlContent: email.html,
+      textContent: email.text,
+    }),
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Brevo email failed with ${response.status}: ${body.slice(0, 500)}`);
   }
 }
 
