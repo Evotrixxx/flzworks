@@ -34,7 +34,7 @@ function smtpConfigReady() {
 
 export async function sendAccessRequestEmail(request: AccessRequestEmail) {
   if (brevoConfigReady()) {
-    const fromEmail = process.env.BREVO_FROM?.trim() || "noreply@flz.works";
+    const fromEmail = process.env.BREVO_FROM?.trim() || process.env.GMAIL_SMTP_USER?.trim() || process.env.RESEND_FROM?.trim() || "noreply@flz.works";
     await sendWithBrevo(buildAccessRequestEmail(request, fromEmail));
     return { sent: true };
   }
@@ -116,7 +116,7 @@ export async function sendMagicLinkEmail(email: string, name: string, claimUrl: 
   const request = { to: email, name, claimUrl, module };
 
   if (brevoConfigReady()) {
-    const fromEmail = process.env.BREVO_FROM?.trim() || "noreply@flz.works";
+    const fromEmail = process.env.BREVO_FROM?.trim() || process.env.GMAIL_SMTP_USER?.trim() || process.env.RESEND_FROM?.trim() || "noreply@flz.works";
     await sendWithBrevo(buildMagicLinkEmail(request, fromEmail));
     return { sent: true };
   }
