@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({
     message: emailResult.sent
-      ? "Request sent. Return to this page after the host approves it."
+      ? "Request sent. The approval link will open the approved intranet module."
       : "Request stored. SMTP is not configured, so the approval links were logged in the server console.",
   });
 }
