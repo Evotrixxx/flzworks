@@ -22,6 +22,9 @@ export async function GET(request: NextRequest) {
     token: request.nextUrl.searchParams.get("token"),
   });
 
+  const durationStr = request.nextUrl.searchParams.get("duration");
+  const grantedDurationDays = durationStr && !isNaN(Number(durationStr)) ? Number(durationStr) : null;
+
   if (!parsed.success) {
     return htmlResponse("Invalid access action", "The approval token is missing or invalid.", 400);
   }
@@ -48,6 +51,7 @@ export async function GET(request: NextRequest) {
       approvedAt: new Date(),
       claimTokenHash: hashOpaqueToken(claimToken),
       expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24), // 24 hours to claim the magic link
+      grantedDurationDays,
     },
     select: { id: true },
   });

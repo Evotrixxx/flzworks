@@ -71,10 +71,15 @@ export async function getIntranetGateState(
   return { status: "needs-request" };
 }
 
-export function setIntranetAccessCookie(response: NextResponse, requestId: string, module: IntranetModule) {
-  response.cookies.set(INTRANET_ACCESS_COOKIE, createIntranetAccessToken(requestId, module), {
+export function setIntranetAccessCookie(
+  response: NextResponse, 
+  requestId: string, 
+  module: IntranetModule,
+  maxAgeSeconds: number = INTRANET_ACCESS_MAX_AGE_SECONDS
+) {
+  response.cookies.set(INTRANET_ACCESS_COOKIE, createIntranetAccessToken(requestId, module, maxAgeSeconds), {
     httpOnly: true,
-    maxAge: INTRANET_ACCESS_MAX_AGE_SECONDS,
+    maxAge: maxAgeSeconds,
     path: "/",
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",

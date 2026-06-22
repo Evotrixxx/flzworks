@@ -138,6 +138,7 @@ model IntranetAccessRequest {
   deniedAt         DateTime?
   accessedAt       DateTime?
   expiresAt        DateTime
+  grantedDurationDays Int?
   createdAt        DateTime  @default(now())
 
   @@index([module, ipAddress, status, expiresAt])

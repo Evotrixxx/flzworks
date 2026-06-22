@@ -9,6 +9,7 @@ type AccessRequestEmail = {
   email: string;
   ipAddress: string;
   approveUrl: string;
+  approve30DaysUrl: string;
   denyUrl: string;
 };
 
@@ -94,7 +95,8 @@ function buildAccessRequestEmail(
       `Email: ${request.email}`,
       `IP address: ${request.ipAddress}`,
       "",
-      `Approve: ${request.approveUrl}`,
+      `Approve (1 hour session): ${request.approveUrl}`,
+      `Approve (30 days access): ${request.approve30DaysUrl}`,
       `Deny and block IP for 30 days: ${request.denyUrl}`,
     ].join("\n"),
     html: `
@@ -103,9 +105,10 @@ function buildAccessRequestEmail(
         <p><strong>Name:</strong> ${escapeHtml(request.name)}</p>
         <p><strong>Email:</strong> ${escapeHtml(request.email)}</p>
         <p><strong>IP address:</strong> ${escapeHtml(request.ipAddress)}</p>
-        <p>
-          <a href="${request.approveUrl}" style="display:inline-block;margin-right:10px;padding:10px 14px;border-radius:999px;background:#111827;color:#fff;text-decoration:none">Approve access</a>
-          <a href="${request.denyUrl}" style="display:inline-block;padding:10px 14px;border-radius:999px;background:#991b1b;color:#fff;text-decoration:none">Deny and block IP</a>
+        <p style="margin-top:20px">
+          <a href="${request.approveUrl}" style="display:inline-block;margin-right:10px;margin-bottom:10px;padding:10px 14px;border-radius:999px;background:#111827;color:#fff;text-decoration:none">Approve (Session)</a>
+          <a href="${request.approve30DaysUrl}" style="display:inline-block;margin-right:10px;margin-bottom:10px;padding:10px 14px;border-radius:999px;background:#0369a1;color:#fff;text-decoration:none">Approve (30 Days)</a>
+          <a href="${request.denyUrl}" style="display:inline-block;margin-bottom:10px;padding:10px 14px;border-radius:999px;background:#991b1b;color:#fff;text-decoration:none">Deny and block IP</a>
         </p>
       </div>
     `,

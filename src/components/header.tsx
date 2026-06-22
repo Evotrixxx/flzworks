@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bookmark, Car, Gauge, Heart, PlusCircle, Search, UserCircle, UserPlus } from "lucide-react";
+import { Bookmark, Car, Gauge, Heart, PlusCircle, Search, UserCircle, UserPlus, Palette } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { dictionaries, type Locale } from "@/lib/i18n";
 import { LogoutButton } from "@/components/logout-button";
@@ -12,6 +12,7 @@ export async function Header({ locale }: { locale: Locale }) {
 
   const navItems = [
     { href: autopiacPath(), label: t.nav.search, icon: Search },
+    { href: autopiacPath("/configurator"), label: "Configurator", icon: Palette },
     { href: autopiacPath("/sell"), label: t.nav.sell, icon: PlusCircle },
     { href: autopiacPath("/dashboard"), label: t.nav.dashboard, icon: Gauge },
     { href: autopiacPath("/favorites"), label: t.nav.favorites, icon: Heart },

@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
 
   const baseUrl = getAppBaseUrl(request);
   const approveUrl = `${baseUrl}/api/intranet/access-requests/approve?token=${approveToken}`;
+  const approve30DaysUrl = `${baseUrl}/api/intranet/access-requests/approve?token=${approveToken}&duration=30`;
   const denyUrl = `${baseUrl}/api/intranet/access-requests/deny?token=${denyToken}`;
 
   let emailResult: { sent: boolean };
@@ -82,6 +83,7 @@ export async function POST(request: NextRequest) {
       email: parsed.data.email,
       ipAddress,
       approveUrl,
+      approve30DaysUrl,
       denyUrl,
     });
   } catch (error) {

@@ -34,11 +34,15 @@ export async function GET(request: NextRequest) {
     return htmlResponse("Link already used", "This access link has already been used. Please request access again if you need to log in from a new device.", 410);
   }
 
+  const durationDays = accessRequest.grantedDurationDays || 0;
+  const maxAgeSeconds = durationDays > 0 ? durationDays * 24 * 60 * 60 : 60 * 60; // default 1 hour
+  const expiresAt = new Date(Date.now() + maxAgeSeconds * 1000);
+
   const claimedRequest = await prisma.intranetAccessRequest.update({
     where: { id: accessRequest.id },
     data: {
       accessedAt: new Date(),
-      expiresAt: new Date(Date.now() + 1000 * 60 * 60), // 1 hour access limit from the moment of claim
+      expiresAt,
     },
     select: { id: true },
   });
@@ -50,6 +54,6 @@ export async function GET(request: NextRequest) {
   if (accessRequest.module === "tree_prototype") redirectPath = "/intranet/tree_prototype";
 
   const response = NextResponse.redirect(new URL(redirectPath, baseUrl));
-  setIntranetAccessCookie(response, claimedRequest.id, accessRequest.module as IntranetModule);
+  setIntranetAccessCookie(response, claimedRequest.id, accessRequest.module as IntranetModule, maxAgeSeconds);
   return response;
 }
