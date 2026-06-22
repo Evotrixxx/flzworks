@@ -189,7 +189,7 @@ export function ShowroomSearchPanel({ locale, t, params, mode = "hero" }: Showro
 
       <div className="showroom-search__head">
         <div>
-          <p className="showroom-kicker">{copy.subtitle}</p>
+          {!compact && <p className="showroom-kicker">{copy.subtitle}</p>}
           <h1>{copy.title}</h1>
         </div>
         <a

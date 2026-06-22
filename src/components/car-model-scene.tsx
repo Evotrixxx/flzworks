@@ -69,7 +69,7 @@ function CarModel({ compact = false }: { compact?: boolean }) {
   }, [materials, scene]);
 
   return (
-    <group rotation={[0.02, -0.72, 0]} scale={compact ? 2.55 : 3.2}>
+    <group rotation={compact ? [0.02, -0.72, 0] : [0.05, -1.08, 0]} scale={compact ? 2.55 : 3.15}>
       <Center>
         <primitive object={scene} />
       </Center>
@@ -91,7 +91,7 @@ export function CarModelScene({ compact = false }: { compact?: boolean }) {
     <div className="showroom-model" data-testid="car-model-scene">
       <Canvas
         shadows
-        camera={{ position: compact ? [4.2, 1.85, 5.2] : [4.5, 1.75, 5.45], fov: compact ? 22 : 18 }}
+        camera={{ position: compact ? [4.2, 1.85, 5.2] : [3.8, 1.55, 5.8], fov: compact ? 22 : 21 }}
         gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true }}
       >
         <ambientLight intensity={1.25} />

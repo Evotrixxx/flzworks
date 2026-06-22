@@ -9,38 +9,45 @@ import { autopiacPath } from "@/lib/routes";
 export async function Header({ locale }: { locale: Locale }) {
   const user = await getCurrentUser();
   const t = dictionaries[locale];
-  const navItems = [
-    { href: autopiacPath("/sell"), label: "Hírdetés" },
-    { href: autopiacPath(), label: "Keresők" },
-    { href: autopiacPath("/preferences"), label: "Preferenciák" },
-    { href: autopiacPath("/financing"), label: "Finanszírozás", featured: true },
-    { href: autopiacPath("/magazine"), label: "Magazin" },
-    { href: autopiacPath("/info"), label: "Információk" },
-  ];
 
   return (
     <header className="autopiac-topbar">
-      <div className="mx-auto flex h-full items-center justify-between gap-4 px-5 sm:px-6">
+      <div className="mx-auto flex h-full items-center justify-between px-5 gap-4">
+        {/* Brand text */}
         <Link
           href={autopiacPath()}
-          className="shrink-0 text-base font-black tracking-wide text-slate-950"
+          className="shrink-0 text-sm font-black tracking-widest text-white/90 uppercase hover:text-white transition"
         >
           Autopiac
         </Link>
 
-        <nav className="hidden min-w-0 flex-1 items-center justify-center gap-1 text-sm font-black text-slate-600 lg:flex">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={item.featured ? "autopiac-nav-link autopiac-nav-link--featured" : "autopiac-nav-link"}
-            >
-              {item.label}
-            </Link>
-          ))}
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-1 text-sm font-semibold text-zinc-300 flex-1 justify-center">
+          <Link href={autopiacPath("/sell")} className="autopiac-nav-link text-[0.82rem]">
+            Hírdetés
+          </Link>
+          <Link href={autopiacPath()} className="autopiac-nav-link text-[0.82rem]">
+            Keresők
+          </Link>
+          <Link href={autopiacPath("/preferences")} className="autopiac-nav-link text-[0.82rem]">
+            Preferenciák
+          </Link>
+          <Link
+            href={autopiacPath("/financing")}
+            className="autopiac-nav-link autopiac-nav-link--featured text-[0.82rem] font-black"
+          >
+            Finanszírozás
+          </Link>
+          <Link href={autopiacPath("/magazine")} className="autopiac-nav-link text-[0.82rem]">
+            Magazin
+          </Link>
+          <Link href={autopiacPath("/info")} className="autopiac-nav-link text-[0.82rem]">
+            Információk
+          </Link>
         </nav>
 
-        <div className="flex shrink-0 items-center gap-3">
+        {/* Right side actions */}
+        <div className="flex shrink-0 items-center gap-2">
           <SiteSettings
             locale={locale}
             labels={{ hu: t.common.hu, en: t.common.en, language: t.common.language }}
@@ -51,14 +58,15 @@ export async function Header({ locale }: { locale: Locale }) {
             ) : (
               <Link
                 href="/login"
-                className="liquid-button-primary inline-flex h-9 items-center justify-center rounded-full px-4 text-xs font-black text-white transition"
+                className="liquid-button-primary inline-flex h-8 items-center justify-center rounded-full px-4 text-xs font-bold text-white transition"
               >
                 Belépés
               </Link>
             )}
           </div>
 
-          <button className="liquid-button-secondary inline-flex h-9 w-9 items-center justify-center rounded-full text-slate-700 lg:hidden" aria-label="Menu">
+          {/* Mobile menu button */}
+          <button className="md:hidden text-white" aria-label="Menu">
             <Menu className="w-5 h-5" />
           </button>
         </div>

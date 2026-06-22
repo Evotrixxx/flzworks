@@ -103,6 +103,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
           <span />
           <span />
           <span />
+          <span />
+          <span />
         </div>
 
         {!searched ? (
