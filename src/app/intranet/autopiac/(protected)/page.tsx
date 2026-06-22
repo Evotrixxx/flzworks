@@ -5,10 +5,10 @@ import { dictionaries } from "@/lib/i18n";
 import { getLocale } from "@/lib/i18n-server";
 import { getListings, type SearchParamsInput } from "@/lib/listings";
 import { sortOptions } from "@/lib/options";
-import { SearchPanel } from "@/components/search-panel";
-import { MobileFilters } from "@/components/mobile-filters";
+import { CarModelScene } from "@/components/car-model-scene";
 import { ListingCard } from "@/components/listing-card";
 import { SaveSearchButton } from "@/components/save-search-button";
+import { ShowroomSearchPanel } from "@/components/showroom-search-panel";
 import { Header } from "@/components/header";
 import { AUTOPIAC_BASE_PATH } from "@/lib/routes";
 
@@ -71,130 +71,166 @@ function selectedView(params: SearchParamsInput): "tile" | "list" {
   return raw === "list" ? "list" : "tile";
 }
 
+function hasSearchIntent(params: SearchParamsInput) {
+  const passive = new Set(["lang", "view", "sort", "page"]);
+  return Object.entries(params).some(([key, raw]) => {
+    if (passive.has(key)) {
+      return false;
+    }
+
+    const values = Array.isArray(raw) ? raw : raw ? [raw] : [];
+    return values.some((item) => item.trim() !== "");
+  });
+}
+
 export default async function Home({ searchParams }: { searchParams: Promise<SearchParamsInput> }) {
   const params = await searchParams;
   const [user, locale] = await Promise.all([getCurrentUser(), getLocale(params)]);
   const t = dictionaries[locale];
   const result = await getListings(params, user?.id);
   const view = selectedView(params);
+  const searched = hasSearchIntent(params);
   const viewLabels =
     locale === "hu"
-      ? { tile: "Kartyak", list: "Lista" }
+      ? { tile: "Csempék", list: "Lista" }
       : { tile: "Tiles", list: "List" };
 
   return (
     <>
       <Header locale={locale} />
-      <main className="mx-auto grid w-full max-w-7xl flex-1 gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[320px_1fr] lg:px-8">
-      <aside className="hidden lg:block">
-        <SearchPanel locale={locale} t={t} params={params} />
-      </aside>
-
-      <section className="min-w-0 space-y-5">
-        <div className="glass-panel flex flex-col gap-3 rounded-lg p-4 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex flex-wrap items-center gap-3">
-            <MobileFilters label={t.home.mobileFilters}>
-              <SearchPanel locale={locale} t={t} params={params} />
-            </MobileFilters>
-            <p className="text-sm font-black text-slate-950">
-              {result.total} {t.home.resultCount}
-            </p>
-            <div className="glass-chip inline-flex rounded-full p-1 text-sm font-black text-slate-600">
-              <Link
-                href={hrefForView(params, "tile", locale)}
-                className={`inline-flex h-9 items-center gap-2 rounded-full px-3 transition ${
-                  view === "tile" ? "bg-white text-black shadow-sm" : "hover:bg-white/70 hover:text-slate-950"
-                }`}
-              >
-                <LayoutGrid className="h-4 w-4" aria-hidden="true" />
-                {viewLabels.tile}
-              </Link>
-              <Link
-                href={hrefForView(params, "list", locale)}
-                className={`inline-flex h-9 items-center gap-2 rounded-full px-3 transition ${
-                  view === "list" ? "bg-white text-black shadow-sm" : "hover:bg-white/70 hover:text-slate-950"
-                }`}
-              >
-                <List className="h-4 w-4" aria-hidden="true" />
-                {viewLabels.list}
-              </Link>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <SaveSearchButton isAuthenticated={Boolean(user)} label={t.home.saveSearch} />
-            <form action={AUTOPIAC_BASE_PATH} className="flex items-center gap-2">
-              {hiddenInputs(params, ["sort", "page", "lang"])}
-              <input type="hidden" name="lang" value={locale} />
-              <select
-                name="sort"
-                defaultValue={result.filters.sort}
-                className="h-10 px-3 text-sm font-semibold text-slate-700 outline-none transition"
-              >
-                {sortOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {t.enums.sort[option]}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="submit"
-                className="liquid-button-primary inline-flex h-10 items-center rounded-full px-3 text-sm font-black text-white transition"
-              >
-                {t.filters.submit}
-              </button>
-            </form>
-          </div>
+      <main className={`showroom-page ${searched ? "showroom-page--results" : "showroom-page--landing"}`}>
+        <div className="showroom-shapes" aria-hidden="true">
+          <span />
+          <span />
+          <span />
         </div>
 
-        {result.listings.length ? (
-          <div className={view === "tile" ? "grid gap-4 md:grid-cols-2 xl:grid-cols-3" : "grid gap-4"}>
-            {result.listings.map((listing) => (
-              <div key={listing.id} className="ap3d-card-3d">
-                <ListingCard
-                  listing={listing}
-                  locale={locale}
-                  t={t}
-                  isAuthenticated={Boolean(user)}
-                  variant={view}
-                />
+        {!searched ? (
+          <section className="showroom-landing" aria-label={t.home.headline}>
+            <div className="showroom-landing__stage">
+              <div className="showroom-landing__search">
+                <ShowroomSearchPanel locale={locale} t={t} params={params} />
               </div>
-            ))}
-          </div>
+              <div className="showroom-landing__model" aria-hidden="true">
+                <CarModelScene />
+              </div>
+            </div>
+          </section>
         ) : (
-          <div className="glass-panel rounded-lg p-10 text-center">
-            <p className="font-black text-slate-950">{t.home.noResults}</p>
-            <Link
-              href={`${AUTOPIAC_BASE_PATH}?lang=${locale}`}
-              className="liquid-button-primary mt-4 inline-flex h-10 items-center rounded-full px-4 text-sm font-black text-white transition"
-            >
-              {t.home.resetFilters}
-            </Link>
-          </div>
-        )}
+          <section className="showroom-results">
+            <aside className="showroom-model-rail">
+              <div className="showroom-floating-filters">
+                <ShowroomSearchPanel locale={locale} t={t} params={params} mode="compact" />
+              </div>
+              <div className="showroom-rail-model" aria-hidden="true">
+                <CarModelScene compact />
+              </div>
+            </aside>
 
-        {result.pageCount > 1 && (
-          <nav className="glass-panel flex items-center justify-between rounded-lg p-3">
-            <Link
-              href={hrefForPage(params, Math.max(1, result.page - 1), locale)}
-              className="liquid-button-secondary inline-flex h-10 items-center gap-2 rounded-full px-3 text-sm font-black text-slate-700 transition hover:text-cyan-800"
-            >
-              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-              {Math.max(1, result.page - 1)}
-            </Link>
-            <span className="text-sm font-black text-slate-600">
-              {result.page} / {result.pageCount}
-            </span>
-            <Link
-              href={hrefForPage(params, Math.min(result.pageCount, result.page + 1), locale)}
-              className="liquid-button-secondary inline-flex h-10 items-center gap-2 rounded-full px-3 text-sm font-black text-slate-700 transition hover:text-cyan-800"
-            >
-              {Math.min(result.pageCount, result.page + 1)}
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
-          </nav>
+            <section className="showroom-listings min-w-0 space-y-5">
+              <div className="glass-panel flex flex-col gap-3 rounded-lg p-4 xl:flex-row xl:items-center xl:justify-between">
+                <div className="flex flex-wrap items-center gap-3">
+                  <p className="text-sm font-black text-slate-950">
+                    {result.total} {t.home.resultCount}
+                  </p>
+                  <div className="glass-chip inline-flex rounded-full p-1 text-sm font-black text-slate-600">
+                    <Link
+                      href={hrefForView(params, "tile", locale)}
+                      className={`inline-flex h-9 items-center gap-2 rounded-full px-3 transition ${
+                        view === "tile" ? "bg-white text-black shadow-sm" : "hover:bg-white/70 hover:text-slate-950"
+                      }`}
+                    >
+                      <LayoutGrid className="h-4 w-4" aria-hidden="true" />
+                      {viewLabels.tile}
+                    </Link>
+                    <Link
+                      href={hrefForView(params, "list", locale)}
+                      className={`inline-flex h-9 items-center gap-2 rounded-full px-3 transition ${
+                        view === "list" ? "bg-white text-black shadow-sm" : "hover:bg-white/70 hover:text-slate-950"
+                      }`}
+                    >
+                      <List className="h-4 w-4" aria-hidden="true" />
+                      {viewLabels.list}
+                    </Link>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <SaveSearchButton isAuthenticated={Boolean(user)} label={t.home.saveSearch} />
+                  <form action={AUTOPIAC_BASE_PATH} className="flex items-center gap-2">
+                    {hiddenInputs(params, ["sort", "page", "lang"])}
+                    <input type="hidden" name="lang" value={locale} />
+                    <select
+                      name="sort"
+                      defaultValue={result.filters.sort}
+                      className="h-10 px-3 text-sm font-semibold text-slate-700 outline-none transition"
+                    >
+                      {sortOptions.map((option) => (
+                        <option key={option} value={option}>
+                          {t.enums.sort[option]}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="submit"
+                      className="liquid-button-primary inline-flex h-10 items-center rounded-full px-3 text-sm font-black text-white transition"
+                    >
+                      {t.filters.submit}
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              {result.listings.length ? (
+                <div className={view === "tile" ? "grid gap-4 md:grid-cols-2" : "grid gap-4"}>
+                  {result.listings.map((listing) => (
+                    <div key={listing.id} className="ap3d-card-3d">
+                      <ListingCard
+                        listing={listing}
+                        locale={locale}
+                        t={t}
+                        isAuthenticated={Boolean(user)}
+                        variant={view}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="glass-panel rounded-lg p-10 text-center">
+                  <p className="font-black text-slate-950">{t.home.noResults}</p>
+                  <Link
+                    href={`${AUTOPIAC_BASE_PATH}?lang=${locale}`}
+                    className="liquid-button-primary mt-4 inline-flex h-10 items-center rounded-full px-4 text-sm font-black text-white transition"
+                  >
+                    {t.home.resetFilters}
+                  </Link>
+                </div>
+              )}
+
+              {result.pageCount > 1 && (
+                <nav className="glass-panel flex items-center justify-between rounded-lg p-3">
+                  <Link
+                    href={hrefForPage(params, Math.max(1, result.page - 1), locale)}
+                    className="liquid-button-secondary inline-flex h-10 items-center gap-2 rounded-full px-3 text-sm font-black text-slate-700 transition hover:text-cyan-800"
+                  >
+                    <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+                    {Math.max(1, result.page - 1)}
+                  </Link>
+                  <span className="text-sm font-black text-slate-600">
+                    {result.page} / {result.pageCount}
+                  </span>
+                  <Link
+                    href={hrefForPage(params, Math.min(result.pageCount, result.page + 1), locale)}
+                    className="liquid-button-secondary inline-flex h-10 items-center gap-2 rounded-full px-3 text-sm font-black text-slate-700 transition hover:text-cyan-800"
+                  >
+                    {Math.min(result.pageCount, result.page + 1)}
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </Link>
+                </nav>
+              )}
+            </section>
+          </section>
         )}
-      </section>
       </main>
     </>
   );

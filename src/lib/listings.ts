@@ -21,10 +21,13 @@ export type ParsedListingSearch = {
   yearMax?: number;
   mileageMax?: number;
   fuel?: string;
+  driveType?: string;
   transmission?: string;
   bodyType?: string;
   condition?: string;
   location?: string;
+  greenPlate?: boolean;
+  orderable?: boolean;
   sort: SortOption;
   page: number;
 };
@@ -44,6 +47,7 @@ export type ListingCardData = {
   location: string;
   description: string;
   financingDetails: string | null;
+  driveType: string | null;
   vatDeductible: boolean;
   availableImmediately: boolean;
   status: string;
@@ -82,6 +86,11 @@ function enumValue<T extends readonly string[]>(value: string | string[] | undef
   return allowed.includes(candidate ?? "") ? candidate : undefined;
 }
 
+function booleanFlag(value: string | string[] | undefined) {
+  const candidate = first(value);
+  return candidate === "true" || candidate === "on" || candidate === "1";
+}
+
 export function parseListingSearch(params: SearchParamsInput): ParsedListingSearch {
   return {
     keyword: cleanString(params.keyword),
@@ -93,10 +102,13 @@ export function parseListingSearch(params: SearchParamsInput): ParsedListingSear
     yearMax: positiveInt(params.yearMax),
     mileageMax: positiveInt(params.mileageMax),
     fuel: enumValue(params.fuel, fuelOptions),
+    driveType: cleanString(params.driveType),
     transmission: enumValue(params.transmission, transmissionOptions),
     bodyType: enumValue(params.bodyType, bodyTypeOptions),
     condition: enumValue(params.condition, conditionOptions),
     location: cleanString(params.location),
+    greenPlate: booleanFlag(params.greenPlate) || undefined,
+    orderable: booleanFlag(params.orderable) || undefined,
     sort: (enumValue(params.sort, sortOptions) as SortOption | undefined) ?? "newest",
     page: Math.max(1, positiveInt(params.page) ?? 1),
   };
@@ -124,6 +136,13 @@ export function buildListingWhere(
   if (filters.model) and.push({ model: { contains: filters.model } });
   if (filters.location) and.push({ location: { contains: filters.location } });
   if (filters.fuel) and.push({ fuel: filters.fuel });
+  if (filters.driveType) and.push({ driveType: { contains: filters.driveType } });
+  if (filters.greenPlate) {
+    and.push({ fuel: { in: ["ELECTRIC", "HYBRID"] } });
+  }
+  if (filters.orderable) {
+    and.push({ availableImmediately: false });
+  }
   if (filters.transmission) {
     and.push({ transmission: filters.transmission });
   }

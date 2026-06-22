@@ -362,6 +362,43 @@ select[aria-invalid="true"] {
   animation: marquee 20s linear infinite;
 }
 
+@keyframes showroom-shift-a {
+  0%, 100% { transform: translate3d(-4%, 0, 0) rotate(-8deg) skewX(-8deg); }
+  50% { transform: translate3d(8%, 5%, 0) rotate(7deg) skewX(-5deg); }
+}
+
+@keyframes showroom-shift-b {
+  0%, 100% { transform: translate3d(5%, 2%, 0) rotate(10deg) skewY(7deg); }
+  50% { transform: translate3d(-7%, -6%, 0) rotate(-6deg) skewY(4deg); }
+}
+
+@keyframes showroom-shift-c {
+  0%, 100% { transform: translate3d(0, 8%, 0) rotate(4deg) scale(1); }
+  50% { transform: translate3d(6%, -4%, 0) rotate(-10deg) scale(1.08); }
+}
+
+@keyframes showroom-rise {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes showroom-drive-in {
+  from {
+    opacity: 0;
+    transform: translateX(18vw) rotate(4deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) rotate(0deg);
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    Web3D Dark Theme – AutoPiac Intranet
    Scoped under .ap3d-shell so existing light-theme pages are untouched.
@@ -369,10 +406,13 @@ select[aria-invalid="true"] {
 
 /* ── Shell: dark base + isometric perspective grid ── */
 .ap3d-shell {
-  background: #0a0a0c;
-  color: #e4e4e7;
+  background:
+    linear-gradient(115deg, var(--page-gradient-a) 0%, var(--page-gradient-b) 34%, var(--page-gradient-c) 68%, var(--page-gradient-d) 100%),
+    linear-gradient(180deg, var(--page-base-a) 0%, var(--page-base-b) 54%, var(--page-base-c) 100%);
+  color: var(--foreground);
   position: relative;
   isolation: isolate;
+  overflow-x: clip;
 }
 
 .ap3d-shell::before {
@@ -382,50 +422,54 @@ select[aria-invalid="true"] {
   z-index: -1;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.36) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.28) 1px, transparent 1px);
   background-size: 48px 48px;
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent 85%);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.58), transparent 86%);
 }
 
 /* ── Text overrides ── */
-.ap3d-shell .text-slate-950 { color: #f4f4f5; }
-.ap3d-shell .text-slate-600,
-.ap3d-shell .text-slate-700,
-.ap3d-shell .text-slate-500 { color: #a1a1aa; }
+.ap3d-shell .text-slate-950 { color: #101827; }
+.ap3d-shell .text-slate-600 { color: #475569; }
+.ap3d-shell .text-slate-700 { color: #334155; }
+.ap3d-shell .text-slate-500 { color: #64748b; }
 
 /* ── Glass panel → dark flat card ── */
 .ap3d-shell .glass-panel {
-  background: rgba(14, 14, 18, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0.45) 62%, rgba(255, 255, 255, 0.3)),
+    var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(28px) saturate(185%);
+  -webkit-backdrop-filter: blur(28px) saturate(185%);
+  box-shadow: var(--glass-shadow-soft);
   border-radius: 8px;
 }
 
 .ap3d-shell .glass-panel::before {
-  display: none;
+  display: block;
 }
 
 /* ── Glass chip → dark chip ── */
 .ap3d-shell .glass-chip {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  box-shadow: none;
-  border-radius: 4px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.42)),
+    rgba(255, 255, 255, 0.44);
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 10px 26px rgba(15, 23, 42, 0.07);
+  border-radius: 999px;
 }
 
 /* ── Liquid buttons ── */
 .ap3d-shell .liquid-button-primary {
-  background: linear-gradient(135deg, #00a3b5, #0891b2);
-  border: none;
-  border-radius: 6px;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  box-shadow: 0 0 20px rgba(0, 163, 181, 0.3), 0 4px 16px rgba(0, 0, 0, 0.4);
+  background: var(--liquid-primary);
+  border: 1px solid rgba(255, 255, 255, 0.52);
+  border-radius: 999px;
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  box-shadow: var(--liquid-primary-shadow);
 }
 
 .ap3d-shell .liquid-button-primary:hover {
@@ -435,12 +479,14 @@ select[aria-invalid="true"] {
 }
 
 .ap3d-shell .liquid-button-secondary {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  box-shadow: none;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.42)),
+    rgba(255, 255, 255, 0.52);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 999px;
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: var(--glass-shadow-soft);
 }
 
 .ap3d-shell .liquid-button-secondary:hover {
@@ -452,24 +498,16 @@ select[aria-invalid="true"] {
 .ap3d-shell input:not([type="file"]):not([type="checkbox"]),
 .ap3d-shell select,
 .ap3d-shell textarea {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #f4f4f5;
-  border-radius: 8px;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  box-shadow: none;
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  color: #101827;
+  border-radius: 16px;
+  backdrop-filter: blur(22px) saturate(155%);
+  -webkit-backdrop-filter: blur(22px) saturate(155%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82), 0 8px 22px rgba(15, 23, 42, 0.06);
 }
 
 /* ── Header ── */
-.ap3d-shell header {
-  background: rgba(10, 10, 14, 0.85);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
 /* ── 3D card hover effect ── */
 .ap3d-shell .ap3d-card-3d {
   perspective: 800px;
@@ -503,3 +541,392 @@ select[aria-invalid="true"] {
 /* ── Border overrides ── */
 .ap3d-shell .border-white\/50 { border-color: rgba(255, 255, 255, 0.08); }
 .ap3d-shell .border-white\/60 { border-color: rgba(255, 255, 255, 0.08); }
+
+.autopiac-topbar {
+  position: fixed;
+  top: clamp(0.75rem, 2vw, 1.25rem);
+  left: 50%;
+  z-index: 50;
+  width: min(86rem, calc(100vw - 1.5rem));
+  height: 4rem;
+  transform: translateX(-50%);
+  overflow: visible;
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.38) 58%, rgba(255, 255, 255, 0.26)),
+    color-mix(in srgb, var(--glass-bg-strong) 88%, transparent);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(30px) saturate(190%);
+  -webkit-backdrop-filter: blur(30px) saturate(190%);
+}
+
+.autopiac-topbar::before {
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  content: "";
+  border-radius: inherit;
+  background:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.82), transparent 36%),
+    linear-gradient(270deg, color-mix(in srgb, var(--accent-aqua) 14%, transparent), transparent 48%, color-mix(in srgb, var(--accent-rose) 12%, transparent));
+  opacity: 0.82;
+}
+
+.autopiac-nav-link {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0 0.9rem;
+  transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+  white-space: nowrap;
+}
+
+.autopiac-nav-link:hover {
+  background: rgba(255, 255, 255, 0.58);
+  color: #0f172a;
+  transform: translateY(-1px);
+}
+
+.autopiac-nav-link--featured {
+  background: var(--liquid-primary);
+  color: white;
+  box-shadow: var(--liquid-primary-shadow);
+}
+
+.showroom-page {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  padding: 6.2rem clamp(1rem, 3vw, 2rem) 2rem;
+}
+
+.showroom-shapes {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.showroom-shapes span {
+  position: absolute;
+  display: block;
+  width: 34vw;
+  min-width: 22rem;
+  max-width: 42rem;
+  aspect-ratio: 1.65 / 1;
+  border: 1px solid color-mix(in srgb, var(--accent-aqua) 16%, transparent);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent-aqua) 22%, transparent), transparent 62%),
+    linear-gradient(45deg, color-mix(in srgb, var(--accent-amber) 18%, transparent), transparent 56%),
+    rgba(255, 255, 255, 0.1);
+  filter: blur(14px);
+  opacity: 0.76;
+  clip-path: polygon(11% 0, 100% 12%, 86% 100%, 0 82%);
+}
+
+.showroom-shapes span:nth-child(1) {
+  top: 10%;
+  left: -8%;
+  animation: showroom-shift-a 14s ease-in-out infinite;
+}
+
+.showroom-shapes span:nth-child(2) {
+  right: -9%;
+  top: 18%;
+  width: 40vw;
+  animation: showroom-shift-b 17s ease-in-out infinite;
+}
+
+.showroom-shapes span:nth-child(3) {
+  bottom: -10%;
+  left: 30%;
+  width: 42vw;
+  animation: showroom-shift-c 19s ease-in-out infinite;
+}
+
+.showroom-landing {
+  min-height: calc(100vh - 8.2rem);
+  display: grid;
+  place-items: center;
+}
+
+.showroom-landing__stage {
+  width: min(82rem, 100%);
+  display: grid;
+  grid-template-columns: minmax(20rem, 0.98fr) minmax(20rem, 1.02fr);
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2.6rem);
+  animation: showroom-rise 520ms ease-out both;
+}
+
+.showroom-landing__search {
+  min-width: 0;
+}
+
+.showroom-landing__model {
+  min-height: clamp(24rem, 48vw, 38rem);
+}
+
+.showroom-results {
+  width: min(92rem, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(19rem, 1fr) minmax(0, 2fr);
+  align-items: start;
+  gap: clamp(1rem, 2.4vw, 2rem);
+}
+
+.showroom-model-rail {
+  position: relative;
+  display: grid;
+  gap: 1rem;
+  width: 100%;
+  min-width: 0;
+  min-height: calc(100vh - 8rem);
+  animation: showroom-drive-in 650ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.showroom-floating-filters {
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.showroom-rail-model {
+  min-width: 0;
+  max-width: 100%;
+  min-height: min(56vh, 34rem);
+}
+
+.showroom-model {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 22rem;
+  pointer-events: none;
+}
+
+.showroom-model canvas {
+  display: block;
+}
+
+.showroom-search {
+  display: grid;
+  gap: 1rem;
+  border-radius: 8px;
+  padding: clamp(1rem, 2.2vw, 1.5rem);
+}
+
+.showroom-search--compact {
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.showroom-compact-drawer {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.showroom-compact-drawer summary {
+  min-height: 2.45rem;
+  cursor: pointer;
+  list-style: none;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 0.65rem 0.85rem;
+  color: #334155;
+  font-size: 0.84rem;
+  font-weight: 950;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78), 0 8px 20px rgba(15, 23, 42, 0.05);
+}
+
+.showroom-compact-drawer summary::-webkit-details-marker {
+  display: none;
+}
+
+.showroom-compact-drawer__body {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.showroom-search__head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.showroom-search h1 {
+  margin: 0;
+  font-size: clamp(1.35rem, 1.9vw, 2rem);
+  line-height: 1.1;
+  color: #101827;
+  letter-spacing: 0;
+}
+
+.showroom-search--compact h1 {
+  font-size: 1.05rem;
+}
+
+.showroom-kicker {
+  margin: 0 0 0.35rem;
+  color: #64748b;
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.showroom-search__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.showroom-search--compact .showroom-search__grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.showroom-field {
+  display: grid;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.showroom-field__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #475569;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.showroom-field__label svg {
+  color: var(--accent-aqua);
+}
+
+.showroom-field input,
+.showroom-field select {
+  width: 100%;
+  height: 2.75rem;
+  padding: 0 0.85rem;
+  outline: none;
+}
+
+.showroom-range {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.showroom-toggle-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.showroom-toggle {
+  display: inline-flex;
+  min-height: 2.35rem;
+  cursor: pointer;
+  align-items: center;
+  gap: 0.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.48);
+  padding: 0 0.8rem;
+  color: #334155;
+  font-size: 0.8rem;
+  font-weight: 900;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78), 0 8px 20px rgba(15, 23, 42, 0.05);
+  backdrop-filter: blur(20px) saturate(170%);
+  -webkit-backdrop-filter: blur(20px) saturate(170%);
+}
+
+.showroom-toggle input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--accent-aqua);
+}
+
+.showroom-advanced {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.showroom-advanced summary {
+  cursor: pointer;
+  color: #334155;
+  font-size: 0.84rem;
+  font-weight: 900;
+  list-style: none;
+}
+
+.showroom-advanced summary::-webkit-details-marker {
+  display: none;
+}
+
+.showroom-advanced[open] summary {
+  margin-bottom: 0.8rem;
+}
+
+.showroom-submit {
+  display: inline-flex;
+  min-height: 2.9rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0 1rem;
+  color: white;
+  font-size: 0.92rem;
+  font-weight: 950;
+}
+
+@media (max-width: 1023px) {
+  .autopiac-topbar {
+    height: 3.6rem;
+  }
+
+  .showroom-page {
+    padding-top: 5.5rem;
+  }
+
+  .showroom-landing__stage,
+  .showroom-results {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .showroom-landing__model {
+    order: -1;
+    min-height: 18rem;
+  }
+
+  .showroom-model-rail {
+    position: relative;
+    top: auto;
+    min-height: auto;
+    animation: none;
+  }
+
+  .showroom-rail-model {
+    min-height: 18rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .showroom-search__grid,
+  .showroom-search__grid--advanced {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .showroom-landing {
+    place-items: start;
+  }
+}

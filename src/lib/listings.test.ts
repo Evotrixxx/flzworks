@@ -33,6 +33,23 @@ describe("listing search", () => {
     });
   });
 
+  it("adds showroom filters for drivetrain and green plate searches", () => {
+    const where = buildListingWhere(
+      parseListingSearch({
+        driveType: "Összkerék",
+        greenPlate: "true",
+      }),
+    );
+
+    expect(where).toMatchObject({
+      AND: [
+        { status: "PUBLISHED" },
+        { driveType: { contains: "Összkerék" } },
+        { fuel: { in: ["ELECTRIC", "HYBRID"] } },
+      ],
+    });
+  });
+
   it("maps sort options to stable order clauses", () => {
     expect(getListingOrderBy("price_asc")).toEqual({ price: "asc" });
     expect(getListingOrderBy("newest")).toEqual({ createdAt: "desc" });
