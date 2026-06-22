@@ -103,7 +103,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
               <Link
                 href={hrefForView(params, "tile", locale)}
                 className={`inline-flex h-9 items-center gap-2 rounded-full px-3 transition ${
-                  view === "tile" ? "bg-slate-950 text-white shadow-sm" : "hover:bg-white/70 hover:text-slate-950"
+                  view === "tile" ? "bg-white text-black shadow-sm" : "hover:bg-white/70 hover:text-slate-950"
                 }`}
               >
                 <LayoutGrid className="h-4 w-4" aria-hidden="true" />
@@ -112,7 +112,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
               <Link
                 href={hrefForView(params, "list", locale)}
                 className={`inline-flex h-9 items-center gap-2 rounded-full px-3 transition ${
-                  view === "list" ? "bg-slate-950 text-white shadow-sm" : "hover:bg-white/70 hover:text-slate-950"
+                  view === "list" ? "bg-white text-black shadow-sm" : "hover:bg-white/70 hover:text-slate-950"
                 }`}
               >
                 <List className="h-4 w-4" aria-hidden="true" />
@@ -150,14 +150,15 @@ export default async function Home({ searchParams }: { searchParams: Promise<Sea
         {result.listings.length ? (
           <div className={view === "tile" ? "grid gap-4 md:grid-cols-2 xl:grid-cols-3" : "grid gap-4"}>
             {result.listings.map((listing) => (
-              <ListingCard
-                key={listing.id}
-                listing={listing}
-                locale={locale}
-                t={t}
-                isAuthenticated={Boolean(user)}
-                variant={view}
-              />
+              <div key={listing.id} className="ap3d-card-3d">
+                <ListingCard
+                  listing={listing}
+                  locale={locale}
+                  t={t}
+                  isAuthenticated={Boolean(user)}
+                  variant={view}
+                />
+              </div>
             ))}
           </div>
         ) : (
