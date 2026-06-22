@@ -1,31 +1,75 @@
 "use client";
 
-import { Suspense, useEffect, useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Bounds, Center, ContactShadows, Environment, useGLTF } from "@react-three/drei";
-import type { Group } from "three";
+import { Suspense, useEffect, useMemo } from "react";
+import { Canvas } from "@react-three/fiber";
+import { Center, ContactShadows, Environment, useGLTF } from "@react-three/drei";
+import * as THREE from "three";
 
 function CarModel({ compact = false }: { compact?: boolean }) {
-  const group = useRef<Group>(null);
   const { scene } = useGLTF("/models/car.glb");
+  const materials = useMemo(
+    () => ({
+      paint: new THREE.MeshPhysicalMaterial({
+        color: "#f8fafc",
+        metalness: 0.42,
+        roughness: 0.24,
+        clearcoat: 1,
+        clearcoatRoughness: 0.12,
+      }),
+      glass: new THREE.MeshPhysicalMaterial({
+        color: "#1f2937",
+        metalness: 0.1,
+        roughness: 0.04,
+        transmission: 0.45,
+        transparent: true,
+        opacity: 0.62,
+      }),
+      tire: new THREE.MeshStandardMaterial({
+        color: "#08090d",
+        roughness: 0.74,
+        metalness: 0.02,
+      }),
+      rim: new THREE.MeshStandardMaterial({
+        color: "#cbd5e1",
+        roughness: 0.24,
+        metalness: 0.82,
+      }),
+      light: new THREE.MeshStandardMaterial({
+        color: "#f8fafc",
+        emissive: "#dbeafe",
+        emissiveIntensity: 0.45,
+        roughness: 0.18,
+        metalness: 0.1,
+      }),
+    }),
+    [],
+  );
 
   useEffect(() => {
     scene.traverse((object) => {
       object.castShadow = true;
       object.receiveShadow = true;
+
+      if (object instanceof THREE.Mesh) {
+        const name = `${object.name} ${object.material instanceof THREE.Material ? object.material.name : ""}`.toLowerCase();
+
+        if (name.includes("glass") || name.includes("window") || name.includes("windscreen")) {
+          object.material = materials.glass;
+        } else if (name.includes("tire") || name.includes("tyre") || name.includes("rubber")) {
+          object.material = materials.tire;
+        } else if (name.includes("rim") || name.includes("wheel") || name.includes("alloy")) {
+          object.material = materials.rim;
+        } else if (name.includes("light") || name.includes("lamp")) {
+          object.material = materials.light;
+        } else {
+          object.material = materials.paint;
+        }
+      }
     });
-  }, [scene]);
-
-  useFrame((_, delta) => {
-    if (!group.current) {
-      return;
-    }
-
-    group.current.rotation.y += delta * (compact ? 0.08 : 0.045);
-  });
+  }, [materials, scene]);
 
   return (
-    <group ref={group} rotation={[0, -0.72, 0]}>
+    <group rotation={[0.02, -0.72, 0]} scale={compact ? 2.55 : 3.2}>
       <Center>
         <primitive object={scene} />
       </Center>
@@ -47,24 +91,23 @@ export function CarModelScene({ compact = false }: { compact?: boolean }) {
     <div className="showroom-model" data-testid="car-model-scene">
       <Canvas
         shadows
-        camera={{ position: compact ? [4.8, 2.1, 5.8] : [5.4, 2.35, 6.4], fov: compact ? 32 : 28 }}
+        camera={{ position: compact ? [4.2, 1.85, 5.2] : [4.5, 1.75, 5.45], fov: compact ? 22 : 18 }}
         gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true }}
       >
-        <ambientLight intensity={0.9} />
-        <directionalLight position={[4, 7, 5]} intensity={2.6} castShadow />
-        <directionalLight position={[-5, 3, -3]} intensity={0.9} />
+        <ambientLight intensity={1.25} />
+        <directionalLight position={[4, 7, 5]} intensity={3.4} castShadow />
+        <directionalLight position={[-5, 3, -3]} intensity={1.2} />
+        <spotLight position={[0, 6, 7]} angle={0.55} penumbra={0.85} intensity={2.2} castShadow />
         <Environment preset="city" />
         <Suspense fallback={<ModelFallback />}>
-          <Bounds fit clip observe margin={compact ? 1.15 : 1.05}>
-            <CarModel compact={compact} />
-          </Bounds>
+          <CarModel compact={compact} />
           <ContactShadows
-            position={[0, -0.72, 0]}
-            opacity={0.34}
-            scale={compact ? 7 : 9}
+            position={[0, -1.05, 0]}
+            opacity={0.42}
+            scale={compact ? 9 : 11}
             blur={2.6}
             far={4}
-            color="#020617"
+            color="#050816"
           />
         </Suspense>
       </Canvas>

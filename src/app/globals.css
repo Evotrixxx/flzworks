@@ -391,7 +391,7 @@ select[aria-invalid="true"] {
 @keyframes showroom-drive-in {
   from {
     opacity: 0;
-    transform: translateX(18vw) rotate(4deg);
+    transform: translateX(48vw) rotate(8deg) scale(1.18);
   }
   to {
     opacity: 1;
@@ -406,9 +406,18 @@ select[aria-invalid="true"] {
 
 /* ── Shell: dark base + isometric perspective grid ── */
 .ap3d-shell {
+  --background: #05060a;
+  --foreground: #eef2ff;
+  --glass-bg: rgba(11, 13, 22, 0.58);
+  --glass-bg-strong: rgba(14, 16, 28, 0.66);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-shadow: 0 28px 90px rgba(0, 0, 0, 0.48), 0 10px 30px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+  --glass-shadow-soft: 0 18px 54px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 -1px 0 rgba(255, 255, 255, 0.06);
   background:
-    linear-gradient(115deg, var(--page-gradient-a) 0%, var(--page-gradient-b) 34%, var(--page-gradient-c) 68%, var(--page-gradient-d) 100%),
-    linear-gradient(180deg, var(--page-base-a) 0%, var(--page-base-b) 54%, var(--page-base-c) 100%);
+    radial-gradient(circle at 18% 16%, color-mix(in srgb, var(--accent-aqua) 20%, transparent), transparent 34%),
+    radial-gradient(circle at 82% 18%, color-mix(in srgb, var(--accent-rose) 18%, transparent), transparent 34%),
+    radial-gradient(circle at 70% 82%, color-mix(in srgb, var(--accent-amber) 14%, transparent), transparent 38%),
+    linear-gradient(135deg, #05060a 0%, #090b13 42%, #070810 100%);
   color: var(--foreground);
   position: relative;
   isolation: isolate;
@@ -422,22 +431,40 @@ select[aria-invalid="true"] {
   z-index: -1;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.36) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.28) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
   background-size: 48px 48px;
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.58), transparent 86%);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.64), transparent 88%);
 }
 
 /* ── Text overrides ── */
-.ap3d-shell .text-slate-950 { color: #101827; }
-.ap3d-shell .text-slate-600 { color: #475569; }
-.ap3d-shell .text-slate-700 { color: #334155; }
-.ap3d-shell .text-slate-500 { color: #64748b; }
+.ap3d-shell .text-slate-950 { color: #f8fafc; }
+.ap3d-shell .text-slate-600 { color: #cbd5e1; }
+.ap3d-shell .text-slate-700 { color: #dbeafe; }
+.ap3d-shell .text-slate-500 { color: #94a3b8; }
 
 /* ── Glass panel → dark flat card ── */
+.ap3d-shell .glass-surface {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.065) 56%, rgba(255, 255, 255, 0.035)),
+    var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(34px) saturate(190%) contrast(1.02);
+  -webkit-backdrop-filter: blur(34px) saturate(190%) contrast(1.02);
+}
+
+.ap3d-shell .glass-surface::before {
+  background:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.18), transparent 34%),
+    radial-gradient(circle at 14% 8%, rgba(255, 255, 255, 0.16), transparent 22%),
+    linear-gradient(270deg, color-mix(in srgb, var(--accent-aqua) 18%, transparent), transparent 38%, color-mix(in srgb, var(--accent-rose) 15%, transparent));
+  opacity: 0.86;
+}
+
 .ap3d-shell .glass-panel {
   background:
-    linear-gradient(150deg, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0.45) 62%, rgba(255, 255, 255, 0.3)),
+    linear-gradient(150deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.055) 62%, rgba(255, 255, 255, 0.035)),
     var(--glass-bg-strong);
   border: 1px solid var(--glass-border);
   backdrop-filter: blur(28px) saturate(185%);
@@ -453,9 +480,9 @@ select[aria-invalid="true"] {
 /* ── Glass chip → dark chip ── */
 .ap3d-shell .glass-chip {
   background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.42)),
-    rgba(255, 255, 255, 0.44);
-  border: 1px solid rgba(255, 255, 255, 0.82);
+    linear-gradient(145deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.065)),
+    rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 10px 26px rgba(15, 23, 42, 0.07);
@@ -480,9 +507,9 @@ select[aria-invalid="true"] {
 
 .ap3d-shell .liquid-button-secondary {
   background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.42)),
-    rgba(255, 255, 255, 0.52);
-  border: 1px solid rgba(255, 255, 255, 0.72);
+    linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.07)),
+    rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 999px;
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
@@ -498,9 +525,9 @@ select[aria-invalid="true"] {
 .ap3d-shell input:not([type="file"]):not([type="checkbox"]),
 .ap3d-shell select,
 .ap3d-shell textarea {
-  background: rgba(255, 255, 255, 0.58);
-  border: 1px solid rgba(255, 255, 255, 0.72);
-  color: #101827;
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #f8fafc;
   border-radius: 16px;
   backdrop-filter: blur(22px) saturate(155%);
   -webkit-backdrop-filter: blur(22px) saturate(155%);
@@ -554,7 +581,7 @@ select[aria-invalid="true"] {
   border: 1px solid var(--glass-border);
   border-radius: 999px;
   background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.38) 58%, rgba(255, 255, 255, 0.26)),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.075) 58%, rgba(255, 255, 255, 0.045)),
     color-mix(in srgb, var(--glass-bg-strong) 88%, transparent);
   box-shadow: var(--glass-shadow);
   backdrop-filter: blur(30px) saturate(190%);
@@ -568,7 +595,7 @@ select[aria-invalid="true"] {
   content: "";
   border-radius: inherit;
   background:
-    linear-gradient(115deg, rgba(255, 255, 255, 0.82), transparent 36%),
+    linear-gradient(115deg, rgba(255, 255, 255, 0.2), transparent 36%),
     linear-gradient(270deg, color-mix(in srgb, var(--accent-aqua) 14%, transparent), transparent 48%, color-mix(in srgb, var(--accent-rose) 12%, transparent));
   opacity: 0.82;
 }
@@ -585,8 +612,8 @@ select[aria-invalid="true"] {
 }
 
 .autopiac-nav-link:hover {
-  background: rgba(255, 255, 255, 0.58);
-  color: #0f172a;
+  background: rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
   transform: translateY(-1px);
 }
 
@@ -620,11 +647,11 @@ select[aria-invalid="true"] {
   aspect-ratio: 1.65 / 1;
   border: 1px solid color-mix(in srgb, var(--accent-aqua) 16%, transparent);
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--accent-aqua) 22%, transparent), transparent 62%),
-    linear-gradient(45deg, color-mix(in srgb, var(--accent-amber) 18%, transparent), transparent 56%),
-    rgba(255, 255, 255, 0.1);
-  filter: blur(14px);
-  opacity: 0.76;
+    linear-gradient(135deg, color-mix(in srgb, var(--accent-aqua) 30%, transparent), transparent 62%),
+    linear-gradient(45deg, color-mix(in srgb, var(--accent-amber) 24%, transparent), transparent 56%),
+    rgba(255, 255, 255, 0.035);
+  filter: blur(18px);
+  opacity: 0.44;
   clip-path: polygon(11% 0, 100% 12%, 86% 100%, 0 82%);
 }
 
@@ -655,20 +682,28 @@ select[aria-invalid="true"] {
 }
 
 .showroom-landing__stage {
-  width: min(82rem, 100%);
+  position: relative;
+  width: min(92rem, 100%);
   display: grid;
-  grid-template-columns: minmax(20rem, 0.98fr) minmax(20rem, 1.02fr);
+  grid-template-columns: minmax(0, 2fr) minmax(18rem, 1fr);
   align-items: center;
-  gap: clamp(1rem, 3vw, 2.6rem);
+  gap: 0;
   animation: showroom-rise 520ms ease-out both;
 }
 
 .showroom-landing__search {
+  position: relative;
+  z-index: 2;
   min-width: 0;
 }
 
 .showroom-landing__model {
-  min-height: clamp(24rem, 48vw, 38rem);
+  position: relative;
+  z-index: 3;
+  align-self: stretch;
+  min-height: clamp(28rem, 52vw, 44rem);
+  margin-left: clamp(-14rem, -12vw, -7rem);
+  pointer-events: none;
 }
 
 .showroom-results {
@@ -690,6 +725,10 @@ select[aria-invalid="true"] {
   animation: showroom-drive-in 650ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
+.showroom-page--results .showroom-model-rail {
+  animation: showroom-drive-in 780ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 .showroom-floating-filters {
   position: relative;
   z-index: 2;
@@ -708,7 +747,7 @@ select[aria-invalid="true"] {
   max-width: 100%;
   min-width: 0;
   height: 100%;
-  min-height: 22rem;
+  min-height: 28rem;
   pointer-events: none;
 }
 
@@ -717,15 +756,21 @@ select[aria-invalid="true"] {
 }
 
 .showroom-search {
+  position: relative;
   display: grid;
-  gap: 1rem;
+  gap: 0.9rem;
   border-radius: 8px;
-  padding: clamp(1rem, 2.2vw, 1.5rem);
+  padding: clamp(1rem, 2vw, 1.35rem);
 }
 
 .showroom-search--compact {
   gap: 0.75rem;
   padding: 1rem;
+}
+
+.showroom-landing .showroom-search {
+  min-height: clamp(28rem, 58vh, 40rem);
+  padding-right: clamp(14rem, 24vw, 28rem);
 }
 
 .showroom-compact-drawer {
@@ -737,14 +782,14 @@ select[aria-invalid="true"] {
   min-height: 2.45rem;
   cursor: pointer;
   list-style: none;
-  border: 1px solid rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.08);
   padding: 0.65rem 0.85rem;
-  color: #334155;
+  color: #e2e8f0;
   font-size: 0.84rem;
   font-weight: 950;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78), 0 8px 20px rgba(15, 23, 42, 0.05);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 8px 20px rgba(0, 0, 0, 0.16);
 }
 
 .showroom-compact-drawer summary::-webkit-details-marker {
@@ -767,7 +812,7 @@ select[aria-invalid="true"] {
   margin: 0;
   font-size: clamp(1.35rem, 1.9vw, 2rem);
   line-height: 1.1;
-  color: #101827;
+  color: #f8fafc;
   letter-spacing: 0;
 }
 
@@ -777,7 +822,7 @@ select[aria-invalid="true"] {
 
 .showroom-kicker {
   margin: 0 0 0.35rem;
-  color: #64748b;
+  color: #94a3b8;
   font-size: 0.74rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -786,7 +831,12 @@ select[aria-invalid="true"] {
 .showroom-search__grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
+  gap: 0.65rem 0.75rem;
+}
+
+.showroom-landing .showroom-search__grid {
+  grid-template-columns: repeat(2, minmax(9rem, 1fr));
+  max-width: min(48rem, 100%);
 }
 
 .showroom-search--compact .showroom-search__grid {
@@ -795,7 +845,7 @@ select[aria-invalid="true"] {
 
 .showroom-field {
   display: grid;
-  gap: 0.4rem;
+  gap: 0.32rem;
   min-width: 0;
 }
 
@@ -803,7 +853,7 @@ select[aria-invalid="true"] {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  color: #475569;
+  color: #cbd5e1;
   font-size: 0.76rem;
   font-weight: 900;
 }
@@ -815,9 +865,13 @@ select[aria-invalid="true"] {
 .showroom-field input,
 .showroom-field select {
   width: 100%;
-  height: 2.75rem;
+  height: 2.55rem;
   padding: 0 0.85rem;
   outline: none;
+}
+
+.showroom-field input::placeholder {
+  color: rgba(226, 232, 240, 0.62);
 }
 
 .showroom-range {
@@ -838,14 +892,14 @@ select[aria-invalid="true"] {
   cursor: pointer;
   align-items: center;
   gap: 0.55rem;
-  border: 1px solid rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.48);
+  background: rgba(255, 255, 255, 0.08);
   padding: 0 0.8rem;
-  color: #334155;
+  color: #e2e8f0;
   font-size: 0.8rem;
   font-weight: 900;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78), 0 8px 20px rgba(15, 23, 42, 0.05);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 8px 20px rgba(0, 0, 0, 0.16);
   backdrop-filter: blur(20px) saturate(170%);
   -webkit-backdrop-filter: blur(20px) saturate(170%);
 }
@@ -863,7 +917,7 @@ select[aria-invalid="true"] {
 
 .showroom-advanced summary {
   cursor: pointer;
-  color: #334155;
+  color: #dbeafe;
   font-size: 0.84rem;
   font-weight: 900;
   list-style: none;
@@ -903,9 +957,15 @@ select[aria-invalid="true"] {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .showroom-landing .showroom-search {
+    min-height: auto;
+    padding-right: clamp(1rem, 2.2vw, 1.5rem);
+  }
+
   .showroom-landing__model {
     order: -1;
     min-height: 18rem;
+    margin-left: 0;
   }
 
   .showroom-model-rail {
