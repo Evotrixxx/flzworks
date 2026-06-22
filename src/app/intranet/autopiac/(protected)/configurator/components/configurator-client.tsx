@@ -1,7 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { CarScene } from "./car-scene";
+import dynamic from "next/dynamic";
+
+const CarScene = dynamic(() => import("./car-scene").then(mod => mod.CarScene), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center text-zinc-500 font-black">
+      Loading 3D Engine...
+    </div>
+  ),
+});
 import { ConfigPanel } from "./config-panel";
 
 export type CarConfig = {
