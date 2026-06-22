@@ -2,11 +2,11 @@
 
 import { Suspense, useEffect, useMemo } from "react";
 import { Canvas } from "@react-three/fiber";
-import { Center, ContactShadows, Environment, useGLTF } from "@react-three/drei";
+import { Center, ContactShadows, Environment, useGLTF, Bounds } from "@react-three/drei";
 import * as THREE from "three";
 
 function CarModel({ compact = false }: { compact?: boolean }) {
-  const { scene } = useGLTF("/models/car.glb");
+  const { scene } = useGLTF("/models/kuga/scene.gltf");
   const materials = useMemo(
     () => ({
       paint: new THREE.MeshPhysicalMaterial({
@@ -69,7 +69,7 @@ function CarModel({ compact = false }: { compact?: boolean }) {
   }, [materials, scene]);
 
   return (
-    <group rotation={compact ? [0.02, -0.72, 0] : [0.05, -1.08, 0]} scale={compact ? 0.45 : 0.55}>
+    <group rotation={compact ? [0.02, -0.72, 0] : [0.05, -1.08, 0]}>
       <Center>
         <primitive object={scene} />
       </Center>
@@ -91,7 +91,7 @@ export function CarModelScene({ compact = false }: { compact?: boolean }) {
     <div className="showroom-model" data-testid="car-model-scene">
       <Canvas
         shadows
-        camera={{ position: compact ? [5.5, 2.1, 7.0] : [6.5, 2.4, 8.2], fov: compact ? 30 : 28 }}
+        camera={{ position: compact ? [4.8, 2.0, 5.8] : [5.4, 2.2, 6.4], fov: compact ? 30 : 28 }}
         gl={{ antialias: true, alpha: true, preserveDrawingBuffer: true }}
       >
         <ambientLight intensity={1.25} />
@@ -100,9 +100,11 @@ export function CarModelScene({ compact = false }: { compact?: boolean }) {
         <spotLight position={[0, 6, 7]} angle={0.55} penumbra={0.85} intensity={2.2} castShadow />
         <Environment preset="city" />
         <Suspense fallback={<ModelFallback />}>
-          <CarModel compact={compact} />
+          <Bounds fit clip observe margin={compact ? 1.25 : 1.15}>
+            <CarModel compact={compact} />
+          </Bounds>
           <ContactShadows
-            position={[0, compact ? -0.63 : -0.77, 0]}
+            position={[0, -1.41, 0]}
             opacity={0.42}
             scale={compact ? 9 : 11}
             blur={2.6}
@@ -115,4 +117,4 @@ export function CarModelScene({ compact = false }: { compact?: boolean }) {
   );
 }
 
-useGLTF.preload("/models/car.glb");
+useGLTF.preload("/models/kuga/scene.gltf");

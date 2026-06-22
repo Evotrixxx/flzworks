@@ -48,6 +48,10 @@ export async function hasValidIntranetCookie(cookieValue?: string, module: Intra
 export async function getIntranetGateState(
   module: IntranetModule = AUTOPIAC_INTRANET_MODULE,
 ): Promise<IntranetGateState> {
+  if (process.env.NODE_ENV === "development") {
+    return { status: "allowed" };
+  }
+
   const [cookieStore, headerStore] = await Promise.all([cookies(), headers()]);
   const ipAddress = getClientIpFromHeaders(headerStore);
 

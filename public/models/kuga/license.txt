@@ -1,0 +1,8 @@
+Model Information:
+* title:	Ford Kuga ST-Line
+* source:	https://sketchfab.com/3d-models/ford-kuga-st-line-c1605bbcdf2e4aafb1c66fc8aacf6f19
+* author:	KOElkast1007 (https://sketchfab.com/koelkastasbers)
+
+Model License:
+* license type:	SKETCHFAB Standard (https://sketchfab.com/licenses)
+* requirements:	Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works
