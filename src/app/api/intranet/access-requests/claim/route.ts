@@ -30,20 +30,39 @@ export async function GET(request: NextRequest) {
     return htmlResponse("Access link expired", "This access link is expired or invalid. Please request access again.", 410);
   }
 
+  const durationDays = accessRequest.grantedDurationDays || 0;
+  const isLongTermAccess = durationDays > 0;
+
   if (accessRequest.accessedAt) {
-    return htmlResponse("Link already used", "This access link has already been used. Please request access again if you need to log in from a new device.", 410);
+    if (!isLongTermAccess) {
+      return htmlResponse(
+        "Link already used",
+        "This access link has already been used. Please request access again if you need to log in from a new device.",
+        410
+      );
+    }
   }
 
-  const durationDays = accessRequest.grantedDurationDays || 0;
-  const maxAgeSeconds = durationDays > 0 ? durationDays * 24 * 60 * 60 : 60 * 60; // default 1 hour
-  const expiresAt = new Date(Date.now() + maxAgeSeconds * 1000);
+  let maxAgeSeconds: number;
+  if (accessRequest.accessedAt) {
+    // Re-claiming: calculate remaining time from the already established expiration date
+    maxAgeSeconds = Math.max(0, Math.floor((accessRequest.expiresAt.getTime() - Date.now()) / 1000));
+  } else {
+    // First time claim: establish the full access duration
+    maxAgeSeconds = isLongTermAccess ? durationDays * 24 * 60 * 60 : 60 * 60; // default 1 hour
+  }
+
+  // Update request record
+  const updateData: { accessedAt: Date; expiresAt?: Date } = {
+    accessedAt: new Date(),
+  };
+  if (!accessRequest.accessedAt) {
+    updateData.expiresAt = new Date(Date.now() + maxAgeSeconds * 1000);
+  }
 
   const claimedRequest = await prisma.intranetAccessRequest.update({
     where: { id: accessRequest.id },
-    data: {
-      accessedAt: new Date(),
-      expiresAt,
-    },
+    data: updateData,
     select: { id: true },
   });
 
