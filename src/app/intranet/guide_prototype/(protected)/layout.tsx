@@ -15,5 +15,9 @@ export default async function GuidePrototypeProtectedLayout({
     redirect(`${GUIDE_PROTOTYPE_BASE_PATH}/request`);
   }
 
-  return children;
+  return (
+    <div className="ap3d-shell min-h-screen">
+      {children}
+    </div>
+  );
 }

@@ -1,10 +1,14 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getIntranetGateState } from "@/lib/intranet";
+import { Network, OctagonX } from "lucide-react";
 import { IntranetAccessRequestForm } from "@/components/intranet-access-request-form";
+import { getIntranetGateState } from "@/lib/intranet";
 import { TREE_PROTOTYPE_BASE_PATH, TREE_PROTOTYPE_INTRANET_MODULE } from "@/lib/routes";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
-  title: "Request Access | Tree Prototype",
+  title: "Request Access | Call Center Mind Map",
 };
 
 export default async function TreePrototypeRequestPage() {
@@ -15,19 +19,61 @@ export default async function TreePrototypeRequestPage() {
   }
 
   return (
-    <main className="portfolio-shell grid min-h-screen place-items-center overflow-hidden bg-black px-4 py-10 text-zinc-50">
-      <section className="relative z-10 grid w-full max-w-xl gap-5">
-        <header className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl">Tree Prototype Access</h1>
-          <p className="text-sm text-zinc-400">
-            Request secure access to the Call Center Mind Map module.
-          </p>
-        </header>
+    <div className="ap3d-shell min-h-screen">
+      {/* Animated background blobs */}
+      <div className="showroom-shapes" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+        <span />
+        <span />
+      </div>
 
-        <div className="portfolio-glass-panel rounded-lg p-6 sm:p-8">
-          <IntranetAccessRequestForm module={TREE_PROTOTYPE_INTRANET_MODULE} />
-        </div>
-      </section>
-    </main>
+      <main className="relative z-10 grid min-h-screen place-items-center px-4 py-12">
+        <section className="w-full max-w-lg space-y-6">
+          {/* Back to portfolio */}
+          <Link
+            href="/"
+            className="inline-block text-xs font-black uppercase tracking-[0.22em] text-slate-400 transition hover:text-white"
+          >
+            ← FLZ Works
+          </Link>
+
+          {/* Gate card */}
+          <div className="glass-surface rounded-2xl p-7">
+            {/* Header row */}
+            <div className="mb-7 flex items-start gap-4">
+              <span className="glass-chip flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-[var(--accent-aqua)]">
+                <Network className="h-6 w-6" aria-hidden="true" />
+              </span>
+              <div>
+                <p className="mb-0.5 text-[0.7rem] font-black uppercase tracking-widest text-slate-400">
+                  Intranet Access
+                </p>
+                <h1 className="text-2xl font-black leading-tight text-white">
+                  Call Center Mind Map
+                </h1>
+                <p className="mt-1.5 text-sm leading-relaxed text-slate-400">
+                  Request one-time access. An approval email is sent to the host — granted access is scoped to this module only.
+                </p>
+              </div>
+            </div>
+
+            {/* Blocked state */}
+            {gate.status === "blocked" ? (
+              <div className="flex items-start gap-3 rounded-xl border border-rose-400/25 bg-rose-500/10 px-4 py-4 backdrop-blur-sm">
+                <OctagonX className="mt-0.5 h-5 w-5 shrink-0 text-rose-400" aria-hidden="true" />
+                <p className="text-sm font-semibold leading-relaxed text-rose-200">
+                  Access from this IP is blocked until{" "}
+                  <span className="font-black">{gate.expiresAt.toLocaleString("en-US")}</span>.
+                </p>
+              </div>
+            ) : (
+              <IntranetAccessRequestForm module={TREE_PROTOTYPE_INTRANET_MODULE} />
+            )}
+          </div>
+        </section>
+      </main>
+    </div>
   );
 }

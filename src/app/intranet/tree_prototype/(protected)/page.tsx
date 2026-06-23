@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { knowledgeBaseData, KnowledgeNode } from "@/data/knowledge-base";
 import Link from "next/link";
-import { ExternalLink, Maximize } from "lucide-react";
+import { BookOpen, Maximize2, Move } from "lucide-react";
 
 const NODE_WIDTH = 320;
 const NODE_HEIGHT = 160;
@@ -56,7 +56,7 @@ export default function TreePrototypePage() {
       const { clientWidth, clientHeight } = containerRef.current;
       setTransform({
         x: clientWidth / 2,
-        y: clientHeight / 4, // start slightly higher
+        y: clientHeight / 4,
         scale: 1,
       });
     }
@@ -88,12 +88,9 @@ export default function TreePrototypePage() {
   };
 
   const handleWheel = (e: React.WheelEvent) => {
-    // Zoom in/out based on cursor position
     e.preventDefault();
     const scaleAdjust = e.deltaY * -0.001;
     const newScale = Math.min(Math.max(0.2, transform.scale + scaleAdjust), 3);
-    
-    // Zooming around center roughly
     setTransform((prev) => ({
       ...prev,
       scale: newScale,
@@ -114,21 +111,43 @@ export default function TreePrototypePage() {
   }, []);
 
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-[#050505] text-zinc-50 font-sans select-none">
-      
-      {/* Header Overlay */}
-      <div className="pointer-events-none absolute left-0 top-0 z-50 flex w-full items-center justify-between p-6">
-        <div>
-          <h1 className="text-2xl font-black text-white drop-shadow-md">Call Center Gondolattérkép</h1>
-          <p className="text-sm text-zinc-400 drop-shadow-md">Jobb klikk: Mozgatás | Dupla kattintás: Fókusz | Görgő: Zoom</p>
-        </div>
-        <div className="pointer-events-auto">
-          <Link href="/intranet/guide_prototype" className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm backdrop-blur-md transition-colors hover:bg-white/10">
-            Tudásbázis Kereső
-            <ExternalLink className="h-4 w-4" />
+    <div className="relative h-screen w-full overflow-hidden select-none">
+
+      {/* Floating pill topbar */}
+      <header className="autopiac-topbar pointer-events-auto" role="banner">
+        <div className="mx-auto flex h-full items-center justify-between px-5 gap-4">
+          <Link
+            href="/"
+            className="shrink-0 text-sm font-black uppercase tracking-widest text-white/90 transition hover:text-white"
+          >
+            FLZ
+          </Link>
+
+          <div className="flex flex-col items-center">
+            <span className="text-[0.82rem] font-black text-white/90 uppercase tracking-widest">
+              Call Center Gondolattérkép
+            </span>
+            <span className="flex items-center gap-3 text-[0.68rem] text-slate-400 mt-0.5">
+              <span className="flex items-center gap-1">
+                <Move className="h-3 w-3" aria-hidden="true" />
+                Jobb klikk: Mozgatás
+              </span>
+              <span>·</span>
+              <span>Dupla klikk: Fókusz</span>
+              <span>·</span>
+              <span>Görgő: Zoom</span>
+            </span>
+          </div>
+
+          <Link
+            href="/intranet/guide_prototype"
+            className="autopiac-nav-link shrink-0 gap-1.5 text-[0.78rem] font-semibold text-zinc-300"
+          >
+            <BookOpen className="h-3.5 w-3.5" aria-hidden="true" />
+            Tudásbázis
           </Link>
         </div>
-      </div>
+      </header>
 
       {/* Canvas */}
       <div
@@ -157,7 +176,6 @@ export default function TreePrototypePage() {
                 const endPos = positions[child.nodeId];
                 if (!endPos) return null;
 
-                // Control points for a smooth bezier curve
                 const startX = startPos.x;
                 const startY = startPos.y + NODE_HEIGHT / 2;
                 const endX = endPos.x;
@@ -168,13 +186,20 @@ export default function TreePrototypePage() {
                 const cp2X = endX;
                 const cp2Y = endY - Y_GAP / 2;
 
+                const isFocusedLine =
+                  focusedNodeId === node.id || focusedNodeId === child.nodeId;
+
                 return (
                   <g key={`${node.id}-${child.nodeId}`}>
                     <path
                       d={`M ${startX} ${startY} C ${cp1X} ${cp1Y}, ${cp2X} ${cp2Y}, ${endX} ${endY}`}
                       fill="none"
-                      stroke={focusedNodeId === node.id || focusedNodeId === child.nodeId ? "#3b82f6" : "rgba(255,255,255,0.1)"}
-                      strokeWidth={focusedNodeId === node.id || focusedNodeId === child.nodeId ? 3 : 2}
+                      stroke={
+                        isFocusedLine
+                          ? "var(--accent-aqua)"
+                          : "rgba(255,255,255,0.12)"
+                      }
+                      strokeWidth={isFocusedLine ? 3 : 1.5}
                       className="transition-all duration-300"
                     />
                     {/* Line Label */}
@@ -186,7 +211,16 @@ export default function TreePrototypePage() {
                       className="overflow-visible"
                     >
                       <div className="flex justify-center">
-                        <span className="rounded-full bg-black/60 px-2 py-0.5 text-xs font-medium text-zinc-400 backdrop-blur-md border border-white/5">
+                        <span
+                          className="rounded-full px-2 py-0.5 text-xs font-semibold backdrop-blur-md"
+                          style={{
+                            background: isFocusedLine
+                              ? "color-mix(in srgb, var(--accent-aqua) 20%, rgba(0,0,0,0.7))"
+                              : "rgba(0,0,0,0.5)",
+                            color: isFocusedLine ? "var(--accent-aqua)" : "rgba(255,255,255,0.5)",
+                            border: `1px solid ${isFocusedLine ? "color-mix(in srgb, var(--accent-aqua) 35%, transparent)" : "rgba(255,255,255,0.08)"}`,
+                          }}
+                        >
                           {child.label}
                         </span>
                       </div>
@@ -208,34 +242,39 @@ export default function TreePrototypePage() {
               <div
                 key={node.id}
                 onDoubleClick={() => centerOnNode(node.id)}
-                className={`absolute flex flex-col overflow-hidden rounded-2xl border transition-all duration-300 ${
+                className={`glass-panel absolute flex flex-col overflow-hidden rounded-2xl transition-all duration-300 ${
                   isFocused
-                    ? "z-20 scale-105 border-blue-500 bg-blue-500/10 shadow-[0_0_40px_rgba(59,130,246,0.3)]"
-                    : "z-10 border-white/10 bg-white/5 hover:border-white/20"
-                } backdrop-blur-xl`}
+                    ? "z-20 scale-105"
+                    : "z-10"
+                }`}
                 style={{
                   left: pos.x - NODE_WIDTH / 2,
                   top: pos.y - NODE_HEIGHT / 2,
                   width: NODE_WIDTH,
                   height: NODE_HEIGHT,
+                  boxShadow: isFocused
+                    ? `0 0 0 2px var(--accent-aqua), 0 20px 60px rgba(0,0,0,0.6), 0 0 40px color-mix(in srgb, var(--accent-aqua) 25%, transparent)`
+                    : undefined,
                 }}
               >
-                <div className="pointer-events-auto border-b border-white/5 bg-black/40 p-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-white">{node.title}</h3>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        centerOnNode(node.id);
-                      }}
-                      className="rounded-lg p-1 text-zinc-500 hover:bg-white/10 hover:text-white transition-colors"
-                      title="Fókuszálás"
-                    >
-                      <Maximize className="h-4 w-4" />
-                    </button>
-                  </div>
+                {/* Node header */}
+                <div className="flex items-center justify-between border-b border-white/10 bg-black/30 px-4 py-3">
+                  <h3 className="text-sm font-black text-white">{node.title}</h3>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      centerOnNode(node.id);
+                    }}
+                    className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-white/10 hover:text-white"
+                    title="Fókuszálás"
+                    aria-label={`Fókuszálás: ${node.title}`}
+                  >
+                    <Maximize2 className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
                 </div>
-                <div className="pointer-events-auto flex-1 overflow-y-auto p-4 text-sm text-zinc-300 scrollbar-thin">
+
+                {/* Node body */}
+                <div className="scrollbar-none flex-1 overflow-y-auto p-4 text-[0.78rem] leading-relaxed text-slate-300">
                   {node.content}
                 </div>
               </div>

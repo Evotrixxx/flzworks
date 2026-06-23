@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { getIntranetGateState } from "@/lib/intranet";
 import { TREE_PROTOTYPE_BASE_PATH, TREE_PROTOTYPE_INTRANET_MODULE } from "@/lib/routes";
 
+export const dynamic = "force-dynamic";
+
 export default async function TreePrototypeIntranetLayout({
   children,
 }: {
@@ -14,7 +16,7 @@ export default async function TreePrototypeIntranetLayout({
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-black text-white selection:bg-white/30">
+    <div className="ap3d-shell min-h-screen selection:bg-white/20">
       {children}
     </div>
   );
