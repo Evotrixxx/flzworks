@@ -15,8 +15,14 @@ interface MagazineListProps {
 export function MagazineList({ initialArticles, user, locale }: MagazineListProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [activeImage, setActiveImage] = useState<{ articleId: string; path: string } | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<"ALL" | "CAR_DESIGN" | "OTHER">("ALL");
 
   const isAdmin = user?.role === "ADMIN";
+
+  const filteredArticles = initialArticles.filter((article) => {
+    if (selectedCategory === "ALL") return true;
+    return article.category === selectedCategory;
+  });
 
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
@@ -68,8 +74,49 @@ export function MagazineList({ initialArticles, user, locale }: MagazineListProp
           <p className="text-sm mt-1">Helyezz el mappákat a Media/Portfolio könyvtárban a betöltéshez.</p>
         </div>
       ) : (
-        <div className="grid gap-6">
-          {initialArticles.map((article) => {
+        <div className="space-y-6">
+          {/* Category Filter Tabs */}
+          <div className="flex flex-wrap items-center justify-center gap-2 bg-white/[0.02] p-1 rounded-2xl border border-white/5 backdrop-blur-md max-w-md mx-auto">
+            <button
+              onClick={() => setSelectedCategory("ALL")}
+              className={`flex-1 min-w-[80px] py-1.5 px-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 ${
+                selectedCategory === "ALL"
+                  ? "bg-white/10 text-white border border-white/10 shadow-inner"
+                  : "text-slate-400 hover:text-white hover:bg-white/[0.01] border border-transparent"
+              }`}
+            >
+              {locale === "hu" ? "Minden" : "All"}
+            </button>
+            <button
+              onClick={() => setSelectedCategory("CAR_DESIGN")}
+              className={`flex-1 min-w-[80px] py-1.5 px-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 ${
+                selectedCategory === "CAR_DESIGN"
+                  ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 shadow-[0_0_12px_rgba(6,182,212,0.15)]"
+                  : "text-slate-400 hover:text-cyan-400 hover:bg-cyan-950/10 border border-transparent"
+              }`}
+            >
+              {locale === "hu" ? "3D Autótervek" : "3D Car Designs"}
+            </button>
+            <button
+              onClick={() => setSelectedCategory("OTHER")}
+              className={`flex-1 min-w-[80px] py-1.5 px-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 ${
+                selectedCategory === "OTHER"
+                  ? "bg-purple-500/20 text-purple-400 border border-purple-500/30 shadow-[0_0_12px_rgba(168,85,247,0.15)]"
+                  : "text-slate-400 hover:text-purple-400 hover:bg-purple-950/10 border border-transparent"
+              }`}
+            >
+              {locale === "hu" ? "Egyéb" : "Other"}
+            </button>
+          </div>
+
+          {filteredArticles.length === 0 ? (
+            <div className="glass-panel rounded-2xl p-12 text-center text-slate-400">
+              <p className="text-lg font-black">Nincsenek cikkek ebben a kategóriában</p>
+              <p className="text-sm mt-1">Válassz másik kategóriát a szűréshez.</p>
+            </div>
+          ) : (
+            <div className="grid gap-6">
+              {filteredArticles.map((article) => {
             const isExpanded = expandedId === article.id;
             
             return (
@@ -96,6 +143,15 @@ export function MagazineList({ initialArticles, user, locale }: MagazineListProp
                           {article.images.length} {locale === "hu" ? "kép" : "images"}
                         </span>
                       )}
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
+                        article.category === "CAR_DESIGN"
+                          ? "bg-cyan-950/40 text-cyan-300 border border-cyan-500/20"
+                          : "bg-purple-950/40 text-purple-300 border border-purple-500/20"
+                      }`}>
+                        {article.category === "CAR_DESIGN"
+                          ? (locale === "hu" ? "3D Autó" : "3D Car Design")
+                          : (locale === "hu" ? "Egyéb" : "Other")}
+                      </span>
                       {!article.visible && (
                         <span className="inline-flex items-center rounded-full bg-rose-950/40 border border-rose-500/30 px-2.5 py-1 text-xs font-semibold text-rose-300">
                           Rejtett
@@ -173,6 +229,8 @@ export function MagazineList({ initialArticles, user, locale }: MagazineListProp
               </article>
             );
           })}
+            </div>
+          )}
         </div>
       )}
 

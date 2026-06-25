@@ -33,6 +33,7 @@ export function MagazineAdmin({ initialArticles, locale }: MagazineAdminProps) {
     date: string;
     description: string;
     visible: boolean;
+    category: string;
   }>>(() => {
     const initialValues: Record<string, any> = {};
     initialArticles.forEach((article) => {
@@ -41,6 +42,7 @@ export function MagazineAdmin({ initialArticles, locale }: MagazineAdminProps) {
         date: article.date,
         description: article.description || "",
         visible: article.visible,
+        category: article.category || "CAR_DESIGN",
       };
     });
     return initialValues;
@@ -77,6 +79,7 @@ export function MagazineAdmin({ initialArticles, locale }: MagazineAdminProps) {
           date: values.date,
           description: values.description,
           visible: values.visible,
+          category: values.category,
         }),
       });
 
@@ -130,6 +133,7 @@ export function MagazineAdmin({ initialArticles, locale }: MagazineAdminProps) {
             date: article.date,
             description: article.description || "",
             visible: article.visible,
+            category: article.category || "CAR_DESIGN",
           };
 
           return (
@@ -157,6 +161,13 @@ export function MagazineAdmin({ initialArticles, locale }: MagazineAdminProps) {
                     }`}>
                       {values.visible ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
                       {values.visible ? "Látható" : "Rejtett"}
+                    </span>
+                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                      values.category === "CAR_DESIGN"
+                        ? "bg-cyan-950/40 text-cyan-400 border border-cyan-500/20"
+                        : "bg-purple-950/40 text-purple-400 border border-purple-500/20"
+                    }`}>
+                      {values.category === "CAR_DESIGN" ? "3D Autó" : "Egyéb"}
                     </span>
                   </div>
                   <h2 className="text-xl font-black text-white uppercase truncate">
@@ -187,7 +198,7 @@ export function MagazineAdmin({ initialArticles, locale }: MagazineAdminProps) {
                 }`}
               >
                 <div className="p-6 space-y-6 bg-white/[0.01]">
-                  <div className="grid gap-5 md:grid-cols-2">
+                  <div className="grid gap-5 md:grid-cols-3">
                     {/* Title Input */}
                     <div className="space-y-1.5">
                       <label className="text-xs font-black uppercase tracking-wider text-slate-400">
@@ -215,6 +226,21 @@ export function MagazineAdmin({ initialArticles, locale }: MagazineAdminProps) {
                         className="glass-input h-10 w-full rounded-xl px-4 text-sm font-semibold text-white focus:border-cyan-500/50 outline-none transition"
                         placeholder="Pl. 2026-11-17"
                       />
+                    </div>
+
+                    {/* Category Selection */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-black uppercase tracking-wider text-slate-400">
+                        Kategória besorolás
+                      </label>
+                      <select
+                        value={values.category}
+                        onChange={(e) => handleInputChange(id, "category", e.target.value)}
+                        className="glass-input h-10 w-full rounded-xl px-4 text-sm font-semibold text-white focus:border-cyan-500/50 outline-none transition bg-slate-950 cursor-pointer"
+                      >
+                        <option value="CAR_DESIGN">3D Autótervezés</option>
+                        <option value="OTHER">Egyéb projekt</option>
+                      </select>
                     </div>
                   </div>
 

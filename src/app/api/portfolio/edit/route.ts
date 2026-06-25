@@ -11,7 +11,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { id, title, description, date, visible } = body;
+    const { id, title, description, date, visible, category } = body;
 
     if (!id || !title || !date) {
       return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
@@ -24,6 +24,7 @@ export async function POST(request: Request) {
         description,
         date,
         visible: Boolean(visible),
+        category: category || "CAR_DESIGN",
       },
     });
 

@@ -9,6 +9,7 @@ export interface PortfolioArticleWithImages {
   description: string | null;
   date: string;
   visible: boolean;
+  category: string;
   images: string[];
   createdAt: Date;
   updatedAt: Date;
@@ -72,12 +73,24 @@ export async function syncPortfolioArticles(): Promise<PortfolioArticleWithImage
     });
 
     if (!dbArticle) {
+      // Smart default categorization
+      let defaultCategory = "CAR_DESIGN";
+      const nameLower = folder.toLowerCase();
+      if (
+        nameLower.includes("poster") ||
+        nameLower.includes("brosure") ||
+        nameLower.includes("present")
+      ) {
+        defaultCategory = "OTHER";
+      }
+
       dbArticle = await prisma.portfolioArticle.create({
         data: {
           folderName: folder,
           title: defaultTitle,
           date: parsedDate || "N/A",
           visible: true,
+          category: defaultCategory,
           description: `Portfolio project: ${defaultTitle}. Automatically loaded from Media repository.`,
         },
       });

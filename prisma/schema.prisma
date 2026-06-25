@@ -162,6 +162,7 @@ model PortfolioArticle {
   description String?
   date        String   // extracted from folder name, e.g. "2026-11-17"
   visible     Boolean  @default(true)
+  category    String   @default("CAR_DESIGN") // "CAR_DESIGN" or "OTHER"
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

@@ -16,7 +16,14 @@ interface PortfolioOnepagerProps {
 export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepagerProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [activeImage, setActiveImage] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<"ALL" | "CAR_DESIGN" | "OTHER">("ALL");
   const enabledSocials = portfolioSocials.filter((s) => s.href);
+
+  const publicArticles = articles.filter((a) => a.visible);
+  const filteredArticles = publicArticles.filter((article) => {
+    if (selectedCategory === "ALL") return true;
+    return article.category === selectedCategory;
+  });
 
   return (
     <div className="neo-bg min-h-screen text-white font-sans overflow-x-hidden selection:bg-white selection:text-black">
@@ -86,11 +93,56 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
 
         {/* Works Bento Grid (Archive) */}
         <div className="lg:col-span-12 mt-8">
-          <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter neo-text-outline mb-6">
+          <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter neo-text-outline mb-4">
             {locale === "hu" ? "Archívum" : "Archive"}
           </h2>
+
+          {/* Category Filter Tabs */}
+          <div className="flex flex-wrap items-center gap-3 mb-8">
+            <button
+              onClick={() => setSelectedCategory("ALL")}
+              className={`neo-button text-xs font-mono uppercase tracking-wider px-5 py-2.5 transition-all ${
+                selectedCategory === "ALL"
+                  ? "bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+                  : "bg-black text-zinc-400 border-white/10 hover:border-white/30 hover:text-white"
+              }`}
+            >
+              {locale === "hu" ? "Összes Projekt" : "All Projects"}
+            </button>
+            <button
+              onClick={() => setSelectedCategory("CAR_DESIGN")}
+              className={`neo-button text-xs font-mono uppercase tracking-wider px-5 py-2.5 transition-all ${
+                selectedCategory === "CAR_DESIGN"
+                  ? "bg-cyan-500/15 text-cyan-400 border-cyan-500/40 shadow-[0_0_15px_rgba(6,182,212,0.15)]"
+                  : "bg-black text-zinc-400 border-white/10 hover:border-cyan-500/35 hover:text-cyan-400"
+              }`}
+            >
+              {locale === "hu" ? "3D Autótervek" : "3D Car Designs"}
+            </button>
+            <button
+              onClick={() => setSelectedCategory("OTHER")}
+              className={`neo-button text-xs font-mono uppercase tracking-wider px-5 py-2.5 transition-all ${
+                selectedCategory === "OTHER"
+                  ? "bg-purple-500/15 text-purple-400 border-purple-500/40 shadow-[0_0_15px_rgba(168,85,247,0.15)]"
+                  : "bg-black text-zinc-400 border-white/10 hover:border-purple-500/35 hover:text-purple-400"
+              }`}
+            >
+              {locale === "hu" ? "Egyéb" : "Other"}
+            </button>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {articles.map((article, i) => {
+            {filteredArticles.length === 0 ? (
+              <div className="col-span-full py-16 text-center text-zinc-500 border border-dashed border-white/10 rounded-2xl">
+                <p className="text-lg font-bold font-mono uppercase tracking-wider">
+                  {locale === "hu" ? "Nincsenek cikkek ebben a kategóriában" : "No projects in this category"}
+                </p>
+                <p className="text-xs font-mono text-zinc-600 mt-1">
+                  {locale === "hu" ? "Válassz másik szűrőt" : "Select another filter"}
+                </p>
+              </div>
+            ) : (
+              filteredArticles.map((article, i) => {
               const isExpanded = expandedId === article.id;
               
               return (
@@ -120,6 +172,13 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                           {article.images.length}
                         </span>
                       )}
+                      <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider border ${
+                        article.category === "CAR_DESIGN"
+                          ? "bg-cyan-950/30 text-cyan-400 border-cyan-500/20"
+                          : "bg-purple-950/30 text-purple-400 border-purple-500/20"
+                      }`}>
+                        {article.category === "CAR_DESIGN" ? "3D" : "Egyéb"}
+                      </span>
                     </div>
                   </div>
 
@@ -186,7 +245,8 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                   </div>
                 </div>
               );
-            })}
+            })
+          )}
           </div>
         </div>
 
