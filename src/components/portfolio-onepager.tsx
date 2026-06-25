@@ -1,11 +1,21 @@
 "use client";
 
+import { useState } from "react";
 import { portfolioFocuses, portfolioSocials } from "@/lib/portfolio";
 import type { InstagramMediaItem } from "@/lib/instagram";
 import { ThemeSwitcher } from "./theme-switcher";
 import Image from "next/image";
+import type { PortfolioArticleWithImages } from "@/lib/portfolio-sync";
+import { Calendar, Image as ImageIcon, ChevronDown, Eye } from "lucide-react";
 
-export function PortfolioOnepager({ instagramMedia }: { instagramMedia: InstagramMediaItem[] }) {
+interface PortfolioOnepagerProps {
+  instagramMedia: InstagramMediaItem[];
+  articles: PortfolioArticleWithImages[];
+}
+
+export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepagerProps) {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [activeImage, setActiveImage] = useState<string | null>(null);
   const enabledSocials = portfolioSocials.filter((s) => s.href);
 
   return (
@@ -74,27 +84,109 @@ export function PortfolioOnepager({ instagramMedia }: { instagramMedia: Instagra
           </div>
         </div>
 
-        {/* Works Bento Grid */}
+        {/* Works Bento Grid (Archive) */}
         <div className="lg:col-span-12 mt-8">
-          <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter neo-text-outline mb-6">Archive</h2>
+          <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter neo-text-outline mb-6">
+            {locale === "hu" ? "Archívum" : "Archive"}
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {portfolioFocuses.flatMap(focus => focus.works).map((work, i) => (
-              <div 
-                key={work.title + i} 
-                className="neo-bento-card p-6 flex flex-col justify-between group h-64 cursor-default"
-              >
-                <div className="flex justify-between items-start">
-                  <span className="text-xs font-mono text-zinc-500">#{String(i+1).padStart(3, "0")}</span>
-                  <span className="text-xs font-mono text-zinc-600">{work.year}</span>
+            {articles.map((article, i) => {
+              const isExpanded = expandedId === article.id;
+              
+              return (
+                <div
+                  key={article.id}
+                  className={`neo-bento-card p-6 flex flex-col justify-between group transition-all duration-500 cursor-pointer ${
+                    isExpanded 
+                      ? "col-span-full md:col-span-full xl:col-span-full h-auto border-white/30" 
+                      : "h-64 hover:border-white/20"
+                  }`}
+                  onClick={() => {
+                    if (!isExpanded) {
+                      setExpandedId(article.id);
+                    }
+                  }}
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <span className="text-xs font-mono text-zinc-500">#{String(i + 1).padStart(3, "0")}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="inline-flex items-center gap-1 text-xs font-mono text-zinc-500">
+                        <Calendar className="h-3 w-3" />
+                        {article.date === "N/A" ? "N/A" : article.date.replace(/-/g, ".")}
+                      </span>
+                      {article.images.length > 0 && (
+                        <span className="inline-flex items-center gap-1 text-xs font-mono text-zinc-500">
+                          <ImageIcon className="h-3 w-3" />
+                          {article.images.length}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex-1 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between gap-4 mb-2">
+                        <h3 className="text-2xl font-black uppercase tracking-tight leading-none group-hover:text-white text-zinc-200 transition-colors">
+                          {article.title}
+                        </h3>
+                        {isExpanded && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setExpandedId(null);
+                            }}
+                            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white transition shrink-0"
+                          >
+                            <ChevronDown className="h-4 w-4 rotate-180 text-slate-300" />
+                          </button>
+                        )}
+                      </div>
+                      
+                      {/* Description */}
+                      <p className={`text-sm text-zinc-500 leading-relaxed ${isExpanded ? "mt-4 text-zinc-300 bg-white/5 p-4 rounded-xl border border-white/5" : "line-clamp-2"}`}>
+                        {article.description || "Portfolio project folder synced from repository."}
+                      </p>
+                    </div>
+
+                    {/* Expanded Gallery */}
+                    {isExpanded && article.images.length > 0 && (
+                      <div className="mt-6 border-t border-white/10 pt-5 space-y-4">
+                        <h4 className="text-xs font-black uppercase tracking-widest text-zinc-400">
+                          Galéria
+                        </h4>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                          {article.images.map((img) => {
+                            const imgPath = `/api/portfolio/media/${article.folderName}/${img}`;
+                            return (
+                              <div
+                                key={img}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveImage(imgPath);
+                                }}
+                                className="group relative aspect-video cursor-zoom-in overflow-hidden rounded-lg bg-zinc-900 border border-white/5 transition hover:border-white/20"
+                              >
+                                <Image
+                                  src={imgPath}
+                                  alt={img}
+                                  fill
+                                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"
+                                  className="object-cover transition duration-350 group-hover:scale-103"
+                                  unoptimized
+                                />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition duration-200 flex items-center justify-center">
+                                  <Eye className="h-5 w-5 text-white" />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-2xl font-black uppercase tracking-tight mb-2 leading-none group-hover:text-white text-zinc-200 transition-colors">
-                    {work.title}
-                  </h3>
-                  <p className="text-sm text-zinc-500 leading-relaxed">{work.description}</p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -132,6 +224,30 @@ export function PortfolioOnepager({ instagramMedia }: { instagramMedia: Instagra
         )}
 
       </div>
+
+      {/* Lightbox Modal */}
+      {activeImage && (
+        <div
+          onClick={() => setActiveImage(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4 backdrop-blur-sm transition-opacity duration-300 cursor-zoom-out"
+        >
+          <div className="relative max-h-full max-w-7xl aspect-video w-full">
+            <Image
+              src={activeImage}
+              alt="Expanded view"
+              fill
+              className="object-contain rounded-lg"
+              unoptimized
+            />
+          </div>
+          <div className="absolute top-4 right-4 text-white/65 hover:text-white transition font-black uppercase tracking-widest text-xs bg-white/5 px-4 py-2 rounded-full border border-white/10 backdrop-blur-md">
+            Kattints a bezáráshoz
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+// Helper to determine locale dynamically (fallback to Hungarian)
+const locale = "hu";

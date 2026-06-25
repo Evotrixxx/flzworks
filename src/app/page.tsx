@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PortfolioOnepager } from "@/components/portfolio-onepager";
 import { getInstagramMedia } from "@/lib/instagram";
+import { syncPortfolioArticles } from "@/lib/portfolio-sync";
 
 export const metadata: Metadata = {
   title: "FLZ | Portfolio",
@@ -8,7 +9,13 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const instagramMedia = await getInstagramMedia();
+  const [instagramMedia, allArticles] = await Promise.all([
+    getInstagramMedia(),
+    syncPortfolioArticles(),
+  ]);
 
-  return <PortfolioOnepager instagramMedia={instagramMedia} />;
+  // Only pass visible articles to the public landing page
+  const visibleArticles = allArticles.filter((article) => article.visible);
+
+  return <PortfolioOnepager instagramMedia={instagramMedia} articles={visibleArticles} />;
 }
