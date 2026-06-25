@@ -154,3 +154,14 @@ model IntranetIpBlock {
 
   @@index([ipAddress, expiresAt])
 }
+
+model PortfolioArticle {
+  id          String   @id @default(cuid())
+  folderName  String   @unique
+  title       String
+  description String?
+  date        String   // extracted from folder name, e.g. "2026-11-17"
+  visible     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

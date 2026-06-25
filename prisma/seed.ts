@@ -196,11 +196,13 @@ async function main() {
     update: {
       name: "Pentagon Automotive Hungary",
       passwordHash: sellerPasswordHash,
+      role: "ADMIN",
     },
     create: {
       email: "seller@autopiac.test",
       name: "Pentagon Automotive Hungary",
       passwordHash: sellerPasswordHash,
+      role: "ADMIN",
     },
   });
 
