@@ -11,6 +11,7 @@ declare module "react" {
         "camera-orbit"?: string;
         "camera-target"?: string;
         "field-of-view"?: string;
+        "min-camera-orbit"?: string;
         "shadow-intensity"?: string;
         "shadow-softness"?: string;
         exposure?: string;

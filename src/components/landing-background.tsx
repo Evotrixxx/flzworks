@@ -16,10 +16,10 @@ import Script from "next/script";
 // Base Position: [6.417, 1.1394, 13.967]
 // Look Direction: [-0.233064, 0.002808, -0.97244]
 // Target: [2.827, 1.182, -1.018]
-// Orbit: 13.49deg yaw (theta), 90.16deg pitch (phi), 15.41m radius
+// Orbit: 13.49deg yaw (theta), 90.16deg pitch (phi), 11.0m radius (moved closer)
 const BASE_THETA = 13.49;
 const BASE_PHI = 90.16;
-const BASE_RADIUS = 15.41;
+const BASE_RADIUS = 11.0; // Reduced from 15.41 to bring the camera closer to the car
 const BASE_FOV = 18.463;
 
 const CAM_TARGET = "2.827m 1.182m -1.018m";
@@ -214,6 +214,7 @@ function LandingBackgroundInner() {
             camera-orbit={`${BASE_THETA}deg ${BASE_PHI}deg ${BASE_RADIUS}m`}
             camera-target={CAM_TARGET}
             field-of-view={CAM_FOV}
+            min-camera-orbit="auto auto 5m"
             interaction-prompt="none"
             style={{
               width: "100%",
