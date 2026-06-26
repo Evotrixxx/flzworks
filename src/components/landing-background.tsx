@@ -1,136 +1,123 @@
 "use client";
 
-import React, { Component, ErrorInfo, ReactNode, Suspense, useEffect, useRef, useState } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Environment, useGLTF, useProgress, useAnimations } from "@react-three/drei";
+import React, {
+  Component,
+  ErrorInfo,
+  ReactNode,
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { useGLTF, useProgress, useAnimations, PerspectiveCamera, Environment } from "@react-three/drei";
 import * as THREE from "three";
 
-// 1. Error Boundary to catch 3D/WebGL/Loading crashes
-interface ErrorBoundaryProps {
-  fallback: ReactNode;
-  children: ReactNode;
+// ─── Camera.001 world transform — extracted from 3D/Landing.glb ──────────────
+// Extracted via node script reading raw GLB JSON chunk (uncompressed Blender export)
+//  Position:   [1.3051, 1.6541, -4.1803]
+//  Quaternion: [-0.025277, 0.970822, 0.118619, 0.206869]  (x y z w)
+//  FOV Y:      37.299°   Near: 0.01   Far: 100
+//
+// Euler equivalent (YXZ order): Y=155.942°, X=-13.932°, Z=0°
+// Three.js rotation (XYZ) equivalent (radians): X=-0.2432, Y=2.7218, Z=0
+const CAM_POS_X = 1.3051;
+const CAM_POS_Y = 1.6541;
+const CAM_POS_Z = -4.1803;
+
+// Quaternion in Three.js Quaternion(x, y, z, w) order
+const CAM_QUAT: [number, number, number, number] = [
+  -0.025277, 0.970822, 0.118619, 0.206869,
+];
+
+const CAM_FOV = 37.299;
+const CAM_NEAR = 0.01;
+const CAM_FAR = 100;
+
+// ─── Error Boundary ──────────────────────────────────────────────────────────
+interface EBProps { fallback: ReactNode; children: ReactNode; }
+interface EBState { hasError: boolean; }
+
+class CanvasErrorBoundary extends Component<EBProps, EBState> {
+  state: EBState = { hasError: false };
+  static getDerivedStateFromError(): EBState { return { hasError: true }; }
+  componentDidCatch(e: Error, i: ErrorInfo) {
+    console.warn("[LandingBackground] 3D scene failed, CSS fallback active:", e, i);
+  }
+  render() { return this.state.hasError ? this.props.fallback : this.props.children; }
 }
 
-interface ErrorBoundaryState {
-  hasError: boolean;
-}
-
-class CanvasErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  public state: ErrorBoundaryState = {
-    hasError: false
-  };
-
-  public static getDerivedStateFromError(_: Error): ErrorBoundaryState {
-    return { hasError: true };
-  }
-
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.warn("3D Background failed to load, falling back to CSS shapes:", error, errorInfo);
-  }
-
-  public render() {
-    if (this.state.hasError) {
-      return this.props.fallback;
-    }
-    return this.props.children;
-  }
-}
-
-// 2. CSS Fallback Shapes (Original background design)
+// ─── CSS Fallback ─────────────────────────────────────────────────────────────
 function FallbackShapes() {
   return (
     <div className="showroom-shapes" aria-hidden="true">
-      <span />
-      <span />
-      <span />
-      <span />
-      <span />
+      <span /><span /><span /><span /><span />
     </div>
   );
 }
 
-// 3. Loading Screen Component
+// ─── Progress Loading Screen ─────────────────────────────────────────────────
+// useProgress reads Zustand state — safe to call outside <Canvas>
 function LoadingScreen() {
   const { active, progress } = useProgress();
-  const [showLoader, setShowLoader] = useState(true);
-  const [fadeClass, setFadeClass] = useState("opacity-100");
-  const [statusText, setStatusText] = useState("LOADING GEOMETRY...");
+  const [visible, setVisible] = useState(true);
+  const [fading, setFading] = useState(false);
+
+  const statusText =
+    progress < 35 ? "DECOMPRESSING 3D GEOMETRY..." :
+    progress < 70 ? "COMPILING TEXTURES & MAPS..." :
+    progress < 90 ? "INITIALIZING PBR MATERIALS..." :
+                    "MOUNTING 3D SCENE...";
 
   useEffect(() => {
-    // Dynamic telemetry status text based on progress
-    if (progress < 35) {
-      setStatusText("DECOMPRESSING 3D GEOMETRY...");
-    } else if (progress < 70) {
-      setStatusText("COMPILING TEXTURES & MAPS...");
-    } else if (progress < 90) {
-      setStatusText("INITIALIZING PBR MATERIALS...");
-    } else {
-      setStatusText("MOUNTING 3D SCENE...");
-    }
-
-    if (!active && progress === 100) {
-      setFadeClass("opacity-0 pointer-events-none transition-all duration-1000 ease-out");
-      const timer = setTimeout(() => {
-        setShowLoader(false);
-      }, 1000);
-      return () => clearTimeout(timer);
+    if (!active && progress >= 99) {
+      setFading(true);
+      const t = setTimeout(() => setVisible(false), 900);
+      return () => clearTimeout(t);
     }
   }, [active, progress]);
 
-  if (!showLoader) return null;
+  if (!visible) return null;
 
   return (
-    <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#05060b] ${fadeClass}`}>
-      {/* Background glow grids */}
+    <div
+      className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#05060b] ${fading ? "opacity-0 pointer-events-none transition-opacity duration-700" : "opacity-100"}`}
+      aria-label="Loading 3D scene"
+    >
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f111a_1px,transparent_1px),linear-gradient(to_bottom,#0f111a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-40 pointer-events-none" />
-      
-      {/* Glow orbits */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none animate-pulse" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[120px] pointer-events-none animate-pulse" style={{ animationDelay: "2s" }} />
 
       <div className="relative max-w-md w-full px-6 text-center z-10">
-        {/* Futuristic Card */}
         <div className="bg-white/[0.01] border border-white/[0.05] rounded-3xl p-8 md:p-10 backdrop-blur-xl shadow-2xl shadow-black/80 relative overflow-hidden">
-          {/* Top corner tech accents */}
           <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-400/50" />
           <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-cyan-400/50" />
           <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-purple-400/50" />
           <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-purple-400/50" />
 
-          {/* Header */}
-          <p className="text-[10px] font-mono text-cyan-400/60 uppercase tracking-[0.4em] mb-2">
-            System Initialization
-          </p>
+          <p className="text-[10px] font-mono text-cyan-400/60 uppercase tracking-[0.4em] mb-2">System Initialization</p>
           <h2 className="text-2xl font-black uppercase tracking-tighter text-white mb-6">
             FLZ <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">WORKS</span>
           </h2>
 
-          {/* Glowing Ring Loader */}
           <div className="relative w-24 h-24 mx-auto mb-8 flex items-center justify-center">
-            {/* Outer spinning ring */}
             <div className="absolute inset-0 rounded-full border-2 border-white/5 border-t-cyan-500/60 border-b-purple-500/60 animate-spin" style={{ animationDuration: "3s" }} />
-            {/* Inner pulsing circle */}
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center animate-pulse">
-              <span className="text-[10px] font-mono text-white/75 font-bold">
-                {Math.round(progress)}%
-              </span>
+              <span className="text-[10px] font-mono text-white/75 font-bold">{Math.round(progress)}%</span>
             </div>
           </div>
 
-          {/* Progress Bar Container */}
           <div className="space-y-3">
             <div className="flex justify-between items-center text-[10px] font-mono text-white/40">
               <span className="tracking-wider">{statusText}</span>
               <span className="text-cyan-400/80 font-bold">{Math.round(progress)}%</span>
             </div>
-            
             <div className="h-1.5 w-full bg-white/[0.04] rounded-full overflow-hidden p-[1px] border border-white/[0.02]">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-purple-500 shadow-[0_0_12px_rgba(6,182,212,0.5)] transition-all duration-300 ease-out"
                 style={{ width: `${progress}%` }}
               />
             </div>
-
             <div className="text-[9px] font-mono text-white/20 uppercase tracking-[0.2em] pt-2">
               Signal Source: Landing.glb (9MB)
             </div>
@@ -141,80 +128,35 @@ function LoadingScreen() {
   );
 }
 
-// 4. 3D Model Component
-interface ModelProps {
-  mouse: React.MutableRefObject<{ x: number; y: number }>;
-  modelUrl: string;
+// ─── Camera Rig — mouse parallax on top of base Blender position ──────────────
+// Uses the drei PerspectiveCamera (makeDefault) as the active camera.
+// useFrame nudges X/Y position toward mouse target; Z and rotation stay fixed.
+function CameraRig({ mouse }: { mouse: React.MutableRefObject<{ x: number; y: number }> }) {
+  useFrame(({ camera }) => {
+    camera.position.x = THREE.MathUtils.lerp(
+      camera.position.x,
+      CAM_POS_X + mouse.current.x * 0.12,
+      0.04,
+    );
+    camera.position.y = THREE.MathUtils.lerp(
+      camera.position.y,
+      CAM_POS_Y + mouse.current.y * 0.08,
+      0.04,
+    );
+  });
+  return null;
 }
 
-function LandingModel({ mouse, modelUrl }: ModelProps) {
+// ─── 3D Model ─────────────────────────────────────────────────────────────────
+function LandingModel({ modelUrl }: { modelUrl: string }) {
   const { scene, animations } = useGLTF(modelUrl, true);
   const groupRef = useRef<THREE.Group>(null);
-  const { set, size } = useThree();
   const { actions, names } = useAnimations(animations, groupRef);
 
-  const basePosition = useRef<THREE.Vector3 | null>(null);
-  const baseRotation = useRef<THREE.Euler | null>(null);
-
-  // Play all animations in the model on mount
+  // Play all embedded animations
   useEffect(() => {
-    names.forEach((name) => {
-      actions[name]?.play();
-    });
+    names.forEach((name) => actions[name]?.play());
   }, [actions, names]);
-
-  // Set the custom Camera.001 from the GLTF as the active rendering camera
-  useEffect(() => {
-    const customCamera = scene.getObjectByName("Camera.001");
-    if (customCamera && customCamera instanceof THREE.PerspectiveCamera) {
-      // Update aspect ratio to match the current viewport/canvas size
-      customCamera.aspect = size.width / size.height;
-      customCamera.updateProjectionMatrix();
-      
-      // Store the original base position and rotation of the camera from Blender
-      basePosition.current = customCamera.position.clone();
-      baseRotation.current = customCamera.rotation.clone();
-      
-      set({ camera: customCamera });
-    }
-  }, [scene, set, size]);
-
-  // Apply shadow casting/receiving to all meshes
-  useEffect(() => {
-    scene.traverse((node) => {
-      if (node instanceof THREE.Mesh) {
-        node.castShadow = true;
-        node.receiveShadow = true;
-        
-        // Optimizations for background performance
-        if (node.material) {
-          node.material.depthWrite = true;
-          // Ensure materials respond elegantly to lighting
-          if (node.material instanceof THREE.MeshStandardMaterial) {
-            node.material.roughness = Math.max(node.material.roughness, 0.15);
-          }
-        }
-      }
-    });
-  }, [scene]);
-
-  // Apply mouse parallax and ambient drift directly to the camera to preserve model alignment
-  useFrame((state) => {
-    const customCamera = scene.getObjectByName("Camera.001");
-    if (customCamera && customCamera instanceof THREE.PerspectiveCamera && basePosition.current && baseRotation.current) {
-      // Subtle parallax translation offset based on normalized mouse coordinates
-      const targetX = basePosition.current.x + (mouse.current.x * 0.15);
-      const targetY = basePosition.current.y + (mouse.current.y * 0.15);
-
-      // Smoothly interpolate the camera position
-      customCamera.position.x = THREE.MathUtils.lerp(customCamera.position.x, targetX, 0.04);
-      customCamera.position.y = THREE.MathUtils.lerp(customCamera.position.y, targetY, 0.04);
-
-      // Subtle ambient camera drift to keep the viewport dynamic
-      const time = state.clock.getElapsedTime();
-      customCamera.position.y += Math.sin(time * 0.4) * 0.001;
-    }
-  });
 
   return (
     <group ref={groupRef}>
@@ -223,74 +165,118 @@ function LandingModel({ mouse, modelUrl }: ModelProps) {
   );
 }
 
-// 5. Main Canvas Content
+// ─── Inner Canvas ─────────────────────────────────────────────────────────────
 function LandingBackgroundInner() {
   const mouse = useRef({ x: 0, y: 0 });
-  
-  // Allows custom CDN URL configuration via environment variable (useful for production LFS bypass)
-  const modelUrl = process.env.NEXT_PUBLIC_LANDING_MODEL_URL || "/models/Landing.glb";
+  const modelUrl = process.env.NEXT_PUBLIC_LANDING_MODEL_URL ?? "/models/Landing.glb";
 
-  // Track mouse coordinates globally on the window
+  // Gate Canvas render behind client mount.
+  // React 18 Strict Mode double-invokes components before any useEffect fires.
+  // Without this gate two WebGL contexts are created on the same canvas element,
+  // causing: "Canvas has an existing context of a different type"
+  const [clientMounted, setClientMounted] = useState(false);
+  useEffect(() => { setClientMounted(true); }, []);
+
   useEffect(() => {
-    const handlePointerMove = (event: PointerEvent) => {
-      mouse.current.x = (event.clientX / window.innerWidth) * 2 - 1;
-      mouse.current.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    const onMove = (e: PointerEvent) => {
+      mouse.current.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.current.y = -((e.clientY / window.innerHeight) * 2 - 1);
     };
-
-    window.addEventListener("pointermove", handlePointerMove);
-    return () => {
-      window.removeEventListener("pointermove", handlePointerMove);
-    };
+    window.addEventListener("pointermove", onMove);
+    return () => window.removeEventListener("pointermove", onMove);
   }, []);
 
   return (
     <>
-      {/* Real-time Loading Overlay */}
+      {/* Loading overlay — reads Zustand progress, safe outside Canvas */}
       <LoadingScreen />
 
-      {/* 3D Background Canvas */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#05060b]" aria-hidden="true">
-        {/* Subtle radial overlay vignette */}
-        <div className="absolute inset-0 bg-radial-[circle_at_center,transparent_40%,#05060b_100%] z-10 pointer-events-none opacity-80" />
+      <div
+        className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#05060b]"
+        aria-hidden="true"
+      >
+        {/* Vignette: darkens canvas edges for depth */}
+        <div
+          className="absolute inset-0 z-10 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(circle at center, transparent 35%, #05060b 100%)",
+            opacity: 0.85,
+          }}
+        />
 
-        <Canvas
-          shadows
-          camera={{ position: [0, 0, 8], fov: 45 }}
-          gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
-        >
-          {/* Subtle atmospheric lighting */}
-          <ambientLight intensity={1.5} />
-          
-          {/* Main directional light */}
-          <directionalLight
-            position={[5, 10, 5]}
-            intensity={3.5}
-            castShadow
-            shadow-mapSize-width={1024}
-            shadow-mapSize-height={1024}
-            shadow-bias={-0.0001}
-          />
-          
-          {/* Colored accent lights */}
-          <pointLight position={[-6, 2, -2]} intensity={2.5} color="#06b6d4" />
-          <pointLight position={[6, -2, 2]} intensity={2.0} color="#a855f7" />
+        {clientMounted && (
+          <Canvas
+            // No shadows — saves significant GPU bandwidth
+            shadows={false}
+            // Clamp pixel ratio to avoid VRAM exhaustion on hi-DPI displays
+            dpr={[1, 1.5]}
+            frameloop="always"
+            gl={{
+              antialias: true,
+              // alpha: true so the canvas background is transparent and the
+              // CSS #05060b shows through — gives a natural dark background
+              // without a hard WebGL clear color.
+              alpha: true,
+              powerPreference: "high-performance",
+              stencil: false,
+              depth: true,
+              preserveDrawingBuffer: false,
+              failIfMajorPerformanceCaveat: false,
+            }}
+            onCreated={({ gl }) => {
+              // Recover gracefully from GPU context loss (driver TDR, too many tabs)
+              gl.domElement.addEventListener("webglcontextlost", (e) => {
+                e.preventDefault();
+                console.warn("[LandingBackground] WebGL context lost — will attempt restore");
+              });
+              gl.domElement.addEventListener("webglcontextrestored", () => {
+                console.log("[LandingBackground] WebGL context restored");
+              });
+            }}
+            style={{ position: "absolute", inset: 0 }}
+          >
+            {/*
+              Use drei's PerspectiveCamera with makeDefault instead of the
+              Canvas camera prop. This is more reliable for quaternion-based
+              orientation because it directly creates and registers the camera
+              in the R3F scene without going through applyProps quaternion parsing.
+            */}
+            <PerspectiveCamera
+              makeDefault
+              position={[CAM_POS_X, CAM_POS_Y, CAM_POS_Z]}
+              quaternion={CAM_QUAT}
+              fov={CAM_FOV}
+              near={CAM_NEAR}
+              far={CAM_FAR}
+            />
 
-          {/* Soft backlighting */}
-          <directionalLight position={[0, -5, -5]} intensity={1.2} color="#0f172a" />
+            {/* Subtle ambient + accent fill */}
+            <ambientLight intensity={0.4} />
+            <pointLight position={[-6, 2, -2]} intensity={8} color="#06b6d4" decay={2} />
+            <pointLight position={[6, -2, 2]} intensity={6} color="#a855f7" decay={2} />
 
-          {/* High-fidelity reflections */}
-          <Environment preset="city" />
+            {/*
+              Environment provides IBL (Image-Based Lighting) needed for PBR
+              materials to look correct. "apartment" is the lightest built-in
+              preset — smaller than "city" and avoids GPU memory exhaustion.
+              background={false} keeps the HDR as lighting-only (no skybox).
+            */}
+            <Environment preset="apartment" background={false} />
 
-          <Suspense fallback={null}>
-            <LandingModel mouse={mouse} modelUrl={modelUrl} />
-          </Suspense>
-        </Canvas>
+            <CameraRig mouse={mouse} />
+
+            <Suspense fallback={null}>
+              <LandingModel modelUrl={modelUrl} />
+            </Suspense>
+          </Canvas>
+        )}
       </div>
     </>
   );
 }
 
-// 6. Exported Component with Error Boundary Wrapper
+// ─── Public export ────────────────────────────────────────────────────────────
 export function LandingBackground() {
   return (
     <CanvasErrorBoundary fallback={<FallbackShapes />}>
@@ -299,6 +285,5 @@ export function LandingBackground() {
   );
 }
 
-// Preload the default model path
-const defaultModelUrl = process.env.NEXT_PUBLIC_LANDING_MODEL_URL || "/models/Landing.glb";
-useGLTF.preload(defaultModelUrl, true);
+const _modelUrl = process.env.NEXT_PUBLIC_LANDING_MODEL_URL ?? "/models/Landing.glb";
+useGLTF.preload(_modelUrl, true);
