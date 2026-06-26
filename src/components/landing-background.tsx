@@ -5,6 +5,7 @@ import React, {
   ErrorInfo,
   ReactNode,
   Suspense,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -37,6 +38,7 @@ const CAM_QUAT: [number, number, number, number] = [
 const CAM_FOV = 18.463; // Extracted from Blender Camera.001 data block (yfov = 0.32225 rad)
 const CAM_NEAR = 0.1;
 const CAM_FAR = 100;
+const DRACO_DECODER_PATH = "/draco/";
 
 // ─── Error Boundary ──────────────────────────────────────────────────────────
 interface EBProps { fallback: ReactNode; children: ReactNode; }
@@ -62,7 +64,7 @@ function FallbackShapes() {
 
 // ─── Progress Loading Screen ─────────────────────────────────────────────────
 // useProgress reads Zustand state — safe to call outside <Canvas>
-function LoadingScreen() {
+function LoadingScreen({ sceneReady }: { sceneReady: boolean }) {
   const { active, progress } = useProgress();
   const [visible, setVisible] = useState(true);
   const [fading, setFading] = useState(false);
@@ -72,14 +74,18 @@ function LoadingScreen() {
     progress < 70 ? "COMPILING TEXTURES & MAPS..." :
     progress < 90 ? "INITIALIZING PBR MATERIALS..." :
                     "MOUNTING 3D SCENE...";
+  const loadingComplete = sceneReady || (!active && progress >= 99);
 
   useEffect(() => {
-    if (!active && progress >= 99) {
-      setFading(true);
-      const t = setTimeout(() => setVisible(false), 900);
-      return () => clearTimeout(t);
+    if (loadingComplete) {
+      const fadeTimer = window.setTimeout(() => setFading(true), 0);
+      const hideTimer = window.setTimeout(() => setVisible(false), 900);
+      return () => {
+        window.clearTimeout(fadeTimer);
+        window.clearTimeout(hideTimer);
+      };
     }
-  }, [active, progress]);
+  }, [loadingComplete]);
 
   if (!visible) return null;
 
@@ -152,8 +158,8 @@ function CameraRig({ mouse }: { mouse: React.MutableRefObject<{ x: number; y: nu
 }
 
 // ─── 3D Model ─────────────────────────────────────────────────────────────────
-function LandingModel({ modelUrl }: { modelUrl: string }) {
-  const { scene, animations } = useGLTF(modelUrl, true);
+function LandingModel({ modelUrl, onReady }: { modelUrl: string; onReady: () => void }) {
+  const { scene, animations } = useGLTF(modelUrl, DRACO_DECODER_PATH);
   const groupRef = useRef<THREE.Group>(null);
   const { actions, names } = useAnimations(animations, groupRef);
 
@@ -161,6 +167,10 @@ function LandingModel({ modelUrl }: { modelUrl: string }) {
   useEffect(() => {
     names.forEach((name) => actions[name]?.play());
   }, [actions, names]);
+
+  useEffect(() => {
+    onReady();
+  }, [onReady, scene]);
 
   // Traverse and enable shadow properties synchronously during render phase (via useMemo)
   // so meshes have castShadow and receiveShadow set BEFORE they are mounted in the scene.
@@ -189,13 +199,18 @@ function LandingModel({ modelUrl }: { modelUrl: string }) {
 function LandingBackgroundInner() {
   const mouse = useRef({ x: 0, y: 0 });
   const modelUrl = process.env.NEXT_PUBLIC_LANDING_MODEL_URL ?? "/models/Landing.glb";
+  const [sceneReady, setSceneReady] = useState(false);
+  const handleSceneReady = useCallback(() => setSceneReady(true), []);
 
   // Gate Canvas render behind client mount.
   // React 18 Strict Mode double-invokes components before any useEffect fires.
   // Without this gate two WebGL contexts are created on the same canvas element,
   // causing: "Canvas has an existing context of a different type"
   const [clientMounted, setClientMounted] = useState(false);
-  useEffect(() => { setClientMounted(true); }, []);
+  useEffect(() => {
+    const mountTimer = window.setTimeout(() => setClientMounted(true), 0);
+    return () => window.clearTimeout(mountTimer);
+  }, []);
 
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
@@ -209,7 +224,7 @@ function LandingBackgroundInner() {
   return (
     <>
       {/* Loading overlay — reads Zustand progress, safe outside Canvas */}
-      <LoadingScreen />
+      <LoadingScreen sceneReady={sceneReady} />
 
       <div
         className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#05060b]"
@@ -310,7 +325,7 @@ function LandingBackgroundInner() {
             <CameraRig mouse={mouse} />
 
             <Suspense fallback={null}>
-              <LandingModel modelUrl={modelUrl} />
+              <LandingModel modelUrl={modelUrl} onReady={handleSceneReady} />
             </Suspense>
           </Canvas>
         )}
@@ -329,4 +344,4 @@ export function LandingBackground() {
 }
 
 const _modelUrl = process.env.NEXT_PUBLIC_LANDING_MODEL_URL ?? "/models/Landing.glb";
-useGLTF.preload(_modelUrl, true);
+useGLTF.preload(_modelUrl, DRACO_DECODER_PATH);
