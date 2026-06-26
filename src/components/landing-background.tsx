@@ -148,7 +148,7 @@ interface ModelProps {
 }
 
 function LandingModel({ mouse, modelUrl }: ModelProps) {
-  const { scene } = useGLTF(modelUrl);
+  const { scene } = useGLTF(modelUrl, true);
   const groupRef = useRef<THREE.Group>(null);
 
   // Apply shadow casting/receiving to all meshes
@@ -274,4 +274,4 @@ export function LandingBackground() {
 
 // Preload the default model path
 const defaultModelUrl = process.env.NEXT_PUBLIC_LANDING_MODEL_URL || "/models/Landing.glb";
-useGLTF.preload(defaultModelUrl);
+useGLTF.preload(defaultModelUrl, true);
