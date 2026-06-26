@@ -4,26 +4,39 @@ import React, {
   Component,
   ErrorInfo,
   ReactNode,
+  Suspense,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
-import Script from "next/script";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { useGLTF, useProgress, useAnimations, PerspectiveCamera, Environment } from "@react-three/drei";
+import * as THREE from "three";
 
+// ─── Camera.001 world transform — extracted from 3D/Landing.glb ──────────────
+// Extracted via node script reading raw GLB JSON chunk (uncompressed Blender export)
+//  Position:   [1.3051, 1.6541, -4.1803]
+//  Quaternion: [-0.025277, 0.970822, 0.118619, 0.206869]  (x y z w)
+//  FOV Y:      37.299°   Near: 0.01   Far: 100
+//
+// Euler equivalent (YXZ order): Y=155.942°, X=-13.932°, Z=0°
+// Three.js rotation (XYZ) equivalent (radians): X=-0.2432, Y=2.7218, Z=0
+const CAM_POS_X = 5.39;
+const CAM_POS_Y = 1.151;
+const CAM_POS_Z = 9.678;
 
+// Quaternion in Three.js Quaternion(x, y, z, w) order
+// Converted from Blender Camera.001 properties:
+// Location X: 6.417, Y: -13.967, Z: 1.1394
+// Rotation (WXYZ): W: 0.701, X: 0.703, Y: 0.083, Z: 0.083
+const CAM_QUAT: [number, number, number, number] = [
+  0.001414, 0.11738, 0.0, 0.992778,
+];
 
-// ─── Camera.001 world transform — converted to spherical coordinates ──────────
-// Base Position: [6.417, 1.1394, 13.967]
-// Look Direction: [-0.233064, 0.002808, -0.97244]
-// Target: [2.827, 1.182, -1.018]
-// Orbit: 13.49deg yaw (theta), 90.16deg pitch (phi), 11.0m radius (moved closer)
-const BASE_THETA = 13.49;
-const BASE_PHI = 90.16;
-const BASE_RADIUS = 11.0; // Reduced from 15.41 to bring the camera closer to the car
-const BASE_FOV = 18.463;
-
-const CAM_TARGET = "2.827m 1.182m -1.018m";
-const CAM_FOV = `${BASE_FOV}deg`;
+const CAM_FOV = 18.463; // Extracted from Blender Camera.001 data block (yfov = 0.32225 rad)
+const CAM_NEAR = 0.1;
+const CAM_FAR = 100;
 
 // ─── Error Boundary ──────────────────────────────────────────────────────────
 interface EBProps { fallback: ReactNode; children: ReactNode; }
@@ -33,7 +46,7 @@ class CanvasErrorBoundary extends Component<EBProps, EBState> {
   state: EBState = { hasError: false };
   static getDerivedStateFromError(): EBState { return { hasError: true }; }
   componentDidCatch(e: Error, i: ErrorInfo) {
-    console.warn("[LandingBackground] 3D viewer failed, CSS fallback active:", e, i);
+    console.warn("[LandingBackground] 3D scene failed, CSS fallback active:", e, i);
   }
   render() { return this.state.hasError ? this.props.fallback : this.props.children; }
 }
@@ -48,7 +61,9 @@ function FallbackShapes() {
 }
 
 // ─── Progress Loading Screen ─────────────────────────────────────────────────
-function LoadingScreen({ progress, loading }: { progress: number; loading: boolean }) {
+// useProgress reads Zustand state — safe to call outside <Canvas>
+function LoadingScreen() {
+  const { active, progress } = useProgress();
   const [visible, setVisible] = useState(true);
   const [fading, setFading] = useState(false);
 
@@ -59,12 +74,12 @@ function LoadingScreen({ progress, loading }: { progress: number; loading: boole
                     "MOUNTING 3D SCENE...";
 
   useEffect(() => {
-    if (!loading && progress >= 99) {
+    if (!active && progress >= 99) {
       setFading(true);
       const t = setTimeout(() => setVisible(false), 900);
       return () => clearTimeout(t);
     }
-  }, [loading, progress]);
+  }, [active, progress]);
 
   if (!visible) return null;
 
@@ -108,7 +123,7 @@ function LoadingScreen({ progress, loading }: { progress: number; loading: boole
               />
             </div>
             <div className="text-[9px] font-mono text-white/20 uppercase tracking-[0.2em] pt-2">
-              Signal Source: Google Model Viewer
+              Signal Source: Landing.glb (9MB)
             </div>
           </div>
         </div>
@@ -117,82 +132,90 @@ function LoadingScreen({ progress, loading }: { progress: number; loading: boole
   );
 }
 
-// ─── Inner Viewer ─────────────────────────────────────────────────────────────
+// ─── Camera Rig — mouse parallax on top of base Blender position ──────────────
+// Uses the drei PerspectiveCamera (makeDefault) as the active camera.
+// useFrame nudges X/Y position toward mouse target; Z and rotation stay fixed.
+function CameraRig({ mouse }: { mouse: React.MutableRefObject<{ x: number; y: number }> }) {
+  useFrame(({ camera }) => {
+    camera.position.x = THREE.MathUtils.lerp(
+      camera.position.x,
+      CAM_POS_X + mouse.current.x * 0.12,
+      0.04,
+    );
+    camera.position.y = THREE.MathUtils.lerp(
+      camera.position.y,
+      CAM_POS_Y + mouse.current.y * 0.08,
+      0.04,
+    );
+  });
+  return null;
+}
+
+// ─── 3D Model ─────────────────────────────────────────────────────────────────
+function LandingModel({ modelUrl }: { modelUrl: string }) {
+  const { scene, animations } = useGLTF(modelUrl, true);
+  const groupRef = useRef<THREE.Group>(null);
+  const { actions, names } = useAnimations(animations, groupRef);
+
+  // Play all embedded animations
+  useEffect(() => {
+    names.forEach((name) => actions[name]?.play());
+  }, [actions, names]);
+
+  // Traverse and enable shadow properties synchronously during render phase (via useMemo)
+  // so meshes have castShadow and receiveShadow set BEFORE they are mounted in the scene.
+  // This is critical in Three.js because materials compiled without shadow support
+  // will not receive or cast shadows even if properties are changed later.
+  useMemo(() => {
+    if (scene) {
+      scene.traverse((child) => {
+        if ((child as THREE.Mesh).isMesh) {
+          const mesh = child as THREE.Mesh;
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+        }
+      });
+    }
+  }, [scene]);
+
+  return (
+    <group ref={groupRef}>
+      <primitive object={scene} />
+    </group>
+  );
+}
+
+// ─── Inner Canvas ─────────────────────────────────────────────────────────────
 function LandingBackgroundInner() {
-  const viewerRef = useRef<any>(null);
-  const [clientMounted, setClientMounted] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const mouse = useRef({ x: 0, y: 0 });
   const modelUrl = process.env.NEXT_PUBLIC_LANDING_MODEL_URL ?? "/models/Landing.glb";
 
-  useEffect(() => {
-    setClientMounted(true);
-  }, []);
+  // Gate Canvas render behind client mount.
+  // React 18 Strict Mode double-invokes components before any useEffect fires.
+  // Without this gate two WebGL contexts are created on the same canvas element,
+  // causing: "Canvas has an existing context of a different type"
+  const [clientMounted, setClientMounted] = useState(false);
+  useEffect(() => { setClientMounted(true); }, []);
 
-  // Mouse Parallax effect on the camera orbit
   useEffect(() => {
-    if (!clientMounted) return;
-
     const onMove = (e: PointerEvent) => {
-      const viewer = viewerRef.current;
-      if (!viewer) return;
-
-      const x = (e.clientX / window.innerWidth) * 2 - 1;
-      const y = -((e.clientY / window.innerHeight) * 2 - 1);
-
-      // Smoothly nudge theta (yaw) and phi (pitch)
-      const targetTheta = BASE_THETA + x * 1.8;
-      const targetPhi = BASE_PHI - y * 1.2;
-
-      // Directly set the camera-orbit attribute
-      viewer.setAttribute("camera-orbit", `${targetTheta}deg ${targetPhi}deg ${BASE_RADIUS}m`);
+      mouse.current.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.current.y = -((e.clientY / window.innerHeight) * 2 - 1);
     };
-
     window.addEventListener("pointermove", onMove);
     return () => window.removeEventListener("pointermove", onMove);
-  }, [clientMounted]);
-
-  // Listen to model-viewer loading events
-  useEffect(() => {
-    const viewer = viewerRef.current;
-    if (!viewer) return;
-
-    const onProgress = (e: any) => {
-      // Scale totalProgress 0.0-1.0 to 0-100
-      setProgress(Math.round(e.detail.totalProgress * 100));
-    };
-
-    const onLoad = () => {
-      setProgress(100);
-      setLoading(false);
-    };
-
-    viewer.addEventListener("progress", onProgress);
-    viewer.addEventListener("load", onLoad);
-
-    return () => {
-      viewer.removeEventListener("progress", onProgress);
-      viewer.removeEventListener("load", onLoad);
-    };
-  }, [clientMounted]);
+  }, []);
 
   return (
     <>
-      {/* Load Google's Model Viewer component from CDN */}
-      <Script
-        type="module"
-        src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"
-        strategy="afterInteractive"
-      />
-
-      {/* Loading Screen */}
-      <LoadingScreen progress={progress} loading={loading} />
+      {/* Loading overlay — reads Zustand progress, safe outside Canvas */}
+      <LoadingScreen />
 
       <div
         className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#05060b]"
         aria-hidden="true"
       >
-        {/* Vignette overlay */}
+        {/* Vignette: darkens canvas edges for depth */}
         <div
           className="absolute inset-0 z-10 pointer-events-none"
           style={{
@@ -203,28 +226,87 @@ function LandingBackgroundInner() {
         />
 
         {clientMounted && (
-          <model-viewer
-            ref={viewerRef}
-            src={modelUrl}
-            autoplay
-            exposure="1.0"
-            environment-image="neutral"
-            shadow-intensity="1.6"
-            shadow-softness="1.0"
-            camera-orbit={`${BASE_THETA}deg ${BASE_PHI}deg ${BASE_RADIUS}m`}
-            camera-target={CAM_TARGET}
-            field-of-view={CAM_FOV}
-            min-camera-orbit="auto auto 5m"
-            interaction-prompt="none"
-            style={{
-              width: "100%",
-              height: "100%",
-              position: "absolute",
-              top: 0,
-              left: 0,
-              background: "transparent",
+          <Canvas
+            // Enable premium soft shadow maps to eliminate jagged edges
+            shadows="soft"
+            // Set high-fidelity pixel ratio up to 2 for sharp rendering on Retina/4K displays
+            dpr={[1, 2]}
+            frameloop="always"
+            gl={{
+              antialias: true,
+              // alpha: true so the canvas background is transparent and the
+              // CSS #05060b shows through — gives a natural dark background
+              // without a hard WebGL clear color.
+              alpha: true,
+              powerPreference: "high-performance",
+              stencil: false,
+              depth: true,
+              preserveDrawingBuffer: false,
+              failIfMajorPerformanceCaveat: false,
+              // Add high-dynamic-range ACES filmic tone mapping for premium rendering quality
+              toneMapping: THREE.ACESFilmicToneMapping,
+              toneMappingExposure: 1.1,
             }}
-          />
+            onCreated={({ gl }) => {
+              // Recover gracefully from GPU context loss (driver TDR, too many tabs)
+              gl.domElement.addEventListener("webglcontextlost", (e) => {
+                e.preventDefault();
+                console.warn("[LandingBackground] WebGL context lost — will attempt restore");
+              });
+              gl.domElement.addEventListener("webglcontextrestored", () => {
+                console.log("[LandingBackground] WebGL context restored");
+              });
+            }}
+            style={{ position: "absolute", inset: 0 }}
+          >
+            {/*
+              Use drei's PerspectiveCamera with makeDefault instead of the
+              Canvas camera prop. This is more reliable for quaternion-based
+              orientation because it directly creates and registers the camera
+              in the R3F scene without going through applyProps quaternion parsing.
+            */}
+            <PerspectiveCamera
+              makeDefault
+              position={[CAM_POS_X, CAM_POS_Y, CAM_POS_Z]}
+              quaternion={CAM_QUAT}
+              fov={CAM_FOV}
+              near={CAM_NEAR}
+              far={CAM_FAR}
+            />
+
+            {/* Subtle ambient + main shadow-casting directional light + accent points */}
+            <ambientLight intensity={0.25} />
+            <directionalLight
+              castShadow
+              position={[8, 12, 8]}
+              intensity={1.8}
+              shadow-mapSize-width={2048}
+              shadow-mapSize-height={2048}
+              shadow-camera-near={0.1}
+              shadow-camera-far={80}
+              shadow-camera-left={-25}
+              shadow-camera-right={25}
+              shadow-camera-top={25}
+              shadow-camera-bottom={-25}
+              shadow-bias={-0.0005}
+            />
+            <pointLight position={[-6, 2, -2]} intensity={6} color="#06b6d4" decay={2} />
+            <pointLight position={[6, -2, 2]} intensity={4} color="#a855f7" decay={2} />
+
+            {/*
+              Environment provides IBL (Image-Based Lighting) needed for PBR
+              materials to look correct. Switching from "apartment" to "studio"
+              provides clean, elongated studio light box reflections that highlight
+              the metallic contours of the car showroom.
+            */}
+            <Environment preset="studio" background={false} />
+
+            <CameraRig mouse={mouse} />
+
+            <Suspense fallback={null}>
+              <LandingModel modelUrl={modelUrl} />
+            </Suspense>
+          </Canvas>
         )}
       </div>
     </>
@@ -239,3 +321,6 @@ export function LandingBackground() {
     </CanvasErrorBoundary>
   );
 }
+
+const _modelUrl = process.env.NEXT_PUBLIC_LANDING_MODEL_URL ?? "/models/Landing.glb";
+useGLTF.preload(_modelUrl, true);
