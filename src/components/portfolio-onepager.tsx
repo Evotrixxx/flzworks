@@ -26,6 +26,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [activeImage, setActiveImage] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<"ALL" | "CAR_DESIGN" | "OTHER">("ALL");
+  const [uiHidden, setUiHidden] = useState(false);
   const enabledSocials = portfolioSocials.filter((s) => s.href);
 
   const publicArticles = articles.filter((a) => a.visible);
@@ -40,7 +41,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
       <LandingBackground />
 
       {/* Marquee Ticker */}
-      <div className="portfolio-ticker w-full border-b border-white/[0.06] py-2.5 overflow-hidden flex items-center relative z-10">
+      <div className={`portfolio-ticker w-full border-b border-white/[0.06] py-2.5 overflow-hidden flex items-center relative z-10 transition-all duration-700 ${uiHidden ? "opacity-0 translate-y-[-20px] pointer-events-none" : "opacity-100 translate-y-0"}`}>
         <div className="flex whitespace-nowrap animate-marquee">
           {Array.from({ length: 10 }).map((_, i) => (
             <span key={i} className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mx-6">
@@ -50,73 +51,80 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
         </div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-12 md:py-20 grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className={`relative z-10 max-w-7xl mx-auto px-4 py-12 md:py-20 transition-all duration-700 ${uiHidden ? "opacity-0 scale-98 pointer-events-none" : "opacity-100 scale-100"}`}>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        {/* Hero Bento — 8 cols */}
-        <div className="portfolio-bento-hero lg:col-span-8 flex flex-col justify-between min-h-[420px] p-10">
-          {/* Shimmer top edge */}
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none" />
+        {/* Left Column: Consolidates Hero + Focus to prevent blocking the 3D model */}
+        <div className="lg:col-span-5 flex flex-col gap-6">
+          {/* Hero Bento */}
+          <div className="portfolio-bento-hero flex flex-col justify-between min-h-[380px] p-8 md:p-10">
+            {/* Shimmer top edge */}
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none" />
 
-          <header className="flex justify-between items-start">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.35em] text-white/30 mb-4">
-                Portfolio · 2026
-              </p>
-              <h1 className="text-7xl md:text-[96px] font-black uppercase tracking-tighter leading-[0.88] mb-5">
-                FLZ
-                <br />
-                <span className="portfolio-text-glow">WORKS</span>
-              </h1>
-              <p className="text-white/40 font-mono text-sm max-w-md leading-relaxed">
-                3D automotive design, systems architecture, high-performance web, and prototype engineering.
-              </p>
-            </div>
-            <ThemeSwitcher />
-          </header>
-
-          <div className="flex flex-wrap gap-3 mt-auto pt-8">
-            {enabledSocials.map((social) => {
-              const Icon = social.icon;
-              return (
-                <a
-                  key={social.label}
-                  href={social.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="portfolio-social-btn inline-flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-wider rounded-full"
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  {social.label}
-                  <ArrowUpRight className="h-3 w-3 opacity-50" />
-                </a>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Index Focus Bento — 4 cols */}
-        <div className="portfolio-bento-card lg:col-span-4 flex flex-col p-8">
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
-          <div className="flex items-center gap-2 mb-7">
-            <Layers className="h-3.5 w-3.5 text-white/30" />
-            <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30">
-              Index Focus
-            </h2>
-          </div>
-          <div className="flex flex-col gap-7 flex-1 justify-center">
-            {portfolioFocuses.map((focus, i) => (
-              <div key={focus.id} className="flex flex-col group cursor-default">
-                <span className="text-[10px] font-mono text-white/20 mb-1 tracking-widest">
-                  0{i + 1}
-                </span>
-                <h3 className="text-2xl lg:text-3xl font-black uppercase tracking-tight text-white/80 group-hover:text-white transition-colors duration-300">
-                  {focus.label}
-                </h3>
-                <div className="h-px w-0 group-hover:w-full bg-gradient-to-r from-[var(--accent-aqua)] to-transparent transition-all duration-500 mt-1.5" />
+            <header className="flex justify-between items-start">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.35em] text-white/30 mb-4">
+                  Portfolio · 2026
+                </p>
+                <h1 className="text-6xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter leading-[0.88] mb-5">
+                  FLZ
+                  <br />
+                  <span className="portfolio-text-glow">WORKS</span>
+                </h1>
+                <p className="text-white/40 font-mono text-xs max-w-md leading-relaxed">
+                  3D automotive design, systems architecture, high-performance web, and prototype engineering.
+                </p>
               </div>
-            ))}
+              <ThemeSwitcher />
+            </header>
+
+            <div className="flex flex-wrap gap-2.5 mt-auto pt-6">
+              {enabledSocials.map((social) => {
+                const Icon = social.icon;
+                return (
+                  <a
+                    key={social.label}
+                    href={social.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="portfolio-social-btn inline-flex items-center gap-1.5 px-4 py-2 text-[10px] font-black uppercase tracking-wider rounded-full"
+                  >
+                    <Icon className="h-3 w-3" />
+                    {social.label}
+                    <ArrowUpRight className="h-2.5 w-2.5 opacity-50" />
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Index Focus Bento */}
+          <div className="portfolio-bento-card flex flex-col p-7 md:p-8">
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
+            <div className="flex items-center gap-2 mb-6">
+              <Layers className="h-3.5 w-3.5 text-white/30" />
+              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30">
+                Index Focus
+              </h2>
+            </div>
+            <div className="flex flex-col gap-5 justify-center">
+              {portfolioFocuses.map((focus, i) => (
+                <div key={focus.id} className="flex flex-col group cursor-default">
+                  <span className="text-[9px] font-mono text-white/20 mb-0.5 tracking-widest">
+                    0{i + 1}
+                  </span>
+                  <h3 className="text-xl lg:text-2xl font-black uppercase tracking-tight text-white/80 group-hover:text-white transition-colors duration-300">
+                    {focus.label}
+                  </h3>
+                  <div className="h-px w-0 group-hover:w-full bg-gradient-to-r from-[var(--accent-aqua)] to-transparent transition-all duration-500 mt-1" />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
+
+        {/* Right Column: Kept completely empty above the fold on desktop to showcase the 3D showroom and car */}
+        <div className="lg:col-span-7 hidden lg:block pointer-events-none" />
 
         {/* ── Archive Section ── */}
         <div className="lg:col-span-12 mt-6">
@@ -342,17 +350,28 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
           </div>
         )}
 
-        {/* Footer spacer */}
-        <div className="lg:col-span-12 mt-12 pt-8 border-t border-white/[0.05] flex items-center justify-between">
-          <p className="text-[10px] font-mono text-white/15 uppercase tracking-widest">
-            FLZ Works · {new Date().getFullYear()}
-          </p>
-          <p className="text-[10px] font-mono text-white/15 uppercase tracking-widest">
-            Design · Engineering · Architecture
-          </p>
-        </div>
+          {/* Footer spacer */}
+          <div className="lg:col-span-12 mt-12 pt-8 border-t border-white/[0.05] flex items-center justify-between">
+            <p className="text-[10px] font-mono text-white/15 uppercase tracking-widest">
+              FLZ Works · {new Date().getFullYear()}
+            </p>
+            <p className="text-[10px] font-mono text-white/15 uppercase tracking-widest">
+              Design · Engineering · Architecture
+            </p>
+          </div>
 
+        </div>
       </div>
+
+      {/* Floating Showroom Mode Toggle Button */}
+      <button
+        onClick={() => setUiHidden(!uiHidden)}
+        className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+        title={uiHidden ? "Show UI" : "Showroom Mode (Hide UI)"}
+        aria-label="Toggle Showroom Mode"
+      >
+        <Eye className={`h-5 w-5 transition-transform duration-300 ${uiHidden ? "text-cyan-400" : "text-white/60"}`} />
+      </button>
 
       {/* Lightbox Modal */}
       {activeImage && (

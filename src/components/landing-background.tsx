@@ -161,6 +161,19 @@ function LandingModel({ modelUrl }: { modelUrl: string }) {
     names.forEach((name) => actions[name]?.play());
   }, [actions, names]);
 
+  // Enable shadow casting and receiving on all meshes
+  useEffect(() => {
+    if (scene) {
+      scene.traverse((child) => {
+        if ((child as THREE.Mesh).isMesh) {
+          const mesh = child as THREE.Mesh;
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+        }
+      });
+    }
+  }, [scene]);
+
   return (
     <group ref={groupRef}>
       <primitive object={scene} />
@@ -210,8 +223,8 @@ function LandingBackgroundInner() {
 
         {clientMounted && (
           <Canvas
-            // No shadows — saves significant GPU bandwidth
-            shadows={false}
+            // Enable shadow maps for realistic depth and contact shadows
+            shadows={true}
             // Clamp pixel ratio to avoid VRAM exhaustion on hi-DPI displays
             dpr={[1, 1.5]}
             frameloop="always"
@@ -226,6 +239,9 @@ function LandingBackgroundInner() {
               depth: true,
               preserveDrawingBuffer: false,
               failIfMajorPerformanceCaveat: false,
+              // Add high-dynamic-range ACES filmic tone mapping for premium rendering quality
+              toneMapping: THREE.ACESFilmicToneMapping,
+              toneMappingExposure: 1.25,
             }}
             onCreated={({ gl }) => {
               // Recover gracefully from GPU context loss (driver TDR, too many tabs)
@@ -254,10 +270,23 @@ function LandingBackgroundInner() {
               far={CAM_FAR}
             />
 
-            {/* Subtle ambient + accent fill */}
-            <ambientLight intensity={0.4} />
-            <pointLight position={[-6, 2, -2]} intensity={8} color="#06b6d4" decay={2} />
-            <pointLight position={[6, -2, 2]} intensity={6} color="#a855f7" decay={2} />
+            {/* Subtle ambient + main shadow-casting directional light + accent points */}
+            <ambientLight intensity={0.25} />
+            <directionalLight
+              castShadow
+              position={[8, 12, 8]}
+              intensity={1.8}
+              shadow-mapSize-width={2048}
+              shadow-mapSize-height={2048}
+              shadow-camera-far={50}
+              shadow-camera-left={-10}
+              shadow-camera-right={10}
+              shadow-camera-top={10}
+              shadow-camera-bottom={-10}
+              shadow-bias={-0.0005}
+            />
+            <pointLight position={[-6, 2, -2]} intensity={6} color="#06b6d4" decay={2} />
+            <pointLight position={[6, -2, 2]} intensity={4} color="#a855f7" decay={2} />
 
             {/*
               Environment provides IBL (Image-Based Lighting) needed for PBR
