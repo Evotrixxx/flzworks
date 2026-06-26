@@ -12,7 +12,6 @@ import React, {
 } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useGLTF, useProgress, useAnimations, PerspectiveCamera, Environment, SoftShadows } from "@react-three/drei";
-import { EffectComposer, N8AO, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
 
 // ─── Camera.001 world transform — extracted from 3D/Landing.glb ──────────────
@@ -236,8 +235,7 @@ function LandingBackgroundInner() {
             frameloop="always"
             gl={{
               antialias: true,
-              // alpha: false ensures EffectComposer render targets don't produce a solid black alpha buffer
-              alpha: false,
+              alpha: true,
               powerPreference: "high-performance",
               stencil: false,
               depth: true,
@@ -250,9 +248,6 @@ function LandingBackgroundInner() {
             }}
             onCreated={({ gl }) => {
               gl.shadowMap.enabled = true;
-              // Explicitly set the WebGL clear color to match the #05060b CSS background perfectly.
-              // This guarantees EffectComposer has a valid opaque color buffer to render over.
-              gl.setClearColor(new THREE.Color("#05060b"), 1);
 
               // Recover gracefully from GPU context loss (driver TDR, too many tabs)
               gl.domElement.addEventListener("webglcontextlost", (e) => {
@@ -316,12 +311,6 @@ function LandingBackgroundInner() {
 
             <Suspense fallback={null}>
               <LandingModel modelUrl={modelUrl} />
-              {/* Advanced Post-Processing Pipeline for photorealistic contact shadows and bloom */}
-              {/* enableNormalPass={false} prevents black screen on custom GLB/Draco geometries */}
-              <EffectComposer enableNormalPass={false} multisampling={4}>
-                <N8AO aoRadius={2} intensity={1.5} distanceFalloff={1} />
-                <Bloom luminanceThreshold={0.8} luminanceSmoothing={0.2} intensity={0.5} mipmapBlur />
-              </EffectComposer>
             </Suspense>
           </Canvas>
         )}
