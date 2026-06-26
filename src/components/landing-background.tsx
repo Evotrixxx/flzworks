@@ -6,6 +6,7 @@ import React, {
   ReactNode,
   Suspense,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -161,8 +162,11 @@ function LandingModel({ modelUrl }: { modelUrl: string }) {
     names.forEach((name) => actions[name]?.play());
   }, [actions, names]);
 
-  // Enable shadow casting and receiving on all meshes
-  useEffect(() => {
+  // Traverse and enable shadow properties synchronously during render phase (via useMemo)
+  // so meshes have castShadow and receiveShadow set BEFORE they are mounted in the scene.
+  // This is critical in Three.js because materials compiled without shadow support
+  // will not receive or cast shadows even if properties are changed later.
+  useMemo(() => {
     if (scene) {
       scene.traverse((child) => {
         if ((child as THREE.Mesh).isMesh) {
@@ -278,12 +282,13 @@ function LandingBackgroundInner() {
               intensity={1.8}
               shadow-mapSize-width={2048}
               shadow-mapSize-height={2048}
-              shadow-camera-far={50}
-              shadow-camera-left={-10}
-              shadow-camera-right={10}
-              shadow-camera-top={10}
-              shadow-camera-bottom={-10}
-              shadow-bias={-0.0003}
+              shadow-camera-near={0.1}
+              shadow-camera-far={80}
+              shadow-camera-left={-25}
+              shadow-camera-right={25}
+              shadow-camera-top={25}
+              shadow-camera-bottom={-25}
+              shadow-bias={-0.0005}
             />
             <pointLight position={[-6, 2, -2]} intensity={6} color="#06b6d4" decay={2} />
             <pointLight position={[6, -2, 2]} intensity={4} color="#a855f7" decay={2} />
