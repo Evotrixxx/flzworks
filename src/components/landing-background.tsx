@@ -2,7 +2,7 @@
 
 import React, { Component, ErrorInfo, ReactNode, Suspense, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Center, Environment, useGLTF, useProgress, useAnimations } from "@react-three/drei";
+import { Environment, useGLTF, useProgress, useAnimations } from "@react-three/drei";
 import * as THREE from "three";
 
 // 1. Error Boundary to catch 3D/WebGL/Loading crashes
@@ -132,7 +132,7 @@ function LoadingScreen() {
             </div>
 
             <div className="text-[9px] font-mono text-white/20 uppercase tracking-[0.2em] pt-2">
-              Signal Source: Landing.glb (138MB)
+              Signal Source: Landing.glb (9MB)
             </div>
           </div>
         </div>
@@ -153,6 +153,9 @@ function LandingModel({ mouse, modelUrl }: ModelProps) {
   const { set, size } = useThree();
   const { actions, names } = useAnimations(animations, groupRef);
 
+  const basePosition = useRef<THREE.Vector3 | null>(null);
+  const baseRotation = useRef<THREE.Euler | null>(null);
+
   // Play all animations in the model on mount
   useEffect(() => {
     names.forEach((name) => {
@@ -167,6 +170,10 @@ function LandingModel({ mouse, modelUrl }: ModelProps) {
       // Update aspect ratio to match the current viewport/canvas size
       customCamera.aspect = size.width / size.height;
       customCamera.updateProjectionMatrix();
+      
+      // Store the original base position and rotation of the camera from Blender
+      basePosition.current = customCamera.position.clone();
+      baseRotation.current = customCamera.rotation.clone();
       
       set({ camera: customCamera });
     }
@@ -191,28 +198,27 @@ function LandingModel({ mouse, modelUrl }: ModelProps) {
     });
   }, [scene]);
 
+  // Apply mouse parallax and ambient drift directly to the camera to preserve model alignment
   useFrame((state) => {
-    if (!groupRef.current) return;
+    const customCamera = scene.getObjectByName("Camera.001");
+    if (customCamera && customCamera instanceof THREE.PerspectiveCamera && basePosition.current && baseRotation.current) {
+      // Subtle parallax translation offset based on normalized mouse coordinates
+      const targetX = basePosition.current.x + (mouse.current.x * 0.15);
+      const targetY = basePosition.current.y + (mouse.current.y * 0.15);
 
-    // Subtle parallax rotation: Y-axis (left/right mouse), X-axis (up/down mouse)
-    const targetRotationY = (mouse.current.x * Math.PI) / 36;
-    const targetRotationX = (mouse.current.y * Math.PI) / 36;
+      // Smoothly interpolate the camera position
+      customCamera.position.x = THREE.MathUtils.lerp(customCamera.position.x, targetX, 0.04);
+      customCamera.position.y = THREE.MathUtils.lerp(customCamera.position.y, targetY, 0.04);
 
-    // Smoothly lerp towards target rotation
-    groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotationY, 0.04);
-    groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, -targetRotationX, 0.04);
-
-    // Subtle slow float drift
-    const time = state.clock.getElapsedTime();
-    groupRef.current.position.y = Math.sin(time * 0.4) * 0.08;
-    groupRef.current.position.x = Math.cos(time * 0.3) * 0.04;
+      // Subtle ambient camera drift to keep the viewport dynamic
+      const time = state.clock.getElapsedTime();
+      customCamera.position.y += Math.sin(time * 0.4) * 0.001;
+    }
   });
 
   return (
     <group ref={groupRef}>
-      <Center>
-        <primitive object={scene} />
-      </Center>
+      <primitive object={scene} />
     </group>
   );
 }
