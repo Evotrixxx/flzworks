@@ -2,7 +2,7 @@
 
 import React, { Component, ErrorInfo, ReactNode, Suspense, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Center, Environment, useGLTF, useProgress } from "@react-three/drei";
+import { Center, Environment, useGLTF, useProgress, useAnimations } from "@react-three/drei";
 import * as THREE from "three";
 
 // 1. Error Boundary to catch 3D/WebGL/Loading crashes
@@ -148,9 +148,17 @@ interface ModelProps {
 }
 
 function LandingModel({ mouse, modelUrl }: ModelProps) {
-  const { scene } = useGLTF(modelUrl, true);
+  const { scene, animations } = useGLTF(modelUrl, true);
   const groupRef = useRef<THREE.Group>(null);
   const { set, size } = useThree();
+  const { actions, names } = useAnimations(animations, groupRef);
+
+  // Play all animations in the model on mount
+  useEffect(() => {
+    names.forEach((name) => {
+      actions[name]?.play();
+    });
+  }, [actions, names]);
 
   // Set the custom Camera.001 from the GLTF as the active rendering camera
   useEffect(() => {
