@@ -1,7 +1,7 @@
 "use client";
 
 import React, { Component, ErrorInfo, ReactNode, Suspense, useEffect, useRef, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Center, Environment, useGLTF, useProgress } from "@react-three/drei";
 import * as THREE from "three";
 
@@ -150,6 +150,19 @@ interface ModelProps {
 function LandingModel({ mouse, modelUrl }: ModelProps) {
   const { scene } = useGLTF(modelUrl, true);
   const groupRef = useRef<THREE.Group>(null);
+  const { set, size } = useThree();
+
+  // Set the custom Camera.001 from the GLTF as the active rendering camera
+  useEffect(() => {
+    const customCamera = scene.getObjectByName("Camera.001");
+    if (customCamera && customCamera instanceof THREE.PerspectiveCamera) {
+      // Update aspect ratio to match the current viewport/canvas size
+      customCamera.aspect = size.width / size.height;
+      customCamera.updateProjectionMatrix();
+      
+      set({ camera: customCamera });
+    }
+  }, [scene, set, size]);
 
   // Apply shadow casting/receiving to all meshes
   useEffect(() => {
