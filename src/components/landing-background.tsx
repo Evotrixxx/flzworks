@@ -11,7 +11,7 @@ import React, {
   useState,
 } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { useGLTF, useProgress, useAnimations, PerspectiveCamera, Environment } from "@react-three/drei";
+import { useGLTF, useProgress, useAnimations, PerspectiveCamera, Environment, SoftShadows } from "@react-three/drei";
 import * as THREE from "three";
 
 // ─── Camera.001 world transform — extracted from 3D/Landing.glb ──────────────
@@ -227,16 +227,14 @@ function LandingBackgroundInner() {
 
         {clientMounted && (
           <Canvas
-            // Enable premium soft shadow maps to eliminate jagged edges
-            shadows="soft"
+            // Pass boolean shadows to avoid Three.js r184 PCFSoftShadowMap deprecation warning.
+            // Drei's <SoftShadows /> below handles the premium soft shadow filtering shaders.
+            shadows
             // Set high-fidelity pixel ratio up to 2 for sharp rendering on Retina/4K displays
             dpr={[1, 2]}
             frameloop="always"
             gl={{
               antialias: true,
-              // alpha: true so the canvas background is transparent and the
-              // CSS #05060b shows through — gives a natural dark background
-              // without a hard WebGL clear color.
               alpha: true,
               powerPreference: "high-performance",
               stencil: false,
@@ -245,7 +243,7 @@ function LandingBackgroundInner() {
               failIfMajorPerformanceCaveat: false,
               // Add high-dynamic-range ACES filmic tone mapping for premium rendering quality
               toneMapping: THREE.ACESFilmicToneMapping,
-              toneMappingExposure: 1.1,
+              toneMappingExposure: 1.2,
             }}
             onCreated={({ gl }) => {
               // Recover gracefully from GPU context loss (driver TDR, too many tabs)
@@ -259,6 +257,9 @@ function LandingBackgroundInner() {
             }}
             style={{ position: "absolute", inset: 0 }}
           >
+            {/* Inject Drei's modern PCF soft shadows shader directly into Three.js materials */}
+            <SoftShadows size={20} samples={10} focus={0.5} />
+
             {/*
               Use drei's PerspectiveCamera with makeDefault instead of the
               Canvas camera prop. This is more reliable for quaternion-based
@@ -275,23 +276,25 @@ function LandingBackgroundInner() {
             />
 
             {/* Subtle ambient + main shadow-casting directional light + accent points */}
-            <ambientLight intensity={0.25} />
+            <ambientLight intensity={0.4} />
             <directionalLight
               castShadow
-              position={[8, 12, 8]}
-              intensity={1.8}
-              shadow-mapSize-width={2048}
-              shadow-mapSize-height={2048}
-              shadow-camera-near={0.1}
-              shadow-camera-far={80}
-              shadow-camera-left={-25}
-              shadow-camera-right={25}
-              shadow-camera-top={25}
-              shadow-camera-bottom={-25}
-              shadow-bias={-0.0005}
+              position={[10, 15, 10]}
+              intensity={2.2}
+              // 1024x1024 prevents VRAM exhaustion/WebGL context loss while SoftShadows ensures smooth edges
+              shadow-mapSize-width={1024}
+              shadow-mapSize-height={1024}
+              shadow-camera-near={0.5}
+              shadow-camera-far={60}
+              // Tightening shadow frustum increases shadow resolution density by 3x over the car
+              shadow-camera-left={-15}
+              shadow-camera-right={15}
+              shadow-camera-top={15}
+              shadow-camera-bottom={-15}
+              shadow-bias={-0.0001}
             />
-            <pointLight position={[-6, 2, -2]} intensity={6} color="#06b6d4" decay={2} />
-            <pointLight position={[6, -2, 2]} intensity={4} color="#a855f7" decay={2} />
+            <pointLight position={[-6, 3, -2]} intensity={8} color="#06b6d4" decay={2} />
+            <pointLight position={[6, -2, 2]} intensity={5} color="#a855f7" decay={2} />
 
             {/*
               Environment provides IBL (Image-Based Lighting) needed for PBR
