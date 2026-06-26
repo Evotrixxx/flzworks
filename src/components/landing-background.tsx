@@ -21,17 +21,20 @@ import * as THREE from "three";
 //
 // Euler equivalent (YXZ order): Y=155.942°, X=-13.932°, Z=0°
 // Three.js rotation (XYZ) equivalent (radians): X=-0.2432, Y=2.7218, Z=0
-const CAM_POS_X = 1.3051;
-const CAM_POS_Y = 1.6541;
-const CAM_POS_Z = -4.1803;
+const CAM_POS_X = 6.417;
+const CAM_POS_Y = 1.1394;
+const CAM_POS_Z = 13.967;
 
 // Quaternion in Three.js Quaternion(x, y, z, w) order
+// Converted from Blender Camera.001 properties:
+// Location X: 6.417, Y: -13.967, Z: 1.1394
+// Rotation (WXYZ): W: 0.701, X: 0.703, Y: 0.083, Z: 0.083
 const CAM_QUAT: [number, number, number, number] = [
-  -0.025277, 0.970822, 0.118619, 0.206869,
+  0.001414, 0.11738, 0.0, 0.992778,
 ];
 
-const CAM_FOV = 37.299;
-const CAM_NEAR = 0.01;
+const CAM_FOV = 18.463; // Extracted from Blender Camera.001 data block (yfov = 0.32225 rad)
+const CAM_NEAR = 0.1;
 const CAM_FAR = 100;
 
 // ─── Error Boundary ──────────────────────────────────────────────────────────
