@@ -12,6 +12,7 @@ import React, {
 } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useGLTF, useProgress, useAnimations, PerspectiveCamera, Environment, SoftShadows } from "@react-three/drei";
+import { EffectComposer, N8AO, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
 
 // ─── Camera.001 world transform — extracted from 3D/Landing.glb ──────────────
@@ -228,7 +229,7 @@ function LandingBackgroundInner() {
         {clientMounted && (
           <Canvas
             // Pass boolean shadows to avoid Three.js r184 PCFSoftShadowMap deprecation warning.
-            // Drei's <SoftShadows /> below handles the premium soft shadow filtering shaders.
+            // VSMShadowMap is explicitly set in onCreated below for premium soft penumbras.
             shadows
             // Set high-fidelity pixel ratio up to 2 for sharp rendering on Retina/4K displays
             dpr={[1, 2]}
@@ -241,11 +242,14 @@ function LandingBackgroundInner() {
               depth: true,
               preserveDrawingBuffer: false,
               failIfMajorPerformanceCaveat: false,
-              // Add high-dynamic-range ACES filmic tone mapping for premium rendering quality
+              // PBR-accurate color and tone mapping
+              outputColorSpace: THREE.SRGBColorSpace,
               toneMapping: THREE.ACESFilmicToneMapping,
               toneMappingExposure: 1.2,
             }}
             onCreated={({ gl }) => {
+              gl.shadowMap.enabled = true;
+              gl.shadowMap.type = THREE.VSMShadowMap;
               // Recover gracefully from GPU context loss (driver TDR, too many tabs)
               gl.domElement.addEventListener("webglcontextlost", (e) => {
                 e.preventDefault();
@@ -281,9 +285,9 @@ function LandingBackgroundInner() {
               castShadow
               position={[10, 15, 10]}
               intensity={2.2}
-              // 1024x1024 prevents VRAM exhaustion/WebGL context loss while SoftShadows ensures smooth edges
-              shadow-mapSize-width={1024}
-              shadow-mapSize-height={1024}
+              // Push shadow resolution to the limit (4096x4096) for maximum visual quality
+              shadow-mapSize-width={4096}
+              shadow-mapSize-height={4096}
               shadow-camera-near={0.5}
               shadow-camera-far={60}
               // Tightening shadow frustum increases shadow resolution density by 3x over the car
@@ -308,6 +312,11 @@ function LandingBackgroundInner() {
 
             <Suspense fallback={null}>
               <LandingModel modelUrl={modelUrl} />
+              {/* Advanced Post-Processing Pipeline for photorealistic contact shadows and bloom */}
+              <EffectComposer enableNormalPass={true} multisampling={4}>
+                <N8AO aoRadius={2} intensity={1.5} distanceFalloff={1} />
+                <Bloom luminanceThreshold={0.8} luminanceSmoothing={0.2} intensity={0.5} mipmapBlur />
+              </EffectComposer>
             </Suspense>
           </Canvas>
         )}
