@@ -1,11 +1,55 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import React, { Component, ErrorInfo, ReactNode, Suspense, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Center, Environment, useGLTF, useProgress } from "@react-three/drei";
 import * as THREE from "three";
 
-// Loading Screen Component
+// 1. Error Boundary to catch 3D/WebGL/Loading crashes
+interface ErrorBoundaryProps {
+  fallback: ReactNode;
+  children: ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+}
+
+class CanvasErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  public state: ErrorBoundaryState = {
+    hasError: false
+  };
+
+  public static getDerivedStateFromError(_: Error): ErrorBoundaryState {
+    return { hasError: true };
+  }
+
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.warn("3D Background failed to load, falling back to CSS shapes:", error, errorInfo);
+  }
+
+  public render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+    return this.props.children;
+  }
+}
+
+// 2. CSS Fallback Shapes (Original background design)
+function FallbackShapes() {
+  return (
+    <div className="showroom-shapes" aria-hidden="true">
+      <span />
+      <span />
+      <span />
+      <span />
+      <span />
+    </div>
+  );
+}
+
+// 3. Loading Screen Component
 function LoadingScreen() {
   const { active, progress } = useProgress();
   const [showLoader, setShowLoader] = useState(true);
@@ -97,13 +141,14 @@ function LoadingScreen() {
   );
 }
 
-// 3D Model Component
+// 4. 3D Model Component
 interface ModelProps {
   mouse: React.MutableRefObject<{ x: number; y: number }>;
+  modelUrl: string;
 }
 
-function LandingModel({ mouse }: ModelProps) {
-  const { scene } = useGLTF("/models/Landing.glb");
+function LandingModel({ mouse, modelUrl }: ModelProps) {
+  const { scene } = useGLTF(modelUrl);
   const groupRef = useRef<THREE.Group>(null);
 
   // Apply shadow casting/receiving to all meshes
@@ -129,7 +174,6 @@ function LandingModel({ mouse }: ModelProps) {
     if (!groupRef.current) return;
 
     // Subtle parallax rotation: Y-axis (left/right mouse), X-axis (up/down mouse)
-    // We constrain the rotation to be extremely gentle (divided by 36) so it's not dizzying
     const targetRotationY = (mouse.current.x * Math.PI) / 36;
     const targetRotationX = (mouse.current.y * Math.PI) / 36;
 
@@ -137,7 +181,7 @@ function LandingModel({ mouse }: ModelProps) {
     groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotationY, 0.04);
     groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, -targetRotationX, 0.04);
 
-    // Subtle slow float drift to make the scene feel alive even when mouse is still
+    // Subtle slow float drift
     const time = state.clock.getElapsedTime();
     groupRef.current.position.y = Math.sin(time * 0.4) * 0.08;
     groupRef.current.position.x = Math.cos(time * 0.3) * 0.04;
@@ -152,14 +196,16 @@ function LandingModel({ mouse }: ModelProps) {
   );
 }
 
-// Main Landing Background Component
-export function LandingBackground() {
+// 5. Main Canvas Content
+function LandingBackgroundInner() {
   const mouse = useRef({ x: 0, y: 0 });
+  
+  // Allows custom CDN URL configuration via environment variable (useful for production LFS bypass)
+  const modelUrl = process.env.NEXT_PUBLIC_LANDING_MODEL_URL || "/models/Landing.glb";
 
   // Track mouse coordinates globally on the window
   useEffect(() => {
     const handlePointerMove = (event: PointerEvent) => {
-      // Normalize to range [-1, 1]
       mouse.current.x = (event.clientX / window.innerWidth) * 2 - 1;
       mouse.current.y = -(event.clientY / window.innerHeight) * 2 + 1;
     };
@@ -177,7 +223,7 @@ export function LandingBackground() {
 
       {/* 3D Background Canvas */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#05060b]" aria-hidden="true">
-        {/* Subtle radial overlay vignette to blend the 3D model into the dark background */}
+        {/* Subtle radial overlay vignette */}
         <div className="absolute inset-0 bg-radial-[circle_at_center,transparent_40%,#05060b_100%] z-10 pointer-events-none opacity-80" />
 
         <Canvas
@@ -188,7 +234,7 @@ export function LandingBackground() {
           {/* Subtle atmospheric lighting */}
           <ambientLight intensity={1.5} />
           
-          {/* Main directional light with soft shadows */}
+          {/* Main directional light */}
           <directionalLight
             position={[5, 10, 5]}
             intensity={3.5}
@@ -198,18 +244,18 @@ export function LandingBackground() {
             shadow-bias={-0.0001}
           />
           
-          {/* Colored accent lights to match cyan/purple theme */}
+          {/* Colored accent lights */}
           <pointLight position={[-6, 2, -2]} intensity={2.5} color="#06b6d4" />
           <pointLight position={[6, -2, 2]} intensity={2.0} color="#a855f7" />
 
           {/* Soft backlighting */}
           <directionalLight position={[0, -5, -5]} intensity={1.2} color="#0f172a" />
 
-          {/* High-fidelity studio reflections */}
+          {/* High-fidelity reflections */}
           <Environment preset="city" />
 
           <Suspense fallback={null}>
-            <LandingModel mouse={mouse} />
+            <LandingModel mouse={mouse} modelUrl={modelUrl} />
           </Suspense>
         </Canvas>
       </div>
@@ -217,5 +263,15 @@ export function LandingBackground() {
   );
 }
 
-// Preload the 138MB GLB asset
-useGLTF.preload("/models/Landing.glb");
+// 6. Exported Component with Error Boundary Wrapper
+export function LandingBackground() {
+  return (
+    <CanvasErrorBoundary fallback={<FallbackShapes />}>
+      <LandingBackgroundInner />
+    </CanvasErrorBoundary>
+  );
+}
+
+// Preload the default model path
+const defaultModelUrl = process.env.NEXT_PUBLIC_LANDING_MODEL_URL || "/models/Landing.glb";
+useGLTF.preload(defaultModelUrl);
