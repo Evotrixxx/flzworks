@@ -223,10 +223,10 @@ function LandingBackgroundInner() {
 
         {clientMounted && (
           <Canvas
-            // Enable shadow maps for realistic depth and contact shadows
-            shadows={true}
-            // Clamp pixel ratio to avoid VRAM exhaustion on hi-DPI displays
-            dpr={[1, 1.5]}
+            // Enable premium soft shadow maps to eliminate jagged edges
+            shadows="soft"
+            // Set high-fidelity pixel ratio up to 2 for sharp rendering on Retina/4K displays
+            dpr={[1, 2]}
             frameloop="always"
             gl={{
               antialias: true,
@@ -241,7 +241,7 @@ function LandingBackgroundInner() {
               failIfMajorPerformanceCaveat: false,
               // Add high-dynamic-range ACES filmic tone mapping for premium rendering quality
               toneMapping: THREE.ACESFilmicToneMapping,
-              toneMappingExposure: 1.25,
+              toneMappingExposure: 1.1,
             }}
             onCreated={({ gl }) => {
               // Recover gracefully from GPU context loss (driver TDR, too many tabs)
@@ -283,18 +283,18 @@ function LandingBackgroundInner() {
               shadow-camera-right={10}
               shadow-camera-top={10}
               shadow-camera-bottom={-10}
-              shadow-bias={-0.0005}
+              shadow-bias={-0.0003}
             />
             <pointLight position={[-6, 2, -2]} intensity={6} color="#06b6d4" decay={2} />
             <pointLight position={[6, -2, 2]} intensity={4} color="#a855f7" decay={2} />
 
             {/*
               Environment provides IBL (Image-Based Lighting) needed for PBR
-              materials to look correct. "apartment" is the lightest built-in
-              preset — smaller than "city" and avoids GPU memory exhaustion.
-              background={false} keeps the HDR as lighting-only (no skybox).
+              materials to look correct. Switching from "apartment" to "studio"
+              provides clean, elongated studio light box reflections that highlight
+              the metallic contours of the car showroom.
             */}
-            <Environment preset="apartment" background={false} />
+            <Environment preset="studio" background={false} />
 
             <CameraRig mouse={mouse} />
 
