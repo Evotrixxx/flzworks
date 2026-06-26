@@ -7,6 +7,12 @@ import { ThemeSwitcher } from "./theme-switcher";
 import Image from "next/image";
 import type { PortfolioArticleWithImages } from "@/lib/portfolio-sync";
 import { Calendar, Image as ImageIcon, ChevronDown, Eye, ArrowUpRight, Layers } from "lucide-react";
+import dynamic from "next/dynamic";
+
+const LandingBackground = dynamic(
+  () => import("./landing-background").then((m) => m.LandingBackground),
+  { ssr: false }
+);
 
 interface PortfolioOnepagerProps {
   instagramMedia: InstagramMediaItem[];
@@ -30,14 +36,8 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
 
   return (
     <div className="portfolio-shell min-h-screen text-white font-sans overflow-x-hidden selection:bg-white/20 selection:text-white">
-      {/* Animated background shapes (same as error page) */}
-      <div className="showroom-shapes" aria-hidden="true">
-        <span />
-        <span />
-        <span />
-        <span />
-        <span />
-      </div>
+      {/* 3D Interactive Background */}
+      <LandingBackground />
 
       {/* Marquee Ticker */}
       <div className="portfolio-ticker w-full border-b border-white/[0.06] py-2.5 overflow-hidden flex items-center relative z-10">

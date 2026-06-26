@@ -45,3 +45,8 @@ outputs/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local design assets and raw models
+/3D/
+/*.psd
+
