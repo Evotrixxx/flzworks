@@ -6,7 +6,7 @@ import type { InstagramMediaItem } from "@/lib/instagram";
 import { ThemeSwitcher } from "./theme-switcher";
 import Image from "next/image";
 import type { PortfolioArticleWithImages } from "@/lib/portfolio-sync";
-import { Calendar, Image as ImageIcon, ChevronDown, Eye, ArrowUpRight, Layers } from "lucide-react";
+import { Calendar, Image as ImageIcon, ChevronDown, Eye, ArrowUpRight, Layers, Radio, Shield, Zap } from "lucide-react";
 import dynamic from "next/dynamic";
 
 const LandingBackground = dynamic(
@@ -19,128 +19,213 @@ interface PortfolioOnepagerProps {
   articles: PortfolioArticleWithImages[];
 }
 
-// Helper to determine locale dynamically (fallback to Hungarian)
 const locale = "hu";
 
 export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepagerProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [activeImage, setActiveImage] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<"ALL" | "CAR_DESIGN" | "OTHER">("ALL");
+  // Default to CAR_DESIGN to immediately showcase high-end automotive 3D projects
+  const [selectedCategory, setSelectedCategory] = useState<"ALL" | "CAR_DESIGN" | "OTHER">("CAR_DESIGN");
   const [uiHidden, setUiHidden] = useState(false);
-  const enabledSocials = portfolioSocials.filter((s) => s.href);
+  const [activeFocusTab, setActiveFocusTab] = useState<string>(portfolioFocuses[0]?.id || "");
 
+  const enabledSocials = portfolioSocials.filter((s) => s.href);
   const publicArticles = articles.filter((a) => a.visible);
   const filteredArticles = publicArticles.filter((article) => {
     if (selectedCategory === "ALL") return true;
     return article.category === selectedCategory;
   });
 
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
-    <div className="portfolio-shell min-h-screen text-white font-sans overflow-x-hidden selection:bg-white/20 selection:text-white">
+    <div className="portfolio-shell min-h-screen text-white font-sans overflow-x-hidden selection:bg-cyan-500/20 selection:text-cyan-300">
       {/* 3D Interactive Background */}
       <LandingBackground />
 
-      {/* Marquee Ticker */}
-      <div className={`portfolio-ticker w-full border-b border-white/[0.06] py-2.5 overflow-hidden flex items-center relative z-10 transition-all duration-700 ${uiHidden ? "opacity-0 translate-y-[-20px] pointer-events-none" : "opacity-100 translate-y-0"}`}>
-        <div className="flex whitespace-nowrap animate-marquee">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <span key={i} className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mx-6">
-              FLZ Works · Design · Engineering · Machine Experience · 2026 ·
+      {/* ── Top HUD Navigation Bar ── */}
+      <header className={`hud-nav fixed top-6 left-4 right-4 max-w-7xl lg:mx-auto z-40 rounded-full px-6 py-3.5 flex items-center justify-between transition-all duration-700 ${
+        uiHidden ? "opacity-0 translate-y-[-20px] pointer-events-none" : "opacity-100 translate-y-0"
+      }`}>
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => scrollToSection("hero")}>
+            <div className="h-7 w-7 rounded-full bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+              <Zap className="h-3.5 w-3.5 text-cyan-400 animate-pulse" />
+            </div>
+            <span className="text-sm font-black uppercase tracking-[0.2em] text-white">
+              FLZ<span className="text-cyan-400">WORKS</span>
             </span>
-          ))}
+          </div>
+
+          {/* Navigation Anchors */}
+          <nav className="hidden md:flex items-center gap-1.5 bg-white/[0.04] border border-white/[0.06] rounded-full p-1.5 px-3">
+            <button
+              onClick={() => scrollToSection("hero")}
+              className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-white hover:bg-white/[0.06] transition-all duration-300"
+            >
+              Fókusz
+            </button>
+            <button
+              onClick={() => scrollToSection("archive")}
+              className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-white hover:bg-white/[0.06] transition-all duration-300"
+            >
+              Archívum
+            </button>
+            {instagramMedia.length > 0 && (
+              <button
+                onClick={() => scrollToSection("signals")}
+                className="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-white/60 hover:text-white hover:bg-white/[0.06] transition-all duration-300"
+              >
+                Jelek
+              </button>
+            )}
+          </nav>
         </div>
-      </div>
 
-      <div className={`relative z-10 max-w-7xl mx-auto px-4 py-12 md:py-20 transition-all duration-700 ${uiHidden ? "opacity-0 scale-98 pointer-events-none" : "opacity-100 scale-100"}`}>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="flex items-center gap-4">
+          {/* Signal Indicator */}
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+            <div className="hud-pulse-bubble" />
+            <span className="text-[9px] font-black uppercase tracking-[0.25em] text-emerald-400">
+              SIGNAL ACTIVE
+            </span>
+          </div>
 
-        {/* Left Column: Consolidates Hero + Focus to prevent blocking the 3D model */}
-        <div className="lg:col-span-5 flex flex-col gap-6">
-          {/* Hero Bento */}
-          <div className="portfolio-bento-hero flex flex-col justify-between min-h-[380px] p-8 md:p-10">
-            {/* Shimmer top edge */}
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none" />
+          {/* Quick Showroom Mode Button */}
+          <button
+            onClick={() => setUiHidden(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] text-[10px] font-black uppercase tracking-widest text-white/80 hover:text-white transition-all duration-300 active:scale-95 cursor-pointer shadow-lg"
+          >
+            <Eye className="h-3.5 w-3.5 text-cyan-400" />
+            <span className="hidden md:inline">Showroom Mode</span>
+          </button>
 
-            <header className="flex justify-between items-start">
+          <ThemeSwitcher />
+        </div>
+      </header>
+
+      {/* ── Main Viewport Content ── */}
+      <main className={`relative z-10 max-w-7xl mx-auto px-4 pt-32 pb-24 transition-all duration-700 ${
+        uiHidden ? "opacity-0 scale-98 pointer-events-none" : "opacity-100 scale-100"
+      }`}>
+        
+        {/* Above-the-fold Stage: Left panel occupies 4 columns, leaving 8 columns completely unhindered for 3D view */}
+        <div id="hero" className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[70vh] items-start pt-6">
+          
+          {/* Unified Hero & Focus Floating Panel */}
+          <div className="lg:col-span-4 flex flex-col gap-6">
+            
+            <div className="hud-panel flex flex-col justify-between p-8 rounded-3xl relative overflow-hidden group">
+              {/* Shimmer top border */}
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent pointer-events-none" />
+
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.35em] text-white/30 mb-4">
-                  Portfolio · 2026
-                </p>
-                <h1 className="text-6xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter leading-[0.88] mb-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <Shield className="h-3.5 w-3.5 text-cyan-400" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.35em] text-cyan-400/80">
+                    AUTOMOTIVE & SYSTEMS
+                  </span>
+                </div>
+
+                <h1 className="text-7xl lg:text-8xl font-black uppercase tracking-tighter leading-[0.85] mb-6 portfolio-text-glow">
                   FLZ
                   <br />
-                  <span className="portfolio-text-glow">WORKS</span>
+                  WORKS
                 </h1>
-                <p className="text-white/40 font-mono text-xs max-w-md leading-relaxed">
-                  3D automotive design, systems architecture, high-performance web, and prototype engineering.
+
+                <p className="text-white/60 font-mono text-xs leading-relaxed mb-8">
+                  Fotorealisztikus 3D gépjárműtervezés, rendszerarchitektúra, nagyteljesítményű webrenderelés és prototípus-fejlesztés.
                 </p>
               </div>
-              <ThemeSwitcher />
-            </header>
 
-            <div className="flex flex-wrap gap-2.5 mt-auto pt-6">
-              {enabledSocials.map((social) => {
-                const Icon = social.icon;
-                return (
-                  <a
-                    key={social.label}
-                    href={social.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="portfolio-social-btn inline-flex items-center gap-1.5 px-4 py-2 text-[10px] font-black uppercase tracking-wider rounded-full"
-                  >
-                    <Icon className="h-3 w-3" />
-                    {social.label}
-                    <ArrowUpRight className="h-2.5 w-2.5 opacity-50" />
-                  </a>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Index Focus Bento */}
-          <div className="portfolio-bento-card flex flex-col p-7 md:p-8">
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
-            <div className="flex items-center gap-2 mb-6">
-              <Layers className="h-3.5 w-3.5 text-white/30" />
-              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30">
-                Index Focus
-              </h2>
-            </div>
-            <div className="flex flex-col gap-5 justify-center">
-              {portfolioFocuses.map((focus, i) => (
-                <div key={focus.id} className="flex flex-col group cursor-default">
-                  <span className="text-[9px] font-mono text-white/20 mb-0.5 tracking-widest">
-                    0{i + 1}
-                  </span>
-                  <h3 className="text-xl lg:text-2xl font-black uppercase tracking-tight text-white/80 group-hover:text-white transition-colors duration-300">
-                    {focus.label}
-                  </h3>
-                  <div className="h-px w-0 group-hover:w-full bg-gradient-to-r from-[var(--accent-aqua)] to-transparent transition-all duration-500 mt-1" />
+              {/* Index Focus Pill Selector */}
+              <div className="pt-6 border-t border-white/[0.06]">
+                <div className="flex items-center gap-2 mb-4">
+                  <Layers className="h-3.5 w-3.5 text-white/40" />
+                  <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">
+                    Index Fókusz
+                  </h2>
                 </div>
-              ))}
+
+                <div className="flex flex-col gap-2">
+                  {portfolioFocuses.map((focus, i) => {
+                    const isActive = activeFocusTab === focus.id;
+                    return (
+                      <div
+                        key={focus.id}
+                        onClick={() => setActiveFocusTab(focus.id)}
+                        className={`group/focus flex items-center justify-between p-3 rounded-2xl border cursor-pointer transition-all duration-300 ${
+                          isActive
+                            ? "bg-cyan-500/10 border-cyan-500/30 shadow-lg shadow-cyan-500/10 text-white"
+                            : "bg-white/[0.02] border-white/[0.05] text-white/60 hover:text-white hover:bg-white/[0.04]"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className={`text-[10px] font-mono tracking-widest ${isActive ? "text-cyan-400" : "text-white/30"}`}>
+                            0{i + 1}
+                          </span>
+                          <span className="text-xs font-black uppercase tracking-wider">
+                            {focus.label}
+                          </span>
+                        </div>
+                        <div className={`h-1.5 w-1.5 rounded-full transition-transform duration-300 ${
+                          isActive ? "bg-cyan-400 scale-125 shadow-sm shadow-cyan-400" : "bg-white/20 group-hover/focus:bg-white/40"
+                        }`} />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Social Links */}
+              <div className="flex flex-wrap gap-2 mt-8 pt-6 border-t border-white/[0.06]">
+                {enabledSocials.map((social) => {
+                  const Icon = social.icon;
+                  return (
+                    <a
+                      key={social.label}
+                      href={social.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/60 hover:text-white hover:bg-white/[0.08] hover:border-white/[0.18] transition-all duration-300 shadow-md"
+                    >
+                      <Icon className="h-3 w-3 text-cyan-400" />
+                      {social.label}
+                      <ArrowUpRight className="h-2.5 w-2.5 opacity-50" />
+                    </a>
+                  );
+                })}
+              </div>
+
             </div>
           </div>
+
+          {/* Completely empty right 8 columns allowing the 3D car to be perfectly visible and unhindered */}
+          <div className="lg:col-span-8 hidden lg:block pointer-events-none" />
+
         </div>
 
-        {/* Right Column: Kept completely empty above the fold on desktop to showcase the 3D showroom and car */}
-        <div className="lg:col-span-7 hidden lg:block pointer-events-none" />
-
-        {/* ── Archive Section ── */}
-        <div className="lg:col-span-12 mt-6">
-          {/* Section heading */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+        {/* ── Design Archive Section ── */}
+        <div id="archive" className="mt-20 pt-16 border-t border-white/[0.06]">
+          
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.35em] text-white/25 mb-2">
-                Design Archive
-              </p>
+              <div className="flex items-center gap-2 mb-2">
+                <Radio className="h-3.5 w-3.5 text-cyan-400 animate-pulse" />
+                <p className="text-[10px] font-black uppercase tracking-[0.35em] text-white/40">
+                  DESIGN ARCHIVE · REPOSITORY
+                </p>
+              </div>
               <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-none portfolio-section-title">
                 {locale === "hu" ? "Archívum" : "Archive"}
               </h2>
             </div>
 
-            {/* Category Filter */}
-            <div className="flex items-center gap-1.5 portfolio-filter-bar p-1.5 rounded-2xl shrink-0 self-start md:self-auto">
+            {/* Category Filters */}
+            <div className="flex items-center gap-1.5 bg-white/[0.03] border border-white/[0.08] p-1.5 rounded-2xl shrink-0 backdrop-blur-xl shadow-xl">
               {[
                 { id: "ALL" as const, label: locale === "hu" ? "Összes" : "All" },
                 { id: "CAR_DESIGN" as const, label: "3D Autó" },
@@ -149,10 +234,11 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`portfolio-filter-btn px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 ${
-                    selectedCategory === cat.id ? "portfolio-filter-active" : "portfolio-filter-inactive"
-                  } ${cat.id === "CAR_DESIGN" && selectedCategory === cat.id ? "portfolio-filter-cyan" : ""}
-                  ${cat.id === "OTHER" && selectedCategory === cat.id ? "portfolio-filter-purple" : ""}`}
+                  className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 ${
+                    selectedCategory === cat.id
+                      ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-lg shadow-cyan-500/20"
+                      : "text-white/40 hover:text-white hover:bg-white/[0.05] border border-transparent"
+                  }`}
                 >
                   {cat.label}
                 </button>
@@ -160,15 +246,15 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             </div>
           </div>
 
-          {/* Cards grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {/* Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {filteredArticles.length === 0 ? (
-              <div className="col-span-full py-20 text-center portfolio-empty-state rounded-3xl">
-                <p className="text-sm font-black uppercase tracking-widest text-white/30">
+              <div className="col-span-full py-28 text-center border border-dashed border-white/[0.08] bg-white/[0.01] rounded-3xl backdrop-blur-md">
+                <p className="text-sm font-black uppercase tracking-widest text-white/40">
                   {locale === "hu" ? "Nincsenek cikkek ebben a kategóriában" : "No projects in this category"}
                 </p>
-                <p className="text-xs font-mono text-white/15 mt-2">
-                  {locale === "hu" ? "Válassz másik szűrőt" : "Select another filter"}
+                <p className="text-xs font-mono text-white/20 mt-2">
+                  {locale === "hu" ? "Válassz másik szűrőt a megtekintéshez" : "Select another filter to view"}
                 </p>
               </div>
             ) : (
@@ -179,46 +265,47 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                 return (
                   <div
                     key={article.id}
-                    className={`portfolio-archive-card relative flex flex-col group transition-all duration-500 cursor-pointer overflow-hidden rounded-2xl ${
+                    className={`hud-card relative flex flex-col group cursor-pointer overflow-hidden rounded-3xl ${
                       isExpanded
-                        ? "col-span-full md:col-span-full xl:col-span-full"
-                        : "min-h-[260px]"
+                        ? "col-span-full md:col-span-full xl:col-span-full ring-1 ring-cyan-500/30"
+                        : "min-h-[280px]"
                     }`}
                     onClick={() => {
                       if (!isExpanded) setExpandedId(article.id);
                     }}
                   >
-                    {/* Card shimmer top */}
+                    {/* Shimmer top */}
                     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
 
-                    {/* Category accent line */}
-                    <div className={`absolute left-0 top-0 bottom-0 w-[2px] ${
-                      isCar ? "bg-gradient-to-b from-cyan-400/80 via-cyan-500/30 to-transparent" : "bg-gradient-to-b from-purple-400/80 via-purple-500/30 to-transparent"
+                    {/* Left category accent bar */}
+                    <div className={`absolute left-0 top-0 bottom-0 w-[3px] ${
+                      isCar ? "bg-gradient-to-b from-cyan-400 via-cyan-600/30 to-transparent" : "bg-gradient-to-b from-purple-400 via-purple-600/30 to-transparent"
                     }`} />
 
-                    <div className="relative p-7 flex flex-col h-full">
-                      {/* Meta row */}
-                      <div className="flex items-center justify-between mb-5">
-                        <div className="flex items-center gap-2.5">
-                          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${
+                    <div className="relative p-8 flex flex-col h-full">
+                      
+                      {/* Meta Header */}
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border ${
                             isCar
                               ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/20"
                               : "bg-purple-500/10 text-purple-400 border-purple-500/20"
                           }`}>
                             {isCar ? "3D Auto" : (locale === "hu" ? "Egyéb" : "Other")}
                           </span>
-                          <span className="text-[9px] font-mono text-white/25 uppercase tracking-widest">
+                          <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest">
                             #{String(i + 1).padStart(3, "0")}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2.5">
-                          <span className="inline-flex items-center gap-1 text-[10px] font-mono text-white/25">
-                            <Calendar className="h-2.5 w-2.5" />
+                        <div className="flex items-center gap-3">
+                          <span className="inline-flex items-center gap-1.5 text-[11px] font-mono text-white/40">
+                            <Calendar className="h-3 w-3 text-cyan-400" />
                             {article.date === "N/A" ? "N/A" : article.date.replace(/-/g, ".")}
                           </span>
                           {article.images.length > 0 && (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-mono text-white/25">
-                              <ImageIcon className="h-2.5 w-2.5" />
+                            <span className="inline-flex items-center gap-1.5 text-[11px] font-mono text-white/40">
+                              <ImageIcon className="h-3 w-3 text-cyan-400" />
                               {article.images.length}
                             </span>
                           )}
@@ -226,8 +313,10 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                       </div>
 
                       {/* Title */}
-                      <div className="flex items-start justify-between gap-4 mb-3">
-                        <h3 className={`font-black uppercase tracking-tight leading-tight text-white/90 group-hover:text-white transition-colors duration-300 ${isExpanded ? "text-3xl md:text-4xl" : "text-xl"}`}>
+                      <div className="flex items-start justify-between gap-4 mb-4">
+                        <h3 className={`font-black uppercase tracking-tight leading-tight text-white/90 group-hover:text-white transition-colors duration-300 ${
+                          isExpanded ? "text-3xl md:text-5xl text-cyan-300" : "text-2xl"
+                        }`}>
                           {article.title}
                         </h3>
                         {isExpanded && (
@@ -236,9 +325,9 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                               e.stopPropagation();
                               setExpandedId(null);
                             }}
-                            className="shrink-0 flex h-9 w-9 items-center justify-center rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white transition"
+                            className="shrink-0 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white transition cursor-pointer"
                           >
-                            <ChevronDown className="h-4 w-4 rotate-180" />
+                            <ChevronDown className="h-5 w-5 rotate-180" />
                           </button>
                         )}
                       </div>
@@ -246,28 +335,29 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                       {/* Description */}
                       <p className={`font-mono text-sm leading-relaxed transition-all duration-300 ${
                         isExpanded
-                          ? "text-white/60 mt-2 mb-6"
-                          : "text-white/35 line-clamp-2 mt-auto"
+                          ? "text-white/70 mt-2 mb-8 max-w-4xl"
+                          : "text-white/40 line-clamp-2 mt-auto"
                       }`}>
                         {article.description || "Portfolio project folder synced from repository."}
                       </p>
 
-                      {/* Hover arrow (not expanded) */}
+                      {/* Hover action indicator */}
                       {!isExpanded && (
                         <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-white/50">
+                          <div className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-cyan-400 bg-cyan-500/10 px-3 py-1.5 rounded-xl border border-cyan-500/20">
                             Megnyit <ArrowUpRight className="h-3 w-3" />
                           </div>
                         </div>
                       )}
 
-                      {/* Expanded: Image gallery */}
+                      {/* Expanded Gallery */}
                       {isExpanded && article.images.length > 0 && (
-                        <div className="mt-2 pt-6 border-t border-white/[0.06] space-y-4">
-                          <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30">
+                        <div className="mt-4 pt-8 border-t border-white/[0.06] space-y-6">
+                          <h4 className="text-xs font-black uppercase tracking-[0.3em] text-cyan-400/80 flex items-center gap-2">
+                            <ImageIcon className="h-4 w-4 text-cyan-400" />
                             Média Galéria · {article.images.length} kép
                           </h4>
-                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
                             {article.images.map((img) => {
                               const imgPath = `/api/portfolio/media/${article.folderName}/${img}`;
                               return (
@@ -277,7 +367,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                                     e.stopPropagation();
                                     setActiveImage(imgPath);
                                   }}
-                                  className="group/img relative aspect-video cursor-zoom-in overflow-hidden rounded-xl bg-white/[0.03] border border-white/[0.06] transition-all duration-300 hover:border-white/20 hover:shadow-lg hover:shadow-black/40"
+                                  className="group/img relative aspect-video cursor-zoom-in overflow-hidden rounded-2xl bg-white/[0.03] border border-white/[0.08] transition-all duration-400 hover:border-cyan-500/40 hover:shadow-xl hover:shadow-cyan-500/10"
                                 >
                                   <Image
                                     src={imgPath}
@@ -287,8 +377,8 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                                     className="object-cover transition duration-500 group-hover/img:scale-105"
                                     unoptimized
                                   />
-                                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/img:opacity-100 transition duration-300 flex items-center justify-center">
-                                    <Eye className="h-4 w-4 text-white" />
+                                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/img:opacity-100 transition duration-300 flex items-center justify-center backdrop-blur-[2px]">
+                                    <Eye className="h-5 w-5 text-cyan-400" />
                                   </div>
                                 </div>
                               );
@@ -296,39 +386,44 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                           </div>
                         </div>
                       )}
+
                     </div>
                   </div>
                 );
               })
             )}
           </div>
+
         </div>
 
-        {/* Instagram Grid */}
+        {/* ── Transmission Log (Instagram Signals) ── */}
         {instagramMedia.length > 0 && (
-          <div className="lg:col-span-12 mt-16">
-            <div className="flex flex-col md:flex-row md:items-end justify-between mb-8">
+          <div id="signals" className="mt-28 pt-16 border-t border-white/[0.06]">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.35em] text-white/25 mb-2">
-                  Live Feed · Instagram
-                </p>
-                <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-none text-white/70">
+                <div className="flex items-center gap-2 mb-2">
+                  <Zap className="h-3.5 w-3.5 text-cyan-400 animate-pulse" />
+                  <p className="text-[10px] font-black uppercase tracking-[0.35em] text-white/40">
+                    LIVE FEED · INSTAGRAM
+                  </p>
+                </div>
+                <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-none text-white/80">
                   Transmission<br />
                   <span className="portfolio-text-glow">Log</span>
                 </h2>
               </div>
-              <p className="text-[10px] font-mono text-white/20 mt-3 md:mt-0 uppercase tracking-widest">
+              <p className="text-xs font-mono text-white/30 mt-3 md:mt-0 uppercase tracking-widest bg-white/[0.03] px-4 py-2 rounded-xl border border-white/[0.06]">
                 @flzworks · IG Signal
               </p>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {instagramMedia.map((item) => (
                 <a
                   key={item.id}
                   href={item.permalink}
                   target="_blank"
                   rel="noreferrer"
-                  className="relative aspect-square overflow-hidden rounded-2xl group bg-white/[0.03] border border-white/[0.06] transition-all duration-300 hover:border-white/20"
+                  className="relative aspect-square overflow-hidden rounded-3xl group bg-white/[0.03] border border-white/[0.08] transition-all duration-400 hover:border-cyan-500/40 hover:shadow-2xl hover:shadow-cyan-500/10"
                 >
                   {(item.thumbnail_url || item.media_url) && (
                     <Image
@@ -336,13 +431,14 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                       alt={item.caption || "Instagram post"}
                       fill
                       sizes="(max-width: 768px) 50vw, (max-width: 1024px) 25vw, 20vw"
-                      className="object-cover opacity-40 group-hover:opacity-80 transition-all duration-500 grayscale group-hover:grayscale-0 scale-105 group-hover:scale-100"
+                      className="object-cover opacity-50 group-hover:opacity-90 transition-all duration-500 grayscale group-hover:grayscale-0 scale-105 group-hover:scale-100"
                       unoptimized
                     />
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-300" />
-                  <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition duration-300">
-                    <ArrowUpRight className="h-4 w-4 text-white" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-300" />
+                  <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center gap-2 bg-cyan-500/20 backdrop-blur-md border border-cyan-500/40 px-3 py-1.5 rounded-full">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-cyan-300">Signal</span>
+                    <ArrowUpRight className="h-3.5 w-3.5 text-cyan-300" />
                   </div>
                 </a>
               ))}
@@ -350,36 +446,50 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
           </div>
         )}
 
-          {/* Footer spacer */}
-          <div className="lg:col-span-12 mt-12 pt-8 border-t border-white/[0.05] flex items-center justify-between">
-            <p className="text-[10px] font-mono text-white/15 uppercase tracking-widest">
-              FLZ Works · {new Date().getFullYear()}
-            </p>
-            <p className="text-[10px] font-mono text-white/15 uppercase tracking-widest">
-              Design · Engineering · Architecture
-            </p>
+        {/* ── Floating Footer Marquee Ticker ── */}
+        <div className="mt-28 pt-8 border-t border-white/[0.06] flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 overflow-hidden w-full bg-white/[0.02] border border-white/[0.06] rounded-2xl py-3 px-6 backdrop-blur-xl shadow-xl">
+            <div className="flex whitespace-nowrap animate-marquee">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <span key={i} className="text-[11px] font-black uppercase tracking-[0.3em] text-white/30 mx-8">
+                  FLZ WORKS · DESIGN · ENGINEERING · MACHINE EXPERIENCE · 2026 ·
+                </span>
+              ))}
+            </div>
           </div>
-
         </div>
-      </div>
 
-      {/* Floating Showroom Mode Toggle Button */}
+        <div className="mt-6 flex items-center justify-between px-2 text-[11px] font-mono text-white/20 uppercase tracking-widest">
+          <p>FLZ Works · {new Date().getFullYear()}</p>
+          <p>Design · Engineering · Architecture</p>
+        </div>
+
+      </main>
+
+      {/* ── Floating Showroom Mode Toggle Button ── */}
       <button
         onClick={() => setUiHidden(!uiHidden)}
-        className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+        className={`fixed bottom-8 right-8 z-50 flex items-center gap-3 px-6 py-4 rounded-full border shadow-2xl backdrop-blur-2xl transition-all duration-400 hover:scale-105 active:scale-95 cursor-pointer ${
+          uiHidden
+            ? "bg-cyan-500/20 border-cyan-400/50 text-cyan-300 shadow-cyan-500/20 ring-2 ring-cyan-400/20"
+            : "bg-white/[0.05] hover:bg-white/[0.1] border-white/[0.15] text-white/70 hover:text-white"
+        }`}
         title={uiHidden ? "Show UI" : "Showroom Mode (Hide UI)"}
         aria-label="Toggle Showroom Mode"
       >
-        <Eye className={`h-5 w-5 transition-transform duration-300 ${uiHidden ? "text-cyan-400" : "text-white/60"}`} />
+        <Eye className={`h-5 w-5 transition-transform duration-300 ${uiHidden ? "text-cyan-300 animate-pulse" : "text-cyan-400"}`} />
+        <span className="text-xs font-black uppercase tracking-widest">
+          {uiHidden ? "Show UI" : "Clean Mode"}
+        </span>
       </button>
 
-      {/* Lightbox Modal */}
+      {/* ── Lightbox Modal ── */}
       {activeImage && (
         <div
           onClick={() => setActiveImage(null)}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/96 p-4 backdrop-blur-sm cursor-zoom-out"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-6 backdrop-blur-2xl cursor-zoom-out animate-fadeIn"
         >
-          <div className="relative max-h-full max-w-7xl aspect-video w-full rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+          <div className="relative max-h-[90vh] max-w-7xl aspect-video w-full rounded-3xl overflow-hidden border border-white/[0.15] shadow-2xl shadow-black/80">
             <Image
               src={activeImage}
               alt="Expanded view"
@@ -388,11 +498,12 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
               unoptimized
             />
           </div>
-          <div className="absolute top-5 right-5 text-white/40 hover:text-white transition font-black uppercase tracking-widest text-[10px] bg-white/5 px-4 py-2 rounded-full border border-white/10 backdrop-blur-md cursor-pointer">
+          <div className="absolute top-8 right-8 text-white/60 hover:text-white transition font-black uppercase tracking-widest text-xs bg-white/[0.08] hover:bg-white/[0.15] px-6 py-3 rounded-full border border-white/[0.15] backdrop-blur-2xl shadow-2xl cursor-pointer">
             ✕ Bezárás
           </div>
         </div>
       )}
+
     </div>
   );
 }
