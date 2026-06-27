@@ -1,36 +1,25 @@
 "use client";
 
 import React, {
-  Component,
-  ErrorInfo,
-  ReactNode,
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+   Component,
+   ErrorInfo,
+   ReactNode,
+   Suspense,
+   useCallback,
+   useEffect,
+   useMemo,
+   useRef,
+   useState,
+ } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { useGLTF, useProgress, useAnimations, PerspectiveCamera, Environment, SoftShadows } from "@react-three/drei";
+import { useGLTF, useProgress, useAnimations, PerspectiveCamera, Environment, SoftShadows, Sparkles } from "@react-three/drei";
+import { EffectComposer, Bloom, ChromaticAberration, Vignette } from "@react-three/postprocessing";
 import * as THREE from "three";
 
-// ─── Camera.001 world transform — extracted from 3D/Landing.glb ──────────────
-// Extracted via node script reading raw GLB JSON chunk (uncompressed Blender export)
-//  Position:   [1.3051, 1.6541, -4.1803]
-//  Quaternion: [-0.025277, 0.970822, 0.118619, 0.206869]  (x y z w)
-//  FOV Y:      37.299°   Near: 0.01   Far: 100
-//
-// Euler equivalent (YXZ order): Y=155.942°, X=-13.932°, Z=0°
-// Three.js rotation (XYZ) equivalent (radians): X=-0.2432, Y=2.7218, Z=0
 const CAM_POS_X = 5.39;
 const CAM_POS_Y = 1.151;
 const CAM_POS_Z = 9.678;
 
-// Quaternion in Three.js Quaternion(x, y, z, w) order
-// Converted from Blender Camera.001 properties:
-// Location X: 6.417, Y: -13.967, Z: 1.1394
-// Rotation (WXYZ): W: 0.701, X: 0.703, Y: 0.083, Z: 0.083
 const CAM_QUAT: [number, number, number, number] = [
   0.001414, 0.11738, 0.0, 0.992778,
 ];
@@ -63,7 +52,6 @@ function FallbackShapes() {
 }
 
 // ─── Progress Loading Screen ─────────────────────────────────────────────────
-// useProgress reads Zustand state — safe to call outside <Canvas>
 function LoadingScreen({ sceneReady }: { sceneReady: boolean }) {
   const { active, progress } = useProgress();
   const [visible, setVisible] = useState(true);
@@ -139,8 +127,6 @@ function LoadingScreen({ sceneReady }: { sceneReady: boolean }) {
 }
 
 // ─── Camera Rig — mouse parallax on top of base Blender position ──────────────
-// Uses the drei PerspectiveCamera (makeDefault) as the active camera.
-// useFrame nudges X/Y position toward mouse target; Z and rotation stay fixed.
 function CameraRig({ mouse }: { mouse: React.MutableRefObject<{ x: number; y: number }> }) {
   useFrame(({ camera }) => {
     camera.position.x = THREE.MathUtils.lerp(
@@ -173,9 +159,6 @@ function LandingModel({ modelUrl, onReady }: { modelUrl: string; onReady: () => 
   }, [onReady, scene]);
 
   // Traverse and enable shadow properties synchronously during render phase (via useMemo)
-  // so meshes have castShadow and receiveShadow set BEFORE they are mounted in the scene.
-  // This is critical in Three.js because materials compiled without shadow support
-  // will not receive or cast shadows even if properties are changed later.
   useMemo(() => {
     if (scene) {
       scene.traverse((child) => {
@@ -202,10 +185,6 @@ function LandingBackgroundInner() {
   const [sceneReady, setSceneReady] = useState(false);
   const handleSceneReady = useCallback(() => setSceneReady(true), []);
 
-  // Gate Canvas render behind client mount.
-  // React 18 Strict Mode double-invokes components before any useEffect fires.
-  // Without this gate two WebGL contexts are created on the same canvas element,
-  // causing: "Canvas has an existing context of a different type"
   const [clientMounted, setClientMounted] = useState(false);
   useEffect(() => {
     const mountTimer = window.setTimeout(() => setClientMounted(true), 0);
@@ -223,7 +202,6 @@ function LandingBackgroundInner() {
 
   return (
     <>
-      {/* Loading overlay — reads Zustand progress, safe outside Canvas */}
       <LoadingScreen sceneReady={sceneReady} />
 
       <div
@@ -242,10 +220,7 @@ function LandingBackgroundInner() {
 
         {clientMounted && (
           <Canvas
-            // Pass boolean shadows to allow Three.js to manage shadow maps cleanly.
-            // Drei's <SoftShadows /> below handles the premium soft shadow filtering shaders.
             shadows
-            // Set high-fidelity pixel ratio up to 2 for sharp rendering on Retina/4K displays
             dpr={[1, 2]}
             frameloop="always"
             gl={{
@@ -256,15 +231,12 @@ function LandingBackgroundInner() {
               depth: true,
               preserveDrawingBuffer: false,
               failIfMajorPerformanceCaveat: false,
-              // PBR-accurate color and tone mapping
               outputColorSpace: THREE.SRGBColorSpace,
               toneMapping: THREE.ACESFilmicToneMapping,
               toneMappingExposure: 1.2,
             }}
             onCreated={({ gl }) => {
               gl.shadowMap.enabled = true;
-
-              // Recover gracefully from GPU context loss (driver TDR, too many tabs)
               gl.domElement.addEventListener("webglcontextlost", (e) => {
                 e.preventDefault();
                 console.warn("[LandingBackground] WebGL context lost — will attempt restore");
@@ -275,15 +247,8 @@ function LandingBackgroundInner() {
             }}
             style={{ position: "absolute", inset: 0 }}
           >
-            {/* Inject Drei's modern PCF soft shadows shader directly into Three.js materials */}
             <SoftShadows size={20} samples={10} focus={0.5} />
 
-            {/*
-              Use drei's PerspectiveCamera with makeDefault instead of the
-              Canvas camera prop. This is more reliable for quaternion-based
-              orientation because it directly creates and registers the camera
-              in the R3F scene without going through applyProps quaternion parsing.
-            */}
             <PerspectiveCamera
               makeDefault
               position={[CAM_POS_X, CAM_POS_Y, CAM_POS_Z]}
@@ -293,18 +258,15 @@ function LandingBackgroundInner() {
               far={CAM_FAR}
             />
 
-            {/* Subtle ambient + main shadow-casting directional light + accent points */}
             <ambientLight intensity={0.4} />
             <directionalLight
               castShadow
               position={[10, 15, 10]}
               intensity={2.2}
-              // Push shadow resolution to the limit (4096x4096) for maximum visual quality
               shadow-mapSize-width={4096}
               shadow-mapSize-height={4096}
               shadow-camera-near={0.5}
               shadow-camera-far={60}
-              // Tightening shadow frustum increases shadow resolution density by 3x over the car
               shadow-camera-left={-15}
               shadow-camera-right={15}
               shadow-camera-top={15}
@@ -314,19 +276,24 @@ function LandingBackgroundInner() {
             <pointLight position={[-6, 3, -2]} intensity={8} color="#06b6d4" decay={2} />
             <pointLight position={[6, -2, 2]} intensity={5} color="#a855f7" decay={2} />
 
-            {/*
-              Environment provides IBL (Image-Based Lighting) needed for PBR
-              materials to look correct. Switching from "apartment" to "studio"
-              provides clean, elongated studio light box reflections that highlight
-              the metallic contours of the car showroom.
-            */}
             <Environment preset="studio" background={false} />
 
             <CameraRig mouse={mouse} />
 
+            {/* Ambient particle layers */}
+            <Sparkles count={150} scale={15} size={1.2} speed={0.3} color="#06b6d4" opacity={0.6} />
+            <Sparkles count={100} scale={15} size={1.5} speed={0.2} color="#a855f7" opacity={0.4} />
+
             <Suspense fallback={null}>
               <LandingModel modelUrl={modelUrl} onReady={handleSceneReady} />
             </Suspense>
+
+            {/* Premium post-processing pipeline */}
+            <EffectComposer>
+              <Bloom intensity={0.8} luminanceThreshold={0.55} luminanceSmoothing={0.85} />
+              <ChromaticAberration offset={[0.0006, 0.0006]} />
+              <Vignette eskil={false} offset={0.1} darkness={0.8} />
+            </EffectComposer>
           </Canvas>
         )}
       </div>

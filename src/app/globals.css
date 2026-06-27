@@ -563,6 +563,70 @@ select[aria-invalid="true"] {
   animation: marquee 20s linear infinite;
 }
 
+@keyframes marquee-reverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0%); }
+}
+
+.animate-marquee-reverse {
+  animation: marquee-reverse 25s linear infinite;
+}
+
+/* Card Ghost Index Background Number */
+.card-ghost-index {
+  position: absolute;
+  bottom: -1rem;
+  right: 0.5rem;
+  font-size: 7rem;
+  font-weight: 900;
+  font-family: var(--font-geist-mono);
+  color: white;
+  opacity: 0.03;
+  pointer-events: none;
+  user-select: none;
+  line-height: 1;
+}
+
+/* Diagonal Light Sweep Shimmer Effect on card hover */
+.hud-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.hud-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+  transform: skewX(-25deg);
+  transition: none;
+  pointer-events: none;
+}
+
+.hud-card:hover::before {
+  left: 150%;
+  transition: left 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Fade In Animation for active focus tab */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+
 @keyframes showroom-shift-a {
   0%, 100% { transform: translate3d(-4%, 0, 0) rotate(-8deg) skewX(-8deg) scale(1); }
   33% { transform: translate3d(6%, 4%, 0) rotate(5deg) skewX(-4deg) scale(1.04); }
