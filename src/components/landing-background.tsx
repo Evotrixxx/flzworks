@@ -12,7 +12,7 @@ import React, {
    useState,
  } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { useGLTF, useProgress, useAnimations, PerspectiveCamera, Environment, SoftShadows, Sparkles } from "@react-three/drei";
+import { useGLTF, useProgress, useAnimations, PerspectiveCamera, Environment, Sparkles } from "@react-three/drei";
 import { EffectComposer, Bloom, ChromaticAberration, Vignette } from "@react-three/postprocessing";
 import * as THREE from "three";
 
@@ -247,8 +247,6 @@ function LandingBackgroundInner() {
             }}
             style={{ position: "absolute", inset: 0 }}
           >
-            <SoftShadows size={20} samples={10} focus={0.5} />
-
             <PerspectiveCamera
               makeDefault
               position={[CAM_POS_X, CAM_POS_Y, CAM_POS_Z]}
