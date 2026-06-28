@@ -191,6 +191,20 @@ function LandingBackgroundInner() {
     return () => window.clearTimeout(mountTimer);
   }, []);
 
+  // R3F can latch onto the default 300x150 buffer when it measures the fixed
+  // container before layout settles, leaving the canvas stuck and the scene
+  // effectively invisible. Nudge react-use-measure to re-read the real bounds
+  // once the Canvas has actually mounted.
+  useEffect(() => {
+    if (!clientMounted) return;
+    const fire = () => window.dispatchEvent(new Event("resize"));
+    const raf1 = window.requestAnimationFrame(() => {
+      fire();
+      window.requestAnimationFrame(fire);
+    });
+    return () => window.cancelAnimationFrame(raf1);
+  }, [clientMounted]);
+
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
       mouse.current.x = (e.clientX / window.innerWidth) * 2 - 1;
