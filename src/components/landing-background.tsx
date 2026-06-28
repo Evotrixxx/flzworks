@@ -16,15 +16,17 @@ import { useGLTF, useProgress, useAnimations, PerspectiveCamera, Environment, Sp
 import { EffectComposer, Bloom, ChromaticAberration, Vignette } from "@react-three/postprocessing";
 import * as THREE from "three";
 
-const CAM_POS_X = 5.39;
-const CAM_POS_Y = 1.151;
-const CAM_POS_Z = 9.678;
+// Hero framing derived from the car's geometry bounds in Landing.glb.
+// Car cluster center ≈ (5.03, 0.56, 1.14), size ≈ 3.36 × 1.23 × 4.58 — long axis
+// is Z (front bumper toward +Z, rear engine/wing toward −Z). The camera sits to
+// the front-right and slightly above for a 3/4 hero shot and is aimed at the car
+// each frame (see CameraRig), so the model stays centered through mouse parallax.
+const CAR_TARGET = new THREE.Vector3(5.03, 0.46, 1.14);
+const CAM_POS_X = 8.6;
+const CAM_POS_Y = 2.09;
+const CAM_POS_Z = 8.7;
 
-const CAM_QUAT: [number, number, number, number] = [
-  0.001414, 0.11738, 0.0, 0.992778,
-];
-
-const CAM_FOV = 18.463; // Extracted from Blender Camera.001 data block (yfov = 0.32225 rad)
+const CAM_FOV = 26;
 const CAM_NEAR = 0.1;
 const CAM_FAR = 100;
 const DRACO_DECODER_PATH = "/draco/";
@@ -139,6 +141,7 @@ function CameraRig({ mouse }: { mouse: React.MutableRefObject<{ x: number; y: nu
       CAM_POS_Y + mouse.current.y * 0.08,
       0.04,
     );
+    camera.lookAt(CAR_TARGET);
   });
   return null;
 }
@@ -264,7 +267,6 @@ function LandingBackgroundInner() {
             <PerspectiveCamera
               makeDefault
               position={[CAM_POS_X, CAM_POS_Y, CAM_POS_Z]}
-              quaternion={CAM_QUAT}
               fov={CAM_FOV}
               near={CAM_NEAR}
               far={CAM_FAR}
