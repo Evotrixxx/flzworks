@@ -250,7 +250,7 @@ function LandingBackgroundInner() {
               failIfMajorPerformanceCaveat: false,
               outputColorSpace: THREE.SRGBColorSpace,
               toneMapping: THREE.ACESFilmicToneMapping,
-              toneMappingExposure: 0.95,
+              toneMappingExposure: 0.82,
             }}
             onCreated={({ gl }) => {
               gl.shadowMap.enabled = true;
@@ -290,7 +290,7 @@ function LandingBackgroundInner() {
             <pointLight position={[-6, 3, -2]} intensity={5} color="#06b6d4" decay={2} />
             <pointLight position={[6, -2, 2]} intensity={4} color="#a855f7" decay={2} />
 
-            <Environment preset="studio" background={false} environmentIntensity={0.3} />
+            <Environment preset="studio" background={false} environmentIntensity={0.22} />
 
             <CameraRig mouse={mouse} />
 
