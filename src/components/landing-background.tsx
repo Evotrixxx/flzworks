@@ -250,7 +250,7 @@ function LandingBackgroundInner() {
               failIfMajorPerformanceCaveat: false,
               outputColorSpace: THREE.SRGBColorSpace,
               toneMapping: THREE.ACESFilmicToneMapping,
-              toneMappingExposure: 0.85,
+              toneMappingExposure: 0.95,
             }}
             onCreated={({ gl }) => {
               gl.shadowMap.enabled = true;
@@ -272,11 +272,11 @@ function LandingBackgroundInner() {
               far={CAM_FAR}
             />
 
-            <ambientLight intensity={0.3} />
+            <ambientLight intensity={0.15} />
             <directionalLight
               castShadow
               position={[10, 15, 10]}
-              intensity={1.1}
+              intensity={1.5}
               shadow-mapSize-width={4096}
               shadow-mapSize-height={4096}
               shadow-camera-near={0.5}
@@ -287,10 +287,10 @@ function LandingBackgroundInner() {
               shadow-camera-bottom={-15}
               shadow-bias={-0.0001}
             />
-            <pointLight position={[-6, 3, -2]} intensity={3} color="#06b6d4" decay={2} />
-            <pointLight position={[6, -2, 2]} intensity={2.2} color="#a855f7" decay={2} />
+            <pointLight position={[-6, 3, -2]} intensity={5} color="#06b6d4" decay={2} />
+            <pointLight position={[6, -2, 2]} intensity={4} color="#a855f7" decay={2} />
 
-            <Environment preset="studio" background={false} environmentIntensity={0.45} />
+            <Environment preset="studio" background={false} environmentIntensity={0.3} />
 
             <CameraRig mouse={mouse} />
 
