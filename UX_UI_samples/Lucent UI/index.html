@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="LUCENT UI: A premium, liquid-glass UI asset library featuring WebGL-powered refraction and real-time lens inspection.">
+  <title>LUCENT UI — Liquid Glass Asset Library</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Custom Cursor Ring -->
+  <div id="custom-cursor"></div>
+
+  <!-- Background WebGL Canvas (creates the refraction under the glass UI) -->
+  <canvas id="canvas"></canvas>
+
+  <!-- Background Source Image (high-contrast abstract grid for refraction) -->
+  <img id="refraction-source" crossorigin="anonymous" src="https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=1600" style="display: none;" />
+
+  <!-- Toast Notification -->
+  <div id="toast">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+    <span id="toast-message">Code copied to clipboard</span>
+  </div>
+
+  <!-- UI Layout -->
+  <div class="app-container">
+    
+    <!-- Floating Glass Navbar -->
+    <nav class="glass-navbar interactive-ui">
+      <div class="nav-brand">
+        <span class="logo">Lucent UI</span>
+        <span class="badge">v1.0.0</span>
+      </div>
+      <div class="nav-links">
+        <a href="#section-buttons" class="active">Buttons</a>
+        <a href="#section-inputs">Inputs</a>
+        <a href="#section-cards">Cards</a>
+        <a href="#section-tables">Tables</a>
+      </div>
+      <button class="btn-icon" id="info-btn" title="About Lucent UI">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+      </button>
+    </nav>
+
+    <!-- Main Content Grid -->
+    <div class="main-layout">
+      
+      <!-- Showcase Area (Left Column) -->
+      <main class="showcase-area">
+        
+        <!-- Welcome Header -->
+        <header class="showcase-header">
+          <h1>Liquid Glass UI Showcase</h1>
+          <p>A premium design system featuring physical WebGL refraction. Hover over any component to see the background grid warp and magnify through the glass elements.</p>
+        </header>
+
+        <!-- Buttons Section -->
+        <section id="section-buttons" class="showcase-section">
+          <h2 class="section-title">Buttons</h2>
+          <div class="component-card glass-card interactive-ui" data-lens-expand="1.0" data-lens-shape="8.0">
+            <div class="component-preview">
+              <!-- Primary Refractive Button -->
+              <button class="btn-refractive-primary">Refractive Primary</button>
+              
+              <!-- Secondary Glass Button -->
+              <button class="btn-glass-secondary">Glass Secondary</button>
+
+              <!-- Icon Button -->
+              <button class="btn-glass-icon" title="Settings">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+              </button>
+            </div>
+            <div class="component-meta">
+              <h3>Glass Buttons</h3>
+              <p>Buttons utilizing layered borders and soft box-shadows. The primary button features a gold-tinted glowing edge.</p>
+              <div class="code-actions">
+                <button class="btn-copy" data-copy-target="html-buttons">Copy HTML</button>
+                <button class="btn-copy" data-copy-target="css-buttons">Copy CSS</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Inputs & Forms Section -->
+        <section id="section-inputs" class="showcase-section">
+          <h2 class="section-title">Form Controls</h2>
+          <div class="component-card glass-card interactive-ui" data-lens-expand="1.05" data-lens-shape="6.0">
+            <div class="component-preview vertical">
+              <!-- Glass Text Input -->
+              <div class="form-group">
+                <label class="form-label">Search Database</label>
+                <div class="input-container">
+                  <input type="text" class="input-glass" placeholder="Enter query...">
+                  <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <!-- Glass Toggle Switch -->
+                <div class="form-group">
+                  <label class="form-label">Refraction Overlay</label>
+                  <label class="toggle-glass">
+                    <input type="checkbox" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+
+                <!-- Glass Slider -->
+                <div class="form-group flex-1">
+                  <label class="form-label">System Gain</label>
+                  <input type="range" class="slider-glass" min="0" max="100" value="70">
+                </div>
+              </div>
+            </div>
+            <div class="component-meta">
+              <h3>Inputs & Toggles</h3>
+              <p>Interactive inputs designed with high-contrast active states. Toggles and sliders feature custom WebGL-inspired accents.</p>
+              <div class="code-actions">
+                <button class="btn-copy" data-copy-target="html-inputs">Copy HTML</button>
+                <button class="btn-copy" data-copy-target="css-inputs">Copy CSS</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Cards Section -->
+        <section id="section-cards" class="showcase-section">
+          <h2 class="section-title">User Cards</h2>
+          <div class="component-card glass-card interactive-ui" data-lens-expand="1.1" data-lens-shape="12.0">
+            <div class="component-preview">
+              <!-- Profile Card -->
+              <div class="profile-card">
+                <div class="profile-header">
+                  <div class="avatar-container">
+                    <img src="https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150" alt="Avatar">
+                  </div>
+                  <div class="profile-info">
+                    <h4>Alexander Vance</h4>
+                    <span class="role">Lead Architect</span>
+                  </div>
+                </div>
+                <p class="profile-bio">Specializing in WebGL shader development and interactive UX design systems.</p>
+                <div class="profile-stats">
+                  <div class="stat-item">
+                    <span class="stat-val">42</span>
+                    <span class="stat-label">Assets</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-val">12K</span>
+                    <span class="stat-label">Downloads</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-val">99.8%</span>
+                    <span class="stat-label">Rating</span>
+                  </div>
+                </div>
+                <button class="btn-refractive-primary w-100">View Portfolio</button>
+              </div>
+            </div>
+            <div class="component-meta">
+              <h3>Profile Card</h3>
+              <p>A composite container showcasing avatar clipping, stat grids, and action buttons in a unified glass layout.</p>
+              <div class="code-actions">
+                <button class="btn-copy" data-copy-target="html-cards">Copy HTML</button>
+                <button class="btn-copy" data-copy-target="css-cards">Copy CSS</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tables Section -->
+        <section id="section-tables" class="showcase-section">
+          <h2 class="section-title">Data Tables</h2>
+          <div class="component-card glass-card interactive-ui" data-lens-expand="1.0" data-lens-shape="4.0">
+            <div class="component-preview vertical">
+              <!-- Glass Table -->
+              <div class="table-container">
+                <table class="table-glass">
+                  <thead>
+                    <tr>
+                      <th>Module</th>
+                      <th>Status</th>
+                      <th>Performance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>refraction.glsl</td>
+                      <td><span class="status-badge status-active">Active</span></td>
+                      <td>98.4 GFLOPS</td>
+                    </tr>
+                    <tr>
+                      <td>blur_filter.js</td>
+                      <td><span class="status-badge status-active">Active</span></td>
+                      <td>120.1 FPS</td>
+                    </tr>
+                    <tr>
+                      <td>chroma_split.glsl</td>
+                      <td><span class="status-badge status-idle">Idle</span></td>
+                      <td>--</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="component-meta">
+              <h3>Data Table</h3>
+              <p>Data grid styled with subtle row borders and highlighted headers. Perfect for dashboards and control panels.</p>
+              <div class="code-actions">
+                <button class="btn-copy" data-copy-target="html-tables">Copy HTML</button>
+                <button class="btn-copy" data-copy-target="css-tables">Copy CSS</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- Sidebar Controls & Tokens (Right Column) -->
+      <aside class="sidebar-panel glass-panel interactive-ui" id="right-sidebar">
+        <div class="panel-header">
+          <h2>Lens Configurator</h2>
+        </div>
+        <div class="panel-content">
+          <!-- Glass Styling Info -->
+          <div class="info-box">
+            <p><strong>Refraction Shader</strong> is active behind the page. As you hover over elements, the background grid is dynamically warped and magnified inside the element boundaries.</p>
+          </div>
+
+          <!-- Live Slider Controls -->
+          <div class="control-group">
+            <h3 class="section-title">Global Adjustments</h3>
+            
+            <div class="control-item">
+              <div class="control-label">
+                <span>Lens Scale</span>
+                <span id="val-size">1.0</span>
+              </div>
+              <input type="range" id="slider-size" min="0.5" max="2.0" step="0.05" value="1.0">
+            </div>
+
+            <div class="control-item">
+              <div class="control-label">
+                <span>Lens Magnification</span>
+                <span id="val-mag">1.2x</span>
+              </div>
+              <input type="range" id="slider-mag" min="0.2" max="2.5" step="0.05" value="1.2">
+            </div>
+
+            <div class="control-item">
+              <div class="control-label">
+                <span>Depth Blur</span>
+                <span id="val-blur">Medium</span>
+              </div>
+              <input type="range" id="slider-blur" min="0.0" max="2.0" step="0.05" value="0.6">
+            </div>
+
+            <div class="control-item">
+              <div class="control-label">
+                <span>Refractive Glow</span>
+                <span id="val-glow">0.25</span>
+              </div>
+              <input type="range" id="slider-glow" min="0.0" max="1.0" step="0.05" value="0.25">
+            </div>
+
+            <div class="control-item">
+              <div class="control-label">
+                <span>Glass Aberration</span>
+                <span id="val-aberration">Prismatic</span>
+              </div>
+              <input type="range" id="slider-aberration" min="0.0" max="3.0" step="0.05" value="0.8">
+            </div>
+          </div>
+
+          <!-- Design Tokens -->
+          <div class="tokens-group">
+            <h3 class="section-title">Design Tokens</h3>
+            <div class="token-list">
+              <div class="token-item">
+                <span class="token-name">--bg-color</span>
+                <span class="token-color-preview" style="background: #050507;"></span>
+                <span class="token-val">#050507</span>
+              </div>
+              <div class="token-item">
+                <span class="token-name">--glass-bg</span>
+                <span class="token-color-preview" style="background: rgba(10,10,15,0.45);"></span>
+                <span class="token-val">rgba(10,10,15,0.45)</span>
+              </div>
+              <div class="token-item">
+                <span class="token-name">--glass-border</span>
+                <span class="token-color-preview" style="background: rgba(255,255,255,0.08);"></span>
+                <span class="token-val">rgba(255,255,255,0.08)</span>
+              </div>
+              <div class="token-item">
+                <span class="token-name">--accent-gold</span>
+                <span class="token-color-preview" style="background: #d1b894;"></span>
+                <span class="token-val">#d1b894</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- Info Modal -->
+  <div id="info-modal" class="interactive-ui" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 500; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease;">
+    <div class="glass-panel" style="max-width: 550px; padding: 40px; text-align: center; gap: 20px; border-color: var(--accent-color); box-shadow: 0 0 30px var(--accent-glow); border-radius: 16px;">
+      <h2 style="font-family: var(--font-serif); font-size: 36px; letter-spacing: 3px; color: var(--accent-color); text-transform: uppercase;">LUCENT UI</h2>
+      <p style="font-size: 14px; line-height: 1.6; color: var(--text-secondary);">
+        Welcome to **Lucent UI**, an interactive showcase of a liquid-glass design system.
+      </p>
+      <p style="font-size: 14px; line-height: 1.6; color: var(--text-secondary); text-align: left;">
+        Every component in this library is built with semantic HTML and styled with premium CSS glassmorphism. A **WebGL refraction shader** runs in the background. 
+      </p>
+      <p style="font-size: 14px; line-height: 1.6; color: var(--text-secondary); text-align: left;">
+        As you move your cursor, the WebGL lens follows and **automatically morphs** its size, aspect ratio, and corner roundness to match the exact boundaries of the card you are hovering over, creating a realistic physical depth effect.
+      </p>
+      <button class="btn-refractive-primary" id="close-modal-btn" style="align-self: center; padding: 12px 36px; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; margin-top: 10px;">Explore Library</button>
+    </div>
+  </div>
+
+  <!-- Code Snippets Templates (Hidden, used by JS to copy to clipboard) -->
+  <div style="display: none;">
+    <!-- Buttons -->
+    <pre id="code-html-buttons">
+&lt;!-- Primary Refractive Button --&gt;
+&lt;button class="btn-refractive-primary"&gt;Refractive Primary&lt;/button&gt;
+
+&lt;!-- Secondary Glass Button --&gt;
+&lt;button class="btn-glass-secondary"&gt;Glass Secondary&lt;/button&gt;
+
+&lt;!-- Icon Button --&gt;
+&lt;button class="btn-glass-icon"&gt;
+  &lt;svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"&gt;...&lt;/svg&gt;
+&lt;/button&gt;</pre>
+    <pre id="code-css-buttons">
+:root {
+  --glass-bg: rgba(10, 10, 15, 0.45);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --accent-gold: #d1b894;
+  --accent-glow: rgba(209, 184, 148, 0.3);
+}
+
+.btn-refractive-primary {
+  background: var(--glass-bg);
+  border: 1px solid var(--accent-gold);
+  color: var(--text-primary);
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 0 10px var(--accent-glow);
+  transition: all 0.3s ease;
+}
+
+.btn-refractive-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.btn-glass-secondary {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  padding: 10px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-glass-secondary:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+}</pre>
+
+    <!-- Inputs -->
+    <pre id="code-html-inputs">
+&lt;!-- Glass Text Input --&gt;
+&lt;div class="input-container"&gt;
+  &lt;input type="text" class="input-glass" placeholder="Enter query..."&gt;
+&lt;/div&gt;
+
+&lt;!-- Glass Toggle Switch --&gt;
+&lt;label class="toggle-glass"&gt;
+  &lt;input type="checkbox"&gt;
+  &lt;span class="toggle-slider"&gt;&lt;/span&gt;
+&lt;/label&gt;</pre>
+    <pre id="code-css-inputs">
+.input-glass {
+  width: 100%;
+  background: rgba(10, 10, 15, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: #fff;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.input-glass:focus {
+  border-color: #d1b894;
+  box-shadow: 0 0 15px rgba(209, 184, 148, 0.15);
+}
+
+.toggle-glass {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 24px;
+}
+
+.toggle-glass input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  transition: .3s;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #9ca3af;
+  border-radius: 50%;
+  transition: .3s;
+}
+
+.toggle-glass input:checked + .toggle-slider {
+  background-color: rgba(209, 184, 148, 0.15);
+  border-color: #d1b894;
+}
+
+.toggle-glass input:checked + .toggle-slider:before {
+  transform: translateX(24px);
+  background-color: #d1b894;
+}</pre>
+
+    <!-- Cards -->
+    <pre id="code-html-cards">
+&lt;div class="profile-card"&gt;
+  &lt;div class="profile-header"&gt;
+    &lt;img src="avatar.jpg" class="avatar"&gt;
+    &lt;div&gt;
+      &lt;h4&gt;Alexander Vance&lt;/h4&gt;
+      &lt;span class="role"&gt;Lead Architect&lt;/span&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;p&gt;Specializing in WebGL shader development...&lt;/p&gt;
+&lt;/div&gt;</pre>
+    <pre id="code-css-cards">
+.profile-card {
+  background: rgba(10, 10, 15, 0.45);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}</pre>
+
+    <!-- Tables -->
+    <pre id="code-html-tables">
+&lt;table class="table-glass"&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Module&lt;/th&gt;
+      &lt;th&gt;Performance&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;refraction.glsl&lt;/td&gt;
+      &lt;td&gt;98.4 GFLOPS&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;</pre>
+    <pre id="code-css-tables">
+.table-glass {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table-glass th {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #d1b894;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.table-glass td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #e5e7eb;
+  font-size: 13px;
+}</pre>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
