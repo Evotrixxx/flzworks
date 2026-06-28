@@ -1,11 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { portfolioFocuses, portfolioSocials } from "@/lib/portfolio";
 import type { InstagramMediaItem } from "@/lib/instagram";
 import Image from "next/image";
 import type { PortfolioArticleWithImages } from "@/lib/portfolio-sync";
-import { Calendar, Image as ImageIcon, ChevronDown, Eye, ArrowUpRight, Layers, Radio, Shield, Zap } from "lucide-react";
+import { Calendar, Image as ImageIcon, ChevronDown, Eye, ArrowUpRight, Radio, Zap } from "lucide-react";
 import dynamic from "next/dynamic";
 
 const LandingBackground = dynamic(
@@ -26,7 +25,6 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
   // Default to ALL to avoid empty states
   const [selectedCategory, setSelectedCategory] = useState<"ALL" | "CAR_DESIGN" | "OTHER">("ALL");
   const [uiHidden, setUiHidden] = useState(false);
-  const [activeFocusTab, setActiveFocusTab] = useState<string>(portfolioFocuses[0]?.id || "");
   const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
@@ -40,7 +38,6 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const enabledSocials = portfolioSocials.filter((s) => s.href);
   const publicArticles = articles.filter((a) => a.visible);
   const filteredArticles = publicArticles.filter((article) => {
     if (selectedCategory === "ALL") return true;
@@ -127,140 +124,8 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
         uiHidden ? "opacity-0 scale-98 pointer-events-none" : "opacity-100 scale-100"
       }`}>
         
-        {/* Above-the-fold Stage: Left panel occupies 4 columns, leaving 8 columns completely unhindered for 3D view */}
-        <div id="hero" className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[70vh] items-start pt-6">
-          
-          {/* Unified Hero & Focus Floating Panel */}
-          <div className="lg:col-span-4 flex flex-col gap-6">
-            
-            <div className="hud-panel flex flex-col justify-between p-8 rounded-3xl relative overflow-hidden group">
-              {/* Shimmer top border */}
-              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent pointer-events-none" />
-
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <Shield className="h-3.5 w-3.5 text-cyan-400" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.35em] text-cyan-400/80">
-                    AUTOMOTIVE & SYSTEMS
-                  </span>
-                </div>
-
-                <h1 className="text-7xl lg:text-8xl font-black uppercase tracking-tighter leading-[0.85] mb-6 portfolio-text-glow">
-                  FLZ
-                  <br />
-                  WORKS
-                </h1>
-
-                <p className="text-white/60 font-mono text-xs leading-relaxed mb-8">
-                  Fotorealisztikus 3D gépjárműtervezés, rendszerarchitektúra, nagyteljesítményű webrenderelés és prototípus-fejlesztés.
-                </p>
-              </div>
-
-              {/* Index Focus Pill Selector */}
-              <div className="pt-6 border-t border-white/[0.06]">
-                <div className="flex items-center gap-2 mb-4">
-                  <Layers className="h-3.5 w-3.5 text-white/40" />
-                  <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">
-                    Index Fókusz
-                  </h2>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  {portfolioFocuses.map((focus, i) => {
-                    const isActive = activeFocusTab === focus.id;
-                    return (
-                      <div
-                        key={focus.id}
-                        onClick={() => setActiveFocusTab(focus.id)}
-                        className={`group/focus flex items-center justify-between p-3 rounded-2xl border cursor-pointer transition-all duration-300 ${
-                          isActive
-                            ? "bg-cyan-500/10 border-cyan-500/30 shadow-lg shadow-cyan-500/10 text-white"
-                            : "bg-white/[0.02] border-white/[0.05] text-white/60 hover:text-white hover:bg-white/[0.04]"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className={`text-[10px] font-mono tracking-widest ${isActive ? "text-cyan-400" : "text-white/30"}`}>
-                            0{i + 1}
-                          </span>
-                          <span className="text-xs font-black uppercase tracking-wider">
-                            {focus.label}
-                          </span>
-                        </div>
-                        <div className={`h-1.5 w-1.5 rounded-full transition-transform duration-300 ${
-                          isActive ? "bg-cyan-400 scale-125 shadow-sm shadow-cyan-400" : "bg-white/20 group-hover/focus:bg-white/40"
-                        }`} />
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Active Focus Content (UX Fix) */}
-              {activeFocusTab && (() => {
-                const activeFocus = portfolioFocuses.find(f => f.id === activeFocusTab);
-                if (!activeFocus) return null;
-                return (
-                  <div key={activeFocus.id} className="mt-6 pt-6 border-t border-white/[0.06] animate-fadeIn">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-cyan-400/80 mb-2">
-                      {activeFocus.eyebrow}
-                    </p>
-                    <p className="text-white/70 font-mono text-xs leading-relaxed mb-4">
-                      {activeFocus.summary}
-                    </p>
-                    
-                    {/* Metrics */}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {activeFocus.metrics.map(metric => (
-                        <span key={metric} className="px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/[0.06] text-[10px] font-mono text-white/50 uppercase tracking-wider">
-                          {metric}
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* Recent Works */}
-                    <div className="space-y-2">
-                      <p className="text-[9px] font-mono text-white/30 uppercase tracking-[0.2em]">Kiemelt munkák</p>
-                      {activeFocus.works.map((work, idx) => (
-                        <div key={idx} className="p-2.5 rounded-xl bg-white/[0.01] border border-white/[0.03] hover:border-white/[0.08] transition-all duration-300">
-                          <div className="flex justify-between items-start gap-2">
-                            <span className="text-[11px] font-black uppercase tracking-wide text-white/85">{work.title}</span>
-                            <span className="text-[9px] font-mono text-cyan-400/60">{work.year}</span>
-                          </div>
-                          <p className="text-[10px] font-mono text-white/45 mt-1 leading-normal">{work.description}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* Social Links */}
-              <div className="flex flex-wrap gap-2 mt-8 pt-6 border-t border-white/[0.06]">
-                {enabledSocials.map((social) => {
-                  const Icon = social.icon;
-                  return (
-                    <a
-                      key={social.label}
-                      href={social.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/60 hover:text-white hover:bg-white/[0.08] hover:border-white/[0.18] transition-all duration-300 shadow-md"
-                    >
-                      <Icon className="h-3 w-3 text-cyan-400" />
-                      {social.label}
-                      <ArrowUpRight className="h-2.5 w-2.5 opacity-50" />
-                    </a>
-                  );
-                })}
-              </div>
-
-            </div>
-          </div>
-
-          {/* Completely empty right 8 columns allowing the 3D car to be perfectly visible and unhindered */}
-          <div className="lg:col-span-8 hidden lg:block pointer-events-none" />
-
-        </div>
+        {/* Above-the-fold Stage: full-width 3D showroom (hero panel removed) */}
+        <div id="hero" className="min-h-[70vh] pt-6" aria-hidden="true" />
 
         {/* Scroll Cue (UX Upgrade) */}
         <div className="flex justify-center mt-16 mb-8 pointer-events-none">
