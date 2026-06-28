@@ -21,10 +21,10 @@ import * as THREE from "three";
 // is Z (front bumper toward +Z, rear engine/wing toward −Z). The camera sits to
 // the front-right and slightly above for a 3/4 hero shot and is aimed at the car
 // each frame (see CameraRig), so the model stays centered through mouse parallax.
-const CAR_TARGET = new THREE.Vector3(5.03, 0.46, 1.14);
-const CAM_POS_X = 8.6;
-const CAM_POS_Y = 2.09;
-const CAM_POS_Z = 8.7;
+const CAR_TARGET = new THREE.Vector3(5.03, 0.41, 1.14);
+const CAM_POS_X = 8.18;
+const CAM_POS_Y = 1.91;
+const CAM_POS_Z = 7.81;
 
 const CAM_FOV = 26;
 const CAM_NEAR = 0.1;
