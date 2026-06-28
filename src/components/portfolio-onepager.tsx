@@ -5,12 +5,7 @@ import type { InstagramMediaItem } from "@/lib/instagram";
 import Image from "next/image";
 import type { PortfolioArticleWithImages } from "@/lib/portfolio-sync";
 import { Calendar, Image as ImageIcon, ChevronDown, Eye, ArrowUpRight, Radio, Zap } from "lucide-react";
-import dynamic from "next/dynamic";
-
-const LandingBackground = dynamic(
-  () => import("./landing-background").then((m) => m.LandingBackground),
-  { ssr: false }
-);
+import { LandingParallax } from "./landing-parallax";
 
 interface PortfolioOnepagerProps {
   instagramMedia: InstagramMediaItem[];
@@ -51,8 +46,8 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
 
   return (
     <div className="portfolio-shell min-h-screen text-white font-sans overflow-x-hidden selection:bg-cyan-500/20 selection:text-cyan-300">
-      {/* 3D Interactive Background */}
-      <LandingBackground />
+      {/* Parallax Image Background */}
+      <LandingParallax />
 
       {/* ── Top HUD Navigation Bar ── */}
       <header className={`hud-nav fixed top-6 left-4 right-4 max-w-7xl lg:mx-auto z-40 rounded-full px-4 sm:px-6 py-3.5 flex items-center justify-between transition-all duration-700 overflow-hidden ${
