@@ -250,7 +250,7 @@ function LandingBackgroundInner() {
               failIfMajorPerformanceCaveat: false,
               outputColorSpace: THREE.SRGBColorSpace,
               toneMapping: THREE.ACESFilmicToneMapping,
-              toneMappingExposure: 1.2,
+              toneMappingExposure: 0.85,
             }}
             onCreated={({ gl }) => {
               gl.shadowMap.enabled = true;
@@ -272,11 +272,11 @@ function LandingBackgroundInner() {
               far={CAM_FAR}
             />
 
-            <ambientLight intensity={0.4} />
+            <ambientLight intensity={0.3} />
             <directionalLight
               castShadow
               position={[10, 15, 10]}
-              intensity={2.2}
+              intensity={1.1}
               shadow-mapSize-width={4096}
               shadow-mapSize-height={4096}
               shadow-camera-near={0.5}
@@ -287,10 +287,10 @@ function LandingBackgroundInner() {
               shadow-camera-bottom={-15}
               shadow-bias={-0.0001}
             />
-            <pointLight position={[-6, 3, -2]} intensity={8} color="#06b6d4" decay={2} />
-            <pointLight position={[6, -2, 2]} intensity={5} color="#a855f7" decay={2} />
+            <pointLight position={[-6, 3, -2]} intensity={3} color="#06b6d4" decay={2} />
+            <pointLight position={[6, -2, 2]} intensity={2.2} color="#a855f7" decay={2} />
 
-            <Environment preset="studio" background={false} />
+            <Environment preset="studio" background={false} environmentIntensity={0.45} />
 
             <CameraRig mouse={mouse} />
 
@@ -304,7 +304,7 @@ function LandingBackgroundInner() {
 
             {/* Premium post-processing pipeline */}
             <EffectComposer>
-              <Bloom intensity={0.8} luminanceThreshold={0.55} luminanceSmoothing={0.85} />
+              <Bloom intensity={0.35} luminanceThreshold={0.9} luminanceSmoothing={0.9} />
               <ChromaticAberration offset={[0.0006, 0.0006]} />
               <Vignette eskil={false} offset={0.1} darkness={0.8} />
             </EffectComposer>
