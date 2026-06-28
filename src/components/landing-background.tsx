@@ -250,7 +250,7 @@ function LandingBackgroundInner() {
               failIfMajorPerformanceCaveat: false,
               outputColorSpace: THREE.SRGBColorSpace,
               toneMapping: THREE.ACESFilmicToneMapping,
-              toneMappingExposure: 0.82,
+              toneMappingExposure: 0.92,
             }}
             onCreated={({ gl }) => {
               gl.shadowMap.enabled = true;
@@ -272,11 +272,11 @@ function LandingBackgroundInner() {
               far={CAM_FAR}
             />
 
-            <ambientLight intensity={0.15} />
+            <ambientLight intensity={0.28} />
             <directionalLight
               castShadow
               position={[10, 15, 10]}
-              intensity={1.5}
+              intensity={1.9}
               shadow-mapSize-width={4096}
               shadow-mapSize-height={4096}
               shadow-camera-near={0.5}
