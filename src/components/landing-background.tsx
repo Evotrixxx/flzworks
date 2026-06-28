@@ -287,8 +287,8 @@ function LandingBackgroundInner() {
               shadow-camera-bottom={-15}
               shadow-bias={-0.0001}
             />
-            <pointLight position={[-6, 3, -2]} intensity={5} color="#06b6d4" decay={2} />
-            <pointLight position={[6, -2, 2]} intensity={4} color="#a855f7" decay={2} />
+            <pointLight position={[-6, 3, -2]} intensity={2} color="#06b6d4" decay={2} />
+            <pointLight position={[6, -2, 2]} intensity={1.5} color="#a855f7" decay={2} />
 
             <Environment preset="studio" background={false} environmentIntensity={0.22} />
 
