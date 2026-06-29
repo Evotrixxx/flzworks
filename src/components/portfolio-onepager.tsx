@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import type { InstagramMediaItem } from "@/lib/instagram";
 import Image from "next/image";
 import type { PortfolioArticleWithImages } from "@/lib/portfolio-sync";
-import { Calendar, Image as ImageIcon, ChevronDown, Eye, ArrowUpRight, Radio, Zap } from "lucide-react";
+import { Image as ImageIcon, Eye, ArrowUpRight, Radio, Zap, X, Calendar, ChevronDown } from "lucide-react";
 import { LandingParallax } from "./landing-parallax";
 
 interface PortfolioOnepagerProps {
@@ -12,10 +12,8 @@ interface PortfolioOnepagerProps {
   articles: PortfolioArticleWithImages[];
 }
 
-const locale = "en";
-
 export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepagerProps) {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [selectedArticle, setSelectedArticle] = useState<PortfolioArticleWithImages | null>(null);
   const [activeGallery, setActiveGallery] = useState<{
     folderName: string;
     images: string[];
@@ -34,9 +32,9 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Lock scroll when lightbox is active
+  // Lock scroll when lightbox or detail modal is active
   useEffect(() => {
-    if (activeGallery) {
+    if (activeGallery || selectedArticle) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -44,7 +42,21 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
     return () => {
       document.body.style.overflow = "";
     };
-  }, [activeGallery]);
+  }, [activeGallery, selectedArticle]);
+
+  // Click or keypress to exit showroom mode
+  useEffect(() => {
+    if (!uiHidden) return;
+    const handleExitShowroom = () => {
+      setUiHidden(false);
+    };
+    window.addEventListener("click", handleExitShowroom);
+    window.addEventListener("keydown", handleExitShowroom);
+    return () => {
+      window.removeEventListener("click", handleExitShowroom);
+      window.removeEventListener("keydown", handleExitShowroom);
+    };
+  }, [uiHidden]);
 
   // Keyboard navigation for lightbox
   useEffect(() => {
@@ -92,15 +104,8 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
   };
 
   return (
-    <div className="portfolio-shell min-h-screen text-white font-sans overflow-x-hidden selection:bg-cyan-500/20 selection:text-cyan-300">
+    <div className="portfolio-shell min-h-screen text-white font-sans overflow-x-hidden selection:bg-white/20 selection:text-white">
       <LandingParallax />
-
-      {/* ── Liquid Blobs (Aura Precision) ── */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[8%] left-[2%] w-[45vw] h-[45vw] rounded-full bg-cyan-500/12 blur-[130px] animate-blob-1" />
-        <div className="absolute top-[35%] right-[5%] w-[50vw] h-[50vw] rounded-full bg-purple-500/10 blur-[140px] animate-blob-2" />
-        <div className="absolute bottom-[12%] left-[15%] w-[40vw] h-[40vw] rounded-full bg-blue-500/8 blur-[120px] animate-blob-3" />
-      </div>
 
       {/* ── Navigation ── */}
       <header
@@ -136,109 +141,66 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
         />
       </header>
 
-      {/* ── Hero ── */}
-      <section
-        id="hero"
-        className={`relative min-h-screen flex flex-col transition-all duration-700 ${
-          uiHidden ? "opacity-0 scale-[0.98] pointer-events-none" : "opacity-100 scale-100"
-        }`}
-      >
-        {/* Content pinned to bottom */}
-        <div className="mt-auto relative z-10 px-8 md:px-20 pb-16 w-full max-w-7xl mx-auto">
-          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 w-full">
-
-            {/* Wordmark */}
-            <div className="font-semibold uppercase leading-[0.82] select-none font-serif tracking-[-0.04em]">
-              <span
-                className="block text-[23vw] lg:text-[13vw]"
-                style={{ WebkitTextStroke: "1.5px rgba(255,255,255,0.12)", color: "transparent" }}
-              >
-                FLZ
-              </span>
-              <span className="block text-[23vw] lg:text-[13vw] portfolio-text-glow">
-                WORKS
-              </span>
-            </div>
-
-            {/* Right info */}
-            <div className="flex flex-col items-start lg:items-end gap-5 lg:mb-1.5">
-              <div className="lg:text-right">
-                <p className="text-[8px] font-mono tracking-[0.4em] text-white/30 uppercase mb-2.5">
-                  Portfolio & Overview
-                </p>
-                <p className="text-[13px] text-white/55 font-mono leading-[1.8]">
-                  Automotive Design · 3D Engineering<br />
-                  Machine Experience
-                </p>
-              </div>
-
-              <div className="flex items-center gap-5">
-                <div>
-                  <div className="text-3xl font-semibold font-serif text-white tabular-nums">
-                    {publicArticles.length.toString().padStart(2, "0")}
-                  </div>
-                  <div className="text-[8px] font-mono tracking-widest text-white/30 uppercase mt-0.5">
-                    Completed Projects
-                  </div>
-                </div>
-                <div className="w-px h-9 bg-white/[0.07]" />
-                <div>
-                  <div className="text-3xl font-semibold font-serif text-white/90">2026</div>
-                  <div className="text-[8px] font-mono tracking-widest text-white/30 uppercase mt-0.5">Active</div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => scrollToSection("archive")}
-                  className="px-5 py-2 rounded-full bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] text-[9px] font-mono tracking-widest uppercase text-white/80 hover:text-white transition-all cursor-pointer"
-                >
-                  Archive
-                </button>
-                <button
-                  onClick={() => setUiHidden(true)}
-                  className="flex items-center gap-1.5 px-5 py-2 rounded-full border border-white/10 bg-white/5 text-[9px] font-mono tracking-widest uppercase text-white/70 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
-                >
-                  <Eye className="h-3 w-3" />
-                  Showroom
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Scroll indicator */}
-        <div
-          className="relative z-10 flex flex-col items-center gap-2 pb-5 mt-5 cursor-pointer opacity-60 hover:opacity-100 transition-opacity"
-          onClick={() => scrollToSection("archive")}
-        >
-          <div className="h-9 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent animate-pulse" />
-          <span className="text-[7px] font-mono uppercase tracking-[0.35em] text-white/60">scroll</span>
-        </div>
-      </section>
-
-      {/* ── Main Content ── */}
       <main
         className={`relative z-10 pb-24 transition-all duration-700 ${
           uiHidden ? "opacity-0 scale-[0.98] pointer-events-none" : "opacity-100 scale-100"
         }`}
       >
+        {/* ── Running Ticker ── */}
+        <div className="w-full overflow-hidden border-t border-b border-white/15 py-4 bg-white/[0.01]">
+          <div className="flex whitespace-nowrap animate-marquee">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <span key={i} className="font-mono text-[9px] tracking-[0.35em] text-white/25 uppercase mx-4">
+                3D Automotive Design <span className="inline-block w-1 h-1 bg-white/20 rounded-full mx-3 align-middle" />
+                System Architecture <span className="inline-block w-1 h-1 bg-white/20 rounded-full mx-3 align-middle" />
+                High-Performance Rendering <span className="inline-block w-1 h-1 bg-white/20 rounded-full mx-3 align-middle" />
+                Prototype Development <span className="inline-block w-1 h-1 bg-white/20 rounded-full mx-3 align-middle" />
+                FLZ Works · 2026 <span className="inline-block w-1 h-1 bg-white/20 rounded-full mx-3 align-middle" />
+                Machine Experience <span className="inline-block w-1 h-1 bg-white/20 rounded-full mx-3 align-middle" />
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Narrative Section 1: Process ── */}
+        <section className="py-40 px-8 md:px-20 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
+          <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden bg-neutral-900 border border-white/5">
+            <svg width="100%" height="100%" viewBox="0 0 600 450" fill="none" className="opacity-40">
+              <circle cx="300" cy="225" r="120" stroke="white" strokeWidth="0.5" strokeOpacity="0.1" />
+              <circle cx="300" cy="225" r="80" stroke="white" strokeWidth="0.5" strokeOpacity="0.15" />
+              <line x1="180" y1="225" x2="420" y2="225" stroke="white" strokeWidth="0.5" strokeOpacity="0.1" />
+              <line x1="300" y1="105" x2="300" y2="345" stroke="white" strokeWidth="0.5" strokeOpacity="0.1" />
+              <text x="300" y="230" textAnchor="middle" fill="white" fillOpacity="0.3" fontFamily="var(--font-geist-mono)" fontSize="10" letterSpacing="4">DESIGN SYSTEM</text>
+              <text x="300" y="250" textAnchor="middle" fill="white" fillOpacity="0.15" fontFamily="var(--font-geist-mono)" fontSize="7" letterSpacing="3">PRECISION ENGINEERING</text>
+            </svg>
+          </div>
+          <div>
+            <span className="font-mono text-[8px] tracking-[0.35em] text-white/30 uppercase mb-6 block">// 01 — Process</span>
+            <h2 className="font-serif text-4xl md:text-6xl font-light leading-tight text-white mb-6">
+              Where precision<br /><span className="text-white/40 italic">meets craft.</span>
+            </h2>
+            <p className="text-sm text-white/50 leading-relaxed max-w-md font-mono">
+              Every project begins with a deep technical study of form, material, and motion. From initial layout to high-fidelity rendering, the workflow is engineered for absolute photorealism.
+            </p>
+          </div>
+        </section>
+
         {/* ── Archive ── */}
-        <section id="archive" className="pt-6 max-w-7xl mx-auto px-8 md:px-20">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 border-t border-white/[0.05] pt-16">
+        <section id="archive" className="pt-24 max-w-7xl mx-auto px-8 md:px-20">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-t border-white/5 pt-16">
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <Radio className="h-3 w-3 text-cyan-400/70 animate-pulse" />
-                <p className="text-[9px] font-black uppercase tracking-[0.4em] text-white/60">
-                  Design Archive · Repository
+                <Radio className="h-3 w-3 text-white/30 animate-pulse" />
+                <p className="font-mono text-[9px] tracking-[0.4em] text-white/40 uppercase">
+                  02 — Archive
                 </p>
               </div>
               <h2 className="text-5xl md:text-7xl font-semibold uppercase tracking-tighter leading-none portfolio-section-title">
-                Archive
+                Selected <span className="italic font-light text-white/45">Works</span>
               </h2>
             </div>
 
-            <div className="flex items-center gap-1 bg-white/[0.02] border border-white/[0.05] p-1 rounded-xl shrink-0">
+            <div className="flex items-center gap-1 bg-white/[0.02] border border-white/[0.05] p-1 rounded-full shrink-0">
               {[
                 { id: "ALL" as const, label: "All" },
                 { id: "CAR_DESIGN" as const, label: "3D Auto" },
@@ -247,10 +209,10 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+                  className={`px-4 py-1.5 rounded-full text-[9px] font-mono uppercase tracking-wider transition-all duration-300 cursor-pointer ${
                     selectedCategory === cat.id
-                      ? "bg-white/[0.07] text-white border border-white/[0.12]"
-                      : "text-white/60 hover:text-white/75 border border-transparent"
+                      ? "bg-white/10 text-white border border-white/15 shadow-md"
+                      : "text-white/40 hover:text-white/70 border border-transparent"
                   }`}
                 >
                   {cat.label}
@@ -259,139 +221,114 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             </div>
           </div>
 
-          <div className="columns-1 md:columns-2 xl:columns-3 gap-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredArticles.length === 0 ? (
-              <div className="py-24 text-center border border-dashed border-white/[0.05] rounded-2xl" style={{ columnSpan: "all" }}>
+              <div className="py-24 text-center border border-dashed border-white/[0.05] rounded-2xl col-span-full">
                 <p className="text-[10px] font-mono tracking-widest uppercase text-white/60">
                   No projects in this category
                 </p>
               </div>
             ) : (
               filteredArticles.map((article, i) => {
-                const isExpanded = expandedId === article.id;
                 const isCar = article.category === "CAR_DESIGN";
+                const firstImg = article.images.length > 0
+                  ? `/api/portfolio/media/${article.folderName}/${article.images[0]}`
+                  : null;
 
                 return (
                   <article
                     key={article.id}
-                    className={`break-inside-avoid portfolio-archive-card group relative flex flex-col cursor-pointer rounded-2xl overflow-hidden ${
-                      isExpanded
-                        ? "col-span-full ring-1 ring-white/[0.1]"
-                        : `min-h-[260px]`
-                    }`}
+                    className="portfolio-archive-card group relative flex flex-col cursor-pointer rounded-2xl overflow-hidden border border-white/5 hover:border-white/10 transition-colors"
                     onMouseMove={handleMouseMove}
-                    onClick={() => { if (!isExpanded) setExpandedId(article.id); }}
+                    onClick={() => setSelectedArticle(article)}
                   >
-                    {!isExpanded && (
-                      <div className="card-ghost-index">
-                        #{String(i + 1).padStart(3, "0")}
-                      </div>
-                    )}
+                    <div className="absolute top-4 left-4 z-10 font-mono text-[9px] tracking-widest text-white/30 group-hover:text-white/60 transition-colors">
+                      #{String(i + 1).padStart(3, "0")}
+                    </div>
 
-                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/12 to-transparent pointer-events-none" />
+                    <div className="relative w-full overflow-hidden bg-neutral-950/40 border-b border-white/5">
+                      {firstImg ? (
+                        <div className="relative aspect-[4/3] w-full overflow-hidden">
+                          <Image
+                            src={firstImg}
+                            alt={article.title}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 30vw"
+                            className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                            unoptimized
+                          />
+                        </div>
+                      ) : (
+                        <div className="relative aspect-[4/3] w-full flex items-center justify-center bg-neutral-900 text-white/10 font-mono text-[10px] tracking-widest uppercase">
+                          No Media
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    </div>
 
-                    <div className={`absolute left-0 top-0 bottom-0 w-[2px] ${
-                      isCar
-                        ? "bg-gradient-to-b from-white/70 via-white/10 to-transparent"
-                        : "bg-gradient-to-b from-white/40 via-white/5 to-transparent"
-                    }`} />
-
-                    <div className="relative p-7 flex flex-col h-full gap-4">
+                    <div className="p-6 flex flex-col gap-4">
                       <div className="flex items-center justify-between">
-                        <span className={`text-[8px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded border ${
+                        <span className={`text-[8px] font-mono tracking-[0.2em] px-2 py-0.5 rounded border ${
                           isCar
                             ? "text-white/70 border-white/[0.1] bg-transparent"
                             : "text-white/50 border-white/[0.05] bg-transparent"
                         }`}>
                           {isCar ? "3D Auto" : "Design"}
                         </span>
-                        <div className="flex items-center gap-3 text-[9px] font-mono text-white/60">
-                          {article.date !== "N/A" && (
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-2.5 w-2.5" />
-                              {article.date.replace(/-/g, ".")}
-                            </span>
-                          )}
-                          {article.images.length > 0 && (
-                            <span className="flex items-center gap-1">
-                              <ImageIcon className="h-2.5 w-2.5" />
-                              {article.images.length}
-                            </span>
-                          )}
-                        </div>
                       </div>
 
-                      <div className="flex items-start justify-between gap-4">
-                        <h3 className={`font-semibold font-serif tracking-tight text-white/95 group-hover:text-white transition-colors ${
-                          isExpanded ? "text-3xl md:text-5xl" : "text-xl"
-                        }`}>
-                          {article.title}
-                        </h3>
-                        {isExpanded && (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setExpandedId(null); }}
-                            className="shrink-0 h-9 w-9 flex items-center justify-center rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] text-white transition cursor-pointer"
-                          >
-                            <ChevronDown className="h-4 w-4 rotate-180" />
-                          </button>
-                        )}
-                      </div>
-
-                      <p className={`font-mono text-sm leading-relaxed ${
-                        isExpanded ? "text-white/80 mb-4 max-w-3xl" : "text-white/60 line-clamp-2 mt-auto"
-                      }`}>
-                        {article.description || "Portfolio project synced from repository."}
-                      </p>
-
-                      {!isExpanded && (
-                        <div className="absolute bottom-5 right-5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                          <div className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-white/60">
-                            Open <ArrowUpRight className="h-3 w-3" />
-                          </div>
-                        </div>
-                      )}
-
-                      {isExpanded && article.images.length > 0 && (
-                        <div className="mt-2 pt-6 border-t border-white/[0.05]">
-                          <h4 className="text-[8px] font-black uppercase tracking-[0.35em] text-white/45 mb-4 flex items-center gap-1.5">
-                            <ImageIcon className="h-3 w-3" />
-                            Media Gallery · {article.images.length}
-                          </h4>
-                          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
-                            {article.images.map((img, imgIndex) => {
-                              const imgPath = `/api/portfolio/media/${article.folderName}/${img}`;
-                              return (
-                                <div
-                                  key={img}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setActiveGallery({
-                                      folderName: article.folderName,
-                                      images: article.images,
-                                      index: imgIndex,
-                                    });
-                                  }}
-                                  className="relative aspect-video cursor-zoom-in overflow-hidden rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.18] transition-all duration-300"
-                                >
-                                  <Image
-                                    src={imgPath}
-                                    alt={img}
-                                    fill
-                                    sizes="(max-width: 640px) 50vw, 12vw"
-                                    className="object-cover transition-transform duration-500 hover:scale-105"
-                                    unoptimized
-                                  />
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
+                      <h3 className="font-serif text-xl font-medium text-white/90 group-hover:text-white transition-colors">
+                        {article.title}
+                      </h3>
                     </div>
                   </article>
                 );
               })
             )}
+          </div>
+        </section>
+
+        {/* ── Narrative Section 2: Interface ── */}
+        <section className="py-40 px-8 md:px-20 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
+          <div className="md:order-2 relative aspect-[4/3] w-full rounded-lg overflow-hidden bg-neutral-900 border border-white/5">
+            <svg width="100%" height="100%" viewBox="0 0 600 450" fill="none" className="opacity-40">
+              <rect x="50" y="50" width="500" height="350" stroke="white" strokeWidth="0.5" strokeOpacity="0.1" />
+              <rect x="80" y="80" width="200" height="120" stroke="white" strokeWidth="0.5" strokeOpacity="0.1" fill="white" fillOpacity="0.01" />
+              <rect x="320" y="80" width="200" height="80" stroke="white" strokeWidth="0.5" strokeOpacity="0.1" fill="white" fillOpacity="0.01" />
+              <rect x="80" y="240" width="440" height="120" stroke="white" strokeWidth="0.5" strokeOpacity="0.1" fill="white" fillOpacity="0.01" />
+              <text x="300" y="230" textAnchor="middle" fill="white" fillOpacity="0.2" fontFamily="var(--font-geist-mono)" fontSize="8" letterSpacing="3">INTERFACE ARCHITECTURE</text>
+            </svg>
+          </div>
+          <div className="md:order-1">
+            <span className="font-mono text-[8px] tracking-[0.35em] text-white/30 uppercase mb-6 block">// 03 — Interface</span>
+            <h2 className="font-serif text-4xl md:text-6xl font-light leading-tight text-white mb-6">
+              Systems built<br /><span className="text-white/40 italic">to feel.</span>
+            </h2>
+            <p className="text-sm text-white/50 leading-relaxed max-w-md font-mono">
+              Every interface choice is rooted in physics and kinetics. The user interface is designed to carry weight, inertia, and memory — behaving like physical hardware rather than a flat digital screen.
+            </p>
+          </div>
+        </section>
+
+        {/* ── Identity Strip ── */}
+        <section className="py-24 max-w-7xl mx-auto px-8 md:px-20 border-t border-b border-white/5 my-20 flex flex-col md:flex-row items-start gap-12 md:gap-20">
+          <div className="font-serif text-8xl md:text-9xl font-light italic text-white/10 leading-none select-none">
+            F
+          </div>
+          <div className="space-y-6 max-w-2xl">
+            <h3 className="font-serif text-3xl md:text-4xl font-normal text-white">
+              FLZ · Studio
+            </h3>
+            <p className="text-sm text-white/55 font-mono leading-relaxed">
+              An independent creative coding and design studio. We specialize in photorealistic 3D automotive design, system architecture, high-performance web rendering, and prototype development. High fidelity in every layer.
+            </p>
+            <div className="flex flex-wrap gap-2 pt-2">
+              {["Blender", "Godot", "Three.js", "Next.js", "TypeScript", "Figma", "3D Automotive", "System Architecture", "Shaders"].map((tag) => (
+                <span key={tag} className="font-mono text-[9px] tracking-wider uppercase px-3 py-1 border border-white/10 rounded-md text-white/50 hover:text-white hover:border-white/25 transition-colors">
+                  {tag}
+                </span>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -461,13 +398,89 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
         </footer>
       </main>
 
+      {/* ── Immersive Project Detail Modal ── */}
+      {selectedArticle && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-3xl p-4 md:p-10 overflow-y-auto animate-fadeIn"
+          onClick={() => setSelectedArticle(null)}
+        >
+          <div
+            className="relative w-full max-w-5xl bg-neutral-950/80 border border-white/10 rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 scale-100 max-h-[90vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-8 py-6 border-b border-white/5">
+              <div>
+                <span className="text-[9px] font-mono tracking-widest uppercase text-white/40">
+                  {selectedArticle.category === "CAR_DESIGN" ? "3D Automotive" : "Design & Dev"}
+                </span>
+                <h3 className="font-serif text-2xl md:text-3xl font-semibold text-white mt-1">
+                  {selectedArticle.title}
+                </h3>
+              </div>
+              <button
+                onClick={() => setSelectedArticle(null)}
+                className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-all cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
 
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-8 space-y-8">
+              {/* Description */}
+              <div className="max-w-3xl">
+                <p className="text-sm md:text-base text-white/70 leading-relaxed font-mono">
+                  {selectedArticle.description || "Project description and technical specifications."}
+                </p>
+              </div>
+
+              {/* Media Grid */}
+              {selectedArticle.images.length > 0 && (
+                <div className="space-y-4">
+                  <h4 className="text-[9px] font-mono tracking-widest uppercase text-white/30 flex items-center gap-2">
+                    <ImageIcon className="h-3 w-3" />
+                    Project Media ({selectedArticle.images.length})
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {selectedArticle.images.map((img, idx) => {
+                      const imgPath = `/api/portfolio/media/${selectedArticle.folderName}/${img}`;
+                      return (
+                        <div
+                          key={img}
+                          onClick={() => {
+                            setActiveGallery({
+                              folderName: selectedArticle.folderName,
+                              images: selectedArticle.images,
+                              index: idx,
+                            });
+                          }}
+                          className="relative aspect-video rounded-xl overflow-hidden bg-white/5 border border-white/10 hover:border-white/30 cursor-zoom-in transition-all duration-300 group"
+                        >
+                          <Image
+                            src={imgPath}
+                            alt={img}
+                            fill
+                            sizes="(max-width: 768px) 50vw, 30vw"
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                            unoptimized
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Lightbox ── */}
       {activeGallery && (
         <div
           onClick={() => setActiveGallery(null)}
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/98 p-4 md:p-10 backdrop-blur-3xl cursor-zoom-out animate-fadeIn"
+          className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black/98 p-4 md:p-10 backdrop-blur-3xl cursor-zoom-out animate-fadeIn"
         >
           {/* Main Image Viewport */}
           <div
@@ -502,7 +515,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
               </button>
 
               <button
-                className="absolute right-6 md:right-10 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/[0.18] text-white flex items-center justify-center cursor-pointer transition-all duration-250 z-55"
+                className="absolute right-6 md:left-auto md:right-10 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/[0.18] text-white flex items-center justify-center cursor-pointer transition-all duration-250 z-55"
                 onClick={(e) => {
                   e.stopPropagation();
                   setActiveGallery((prev) =>
