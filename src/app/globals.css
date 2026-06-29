@@ -1393,3 +1393,8 @@ select[aria-invalid="true"] {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.4; transform: scale(0.85); }
 }
+
+/* Squircle — superellipse n=4 clip via SVG clipPathUnits="objectBoundingBox" in layout.tsx */
+.clip-squircle {
+  clip-path: url(#squircle);
+}

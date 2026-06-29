@@ -50,6 +50,14 @@ export default async function RootLayout({
             </div>
           </div>
         </noscript>
+        {/* Squircle clip path — superellipse n=4, k=0.9091, referenced as url(#squircle) */}
+        <svg width="0" height="0" aria-hidden="true" style={{ position: "absolute", pointerEvents: "none" }}>
+          <defs>
+            <clipPath id="squircle" clipPathUnits="objectBoundingBox">
+              <path d="M 0.5 0 C 0.9545 0, 1 0.0455, 1 0.5 C 1 0.9545, 0.9545 1, 0.5 1 C 0.0455 1, 0 0.9545, 0 0.5 C 0 0.0455, 0.0455 0, 0.5 0 Z" />
+            </clipPath>
+          </defs>
+        </svg>
         {children}
       </body>
     </html>

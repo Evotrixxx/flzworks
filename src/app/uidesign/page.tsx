@@ -283,6 +283,14 @@ function PreviewBoard({ theme }: { theme: Theme }) {
             <span className="ds-badge">Default</span>
             <span className="ds-badge ds-badge-dot"><i />Active</span>
           </div>
+
+          <div className="ds-group-label">Icons</div>
+          <div className="ds-icons">
+            {(["⚡", "🎵", "📷", "🗺️"] as const).map((icon) => (
+              <div key={icon} className="ds-icon-btn">{icon}</div>
+            ))}
+            <div className="ds-icon-btn ds-icon-btn-accent">✦</div>
+          </div>
         </div>
       </div>
     </div>
@@ -314,13 +322,16 @@ export default function UiDesignBoard() {
       {/* Fonts (hoisted to <head> by React) */}
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" />
 
-      {/* SVG refraction filter used by the Liquid Glass skin */}
+      {/* SVG defs: refraction filter (Liquid Glass) + squircle clip path (n=4, k=0.9091) */}
       <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
         <defs>
           <filter id="ds-lg-dist">
             <feTurbulence type="fractalNoise" baseFrequency="0.012 0.012" numOctaves="2" seed="7" result="noise" />
             <feDisplacementMap in="SourceGraphic" in2="noise" scale="22" xChannelSelector="R" yChannelSelector="G" />
           </filter>
+          <clipPath id="ds-squircle" clipPathUnits="objectBoundingBox">
+            <path d="M 0.5 0 C 0.9545 0, 1 0.0455, 1 0.5 C 1 0.9545, 0.9545 1, 0.5 1 C 0.0455 1, 0 0.9545, 0 0.5 C 0 0.0455, 0.0455 0, 0.5 0 Z" />
+          </clipPath>
         </defs>
       </svg>
 
@@ -456,6 +467,19 @@ export default function UiDesignBoard() {
         .skin-widget .ds-panel { box-shadow: 0 18px 46px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2); }
         .skin-widget .ds-card { border-radius: 22px; }
         .skin-widget .ds-btn-secondary, .skin-widget .ds-input, .skin-widget .ds-search { background: rgba(255,255,255,0.15); }
+
+        /* ── Icons row (squircle demonstration) ── */
+        .ds-icons { display: flex; gap: 10px; }
+        .ds-icon-btn { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; background: var(--ds-surface-2); border: 1px solid var(--ds-border); border-radius: var(--ds-btn-radius); transition: transform 0.3s var(--ds-ease), background 0.2s ease; cursor: default; user-select: none; }
+        .ds-icon-btn:hover { transform: scale(1.08); }
+        .ds-icon-btn-accent { background: linear-gradient(135deg, var(--ds-accent), var(--ds-accent-2)); border-color: transparent; box-shadow: 0 4px 14px var(--ds-glow); font-size: 16px; color: var(--ds-accent-ink); }
+
+        /* Widget Space — squircle icons (Apple iOS home screen n=4 superellipse) */
+        .skin-widget .ds-icon-btn { clip-path: url(#ds-squircle); border-radius: 0; }
+
+        /* Lucent UI — squircle panel shape (mirrors the WebGL squircle lens) */
+        .skin-lucent .ds-panel { clip-path: url(#ds-squircle); border-radius: 0; }
+        .skin-lucent .ds-icon-btn { clip-path: url(#ds-squircle); border-radius: 0; }
 
         /* Caption */
         .ds-caption { width: 100%; max-width: 560px; display: flex; flex-direction: column; gap: 5px; align-items: center; text-align: center; }

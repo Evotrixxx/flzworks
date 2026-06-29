@@ -366,7 +366,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                   href={item.permalink}
                   target="_blank"
                   rel="noreferrer"
-                  className="relative aspect-square overflow-hidden rounded-2xl group bg-white/[0.02] border border-white/[0.05] hover:border-white/[0.14] transition-all duration-300"
+                  className="relative aspect-square overflow-hidden clip-squircle group bg-white/[0.02] border border-white/[0.05] hover:border-white/[0.14] transition-all duration-300"
                 >
                   {(item.thumbnail_url || item.media_url) && (
                     <Image
