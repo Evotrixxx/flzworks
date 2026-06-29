@@ -19,7 +19,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
     images: string[];
     index: number;
   } | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<"ALL" | "CAR_DESIGN" | "OTHER">("ALL");
+  const [selectedCategory, setSelectedCategory] = useState<"ALL" | "AUTOMOTIVE" | "BRICKWORKS" | "GAMES" | "MEDIA">("ALL");
   const [uiHidden, setUiHidden] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
 
@@ -87,9 +87,31 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
   }, [activeGallery]);
 
   const publicArticles = articles.filter((a) => a.visible);
-  const filteredArticles = publicArticles.filter((article) =>
-    selectedCategory === "ALL" ? true : article.category === selectedCategory
-  );
+  const filteredArticles = publicArticles.filter((article) => {
+    const cat = article.category.toUpperCase();
+    const title = article.title.toLowerCase();
+    const folder = article.folderName.toLowerCase();
+    
+    if (selectedCategory === "ALL") return true;
+    
+    if (selectedCategory === "AUTOMOTIVE") {
+      return cat === "CAR_DESIGN" || cat === "AUTOMOTIVE" || title.includes("mirsairen") || title.includes("hydra");
+    }
+    
+    if (selectedCategory === "BRICKWORKS") {
+      return cat === "BRICKWORKS" || title.includes("brick") || folder.includes("lego");
+    }
+    
+    if (selectedCategory === "GAMES") {
+      return cat === "GAMES" || title.includes("game") || folder.includes("godot");
+    }
+    
+    if (selectedCategory === "MEDIA") {
+      return cat === "MEDIA" || cat === "OTHER" || title.includes("poster") || title.includes("brosure") || title.includes("present");
+    }
+    
+    return cat === selectedCategory;
+  });
 
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -109,34 +131,52 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
 
       {/* ── Navigation ── */}
       <header
-        className={`fixed top-6 z-40 flex items-center gap-0.5 p-1.5 bg-black/70 border border-white/10 rounded-full backdrop-blur-2xl transition-all duration-700 ${
-          uiHidden ? "opacity-0 -translate-y-4 pointer-events-none" : "opacity-100"
+        className={`fixed top-0 left-0 right-0 z-40 w-full border-b border-white/5 bg-black/40 backdrop-blur-md transition-all duration-700 ${
+          uiHidden ? "opacity-0 -translate-y-full pointer-events-none" : "opacity-100 translate-y-0"
         }`}
-        style={{ left: "50%", transform: "translateX(-50%)" }}
       >
-        <button
-          onClick={() => scrollToSection("hero")}
-          className="font-serif text-[15px] font-semibold tracking-wider px-4 py-1 border-r border-white/10 text-white mr-1 cursor-pointer select-none"
-        >
-          FLZ
-        </button>
-        <nav className="flex items-center">
-          {[
-            { label: "Home", id: "hero" },
-            { label: "Archive", id: "archive" },
-            ...(instagramMedia.length > 0 ? [{ label: "Signals", id: "signals" }] : []),
-          ].map((item) => (
+        <div className="max-w-7xl mx-auto px-8 md:px-20 h-16 flex items-center justify-between">
+          <button
+            onClick={() => {
+              setSelectedCategory("ALL");
+              scrollToSection("hero");
+            }}
+            className="font-serif text-[18px] font-semibold tracking-[0.15em] text-white hover:opacity-80 transition-opacity cursor-pointer uppercase select-none"
+          >
+            FLZ
+          </button>
+          <nav className="flex items-center gap-6 md:gap-8">
+            {[
+              { label: "Automotive", category: "AUTOMOTIVE" as const },
+              { label: "Brickworks", category: "BRICKWORKS" as const },
+              { label: "Games", category: "GAMES" as const },
+              { label: "Media", category: "MEDIA" as const },
+            ].map((item) => (
+              <button
+                key={item.category}
+                onClick={() => {
+                  setSelectedCategory(item.category);
+                  scrollToSection("archive");
+                }}
+                className={`font-mono text-[9px] tracking-[0.25em] uppercase transition-all duration-350 cursor-pointer ${
+                  selectedCategory === item.category
+                    ? "text-white font-medium border-b border-white/30 pb-1 -mb-1"
+                    : "text-white/45 hover:text-white/90"
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
             <button
-              key={item.id}
-              onClick={() => scrollToSection(item.id)}
-              className="font-mono text-[10px] font-medium tracking-wider uppercase text-white/50 hover:text-white hover:bg-white/5 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer"
+              onClick={() => scrollToSection("signals")}
+              className="font-mono text-[9px] tracking-[0.25em] uppercase text-white/45 hover:text-white/90 transition-all duration-350 cursor-pointer"
             >
-              {item.label}
+              Kontakt
             </button>
-          ))}
-        </nav>
+          </nav>
+        </div>
         <div
-          className="absolute bottom-0 left-6 right-6 h-px bg-white/20 transition-all duration-75"
+          className="h-[1px] bg-white/25 transition-all duration-75"
           style={{ width: `${scrollProgress}%` }}
         />
       </header>
@@ -186,26 +226,6 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
               <h2 className="text-5xl md:text-7xl font-semibold uppercase tracking-tighter leading-none portfolio-section-title">
                 Selected <span className="italic font-light text-white/45">Works</span>
               </h2>
-            </div>
-
-            <div className="flex items-center gap-1 bg-white/[0.02] border border-white/[0.05] p-1 rounded-full shrink-0">
-              {[
-                { id: "ALL" as const, label: "All" },
-                { id: "CAR_DESIGN" as const, label: "3D Auto" },
-                { id: "OTHER" as const, label: "Other" },
-              ].map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-4 py-1.5 rounded-full text-[9px] font-mono uppercase tracking-wider transition-all duration-300 cursor-pointer ${
-                    selectedCategory === cat.id
-                      ? "bg-white/10 text-white border border-white/15 shadow-md"
-                      : "text-white/40 hover:text-white/70 border border-transparent"
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              ))}
             </div>
           </div>
 
