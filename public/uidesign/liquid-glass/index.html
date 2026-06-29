@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Liquid Glass - WebGL Interactive Music Player</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Background WebGL Canvas -->
+  <canvas id="canvas"></canvas>
+
+  <!-- SVG Filter for Glass Refraction/Distortion on the UI Card -->
+  <svg style="display: none;">
+    <defs>
+      <filter id="lg-dist">
+        <!-- Generates fractal noise to simulate glass imperfections and organic refraction -->
+        <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="15" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- Offscreen Image used as the WebGL texture -->
+  <img id="sourceImage" src="https://images.unsplash.com/photo-1551384963-cccb0b7ed94b?q=80&w=3247&auto=format&fit=crop" alt="Source" style="display: none;" crossorigin="anonymous">
+
+  <!-- WebGL Fragment Shader -->
+  <script id="fragShader" type="x-shader/x-fragment">
+    precision highp float;
+    uniform vec3 iResolution;
+    uniform float iTime;
+    uniform vec4 iMouse;
+    uniform sampler2D iChannel0;
+
+    // Simplex-like 2D noise for organic fluid motion
+    vec2 hash(vec2 p) {
+      p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
+      return -1.0 + 2.0 * fract(sin(p) * 43758.5453123);
+    }
+
+    float noise(in vec2 p) {
+      const float K1 = 0.366025404; // (sqrt(3)-1)/2;
+      const float K2 = 0.211324865; // (3-sqrt(3))/6;
+      vec2 i = floor(p + (p.x + p.y) * K1);
+      vec2 a = p - i + (i.x + i.y) * K2;
+      float m = step(a.y, a.x);
+      vec2 o = vec2(m, 1.0 - m);
+      vec2 b = a - o + K2;
+      vec2 c = a - 1.0 + 2.0 * K2;
+      vec3 h = max(0.5 - vec3(dot(a, a), dot(b, b), dot(c, c)), 0.0);
+      vec3 n = h * h * h * h * vec3(dot(a, hash(i + 0.0)), dot(b, hash(i + o)), dot(c, hash(i + 1.0)));
+      return dot(n, vec3(70.0));
+    }
+
+    void main() {
+      vec2 uv = gl_FragCoord.xy / iResolution.xy;
+      
+      // Aspect ratio correction
+      vec2 texUv = uv;
+      float screenAspect = iResolution.x / iResolution.y;
+      float imageAspect = 16.0 / 9.0;
+      if (screenAspect > imageAspect) {
+        texUv.y = (uv.y - 0.5) * (imageAspect / screenAspect) + 0.5;
+      } else {
+        texUv.x = (uv.x - 0.5) * (screenAspect / imageAspect) + 0.5;
+      }
+
+      // Layered liquid wave distortion
+      vec2 flowUv = uv * 2.5;
+      float t = iTime * 0.15;
+      
+      float n1 = noise(flowUv + vec2(t, t * 0.4));
+      float n2 = noise(flowUv * 1.8 - vec2(t * 0.6, -t * 0.3));
+      float distortionStrength = 0.035;
+      
+      // Mouse lens refraction
+      vec2 mousePos = iMouse.xy / iResolution.xy;
+      float mouseDist = distance(uv, mousePos);
+      float mouseLens = smoothstep(0.3, 0.0, mouseDist);
+      
+      vec2 refraction = vec2(n1, n2) * distortionStrength;
+      
+      if (iMouse.x > 0.0) {
+        vec2 mouseDir = uv - mousePos;
+        refraction += normalize(mouseDir + 0.001) * mouseLens * 0.06;
+      }
+      
+      // Chromatic aberration (RGB splitting)
+      vec2 uvR = texUv + refraction * 1.12;
+      vec2 uvG = texUv + refraction;
+      vec2 uvB = texUv + refraction * 0.88;
+      
+      float r = texture2D(iChannel0, uvR).r;
+      float g = texture2D(iChannel0, uvG).g;
+      float b = texture2D(iChannel0, uvB).b;
+      
+      vec3 color = vec3(r, g, b);
+      
+      // Specular highlights from surface curvature
+      float dx = noise(flowUv + vec2(0.01, 0.0)) - noise(flowUv - vec2(0.01, 0.0));
+      float dy = noise(flowUv + vec2(0.0, 0.01)) - noise(flowUv - vec2(0.0, 0.01));
+      vec2 normal = normalize(vec2(dx, dy));
+      
+      vec2 lightDir = normalize(vec2(1.0, 1.0));
+      float spec = max(0.0, dot(normal, lightDir));
+      spec = pow(spec, 12.0) * 0.22;
+      
+      if (iMouse.x > 0.0) {
+        vec2 mouseNormal = normalize(uv - mousePos);
+        float mouseSpec = max(0.0, dot(mouseNormal, lightDir));
+        spec += pow(mouseSpec, 20.0) * mouseLens * 0.35;
+      }
+      
+      color += vec3(spec);
+      
+      // Gentle vignette
+      float vignette = uv.x * uv.y * (1.0 - uv.x) * (1.0 - uv.y);
+      vignette = clamp(pow(16.0 * vignette, 0.3), 0.0, 1.0);
+      color *= mix(0.75, 1.0, vignette);
+      
+      gl_FragColor = vec4(color, 1.0);
+    }
+  </script>
+
+  <!-- Main Container -->
+  <div class="container">
+    
+    <!-- Glassmorphism Music Player -->
+    <div class="glass-container glass-container--large" id="playerCard">
+      <!-- Glass Effect Layers -->
+      <div class="glass-filter"></div>
+      <div class="glass-overlay"></div>
+      <div class="glass-specular"></div>
+      
+      <!-- Content Layer -->
+      <div class="glass-content">
+        <div class="player">
+          
+          <!-- Album Cover / Thumbnail -->
+          <div class="player__thumb">
+            <div class="album-art-wrapper">
+              <img id="albumArt" class="player__img" src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=300&auto=format&fit=crop" alt="Album Cover">
+              <div class="album-art-center"></div>
+            </div>
+          </div>
+          
+          <!-- Track Info & Visualizer -->
+          <div class="player__details">
+            <div class="player__legend">
+              <h2 class="player__legend__title" id="trackTitle">Ambient Flow</h2>
+              <p class="player__legend__sub-title" id="trackArtist">Liquid Glass Project</p>
+            </div>
+            
+            <!-- Real-time Visualizer -->
+            <div class="visualizer" id="visualizer">
+              <div class="bar"></div>
+              <div class="bar"></div>
+              <div class="bar"></div>
+              <div class="bar"></div>
+              <div class="bar"></div>
+              <div class="bar"></div>
+              <div class="bar"></div>
+              <div class="bar"></div>
+              <div class="bar"></div>
+              <div class="bar"></div>
+              <div class="bar"></div>
+              <div class="bar"></div>
+            </div>
+          </div>
+          
+          <!-- Controls Section -->
+          <div class="player__controls-wrapper">
+            <!-- Timeline / Progress -->
+            <div class="timeline-container">
+              <span class="time-stamp" id="currentTime">0:00</span>
+              <div class="progress-bar-bg" id="progressBarBg">
+                <div class="progress-bar-fill" id="progressBarFill"></div>
+                <div class="progress-bar-knob"></div>
+              </div>
+              <span class="time-stamp" id="totalDuration">0:00</span>
+            </div>
+
+            <!-- Media Buttons -->
+            <div class="player__controls">
+              <button class="control-btn" id="prevBtn" title="Previous Track">
+                <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6L18 6v12z"/></svg>
+              </button>
+              
+              <button class="control-btn control-btn--play" id="playBtn" title="Play / Pause">
+                <!-- Play Icon -->
+                <svg class="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <!-- Pause Icon (hidden by default) -->
+                <svg class="icon-pause" viewBox="0 0 24 24" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              </button>
+              
+              <button class="control-btn" id="nextBtn" title="Next Track">
+                <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6zm9-12v12h2V6z"/></svg>
+              </button>
+              
+              <button class="control-btn" id="loopBtn" title="Loop Track">
+                <svg viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
+              </button>
+            </div>
+            
+            <!-- Volume Slider -->
+            <div class="volume-container">
+              <svg class="volume-icon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+              <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.01" value="0.7">
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Playlist Drawer (Accordion style) -->
+    <div class="playlist-card" id="playlistCard">
+      <div class="playlist-header" id="playlistHeader">
+        <span>Up Next / Playlist</span>
+        <svg class="chevron-icon" id="playlistChevron" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+      </div>
+      <div class="playlist-list" id="playlistList">
+        <!-- Playlist items will be injected here via JavaScript -->
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

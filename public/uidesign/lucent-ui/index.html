@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LUCENT — Interactive WebGL Lens Gallery</title>
+  <meta name="description" content="Explore stunning digital art through an interactive WebGL magnifying lens with real-time shader customization.">
+  <link rel="stylesheet" href="styles.css">
+  <!-- Google Fonts for premium typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@500;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Full-screen WebGL Canvas -->
+  <canvas id="canvas"></canvas>
+
+  <!-- Premium UI Overlay -->
+  <div class="ui-wrapper" id="uiWrapper">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">LUCENT</div>
+      <div class="header-tag">WEBGL INTERACTIVE LABORATORY</div>
+    </header>
+
+    <!-- Main Sidebar Panel -->
+    <aside class="control-panel">
+      <!-- Section: Artwork Info -->
+      <section class="panel-section artwork-info">
+        <div class="tag">ACTIVE ARTWORK</div>
+        <h1 id="artTitle" class="art-title">Sylvan Sanctuary</h1>
+        <p id="artMeta" class="art-meta">By Pixabay &bull; 2024</p>
+        <p id="artDesc" class="art-description">
+          A serene exploration of light filtering through a dense forest canopy. Move your cursor to focus the lens and reveal the hidden textures of nature.
+        </p>
+      </section>
+
+      <!-- Section: Lens Customizer -->
+      <section class="panel-section lens-customizer">
+        <div class="tag">LENS PARAMETERS</div>
+        
+        <!-- Size Control -->
+        <div class="control-group">
+          <div class="control-label">
+            <span>Lens Size</span>
+            <span id="valSize" class="control-value">Medium</span>
+          </div>
+          <input type="range" id="paramSize" min="0.4" max="2.0" step="0.05" value="1.0">
+        </div>
+
+        <!-- Zoom Control -->
+        <div class="control-group">
+          <div class="control-label">
+            <span>Magnification</span>
+            <span id="valZoom" class="control-value">2.0x</span>
+          </div>
+          <input type="range" id="paramZoom" min="1500" max="9000" step="100" value="5000">
+        </div>
+
+        <!-- Shape Control -->
+        <div class="control-group">
+          <div class="control-label">
+            <span>Lens Shape</span>
+            <span id="valShape" class="control-value">Squircle</span>
+          </div>
+          <input type="range" id="paramShape" min="2.0" max="12.0" step="0.5" value="6.0">
+        </div>
+
+        <!-- Glow Control -->
+        <div class="control-group">
+          <div class="control-label">
+            <span>Bezel Glow</span>
+            <span id="valGlow" class="control-value">30%</span>
+          </div>
+          <input type="range" id="paramGlow" min="0.0" max="1.0" step="0.05" value="0.3">
+        </div>
+      </section>
+
+      <!-- Section: Gallery -->
+      <section class="panel-section gallery-section">
+        <div class="tag">EXHIBITION GALLERY</div>
+        <div class="gallery-grid">
+          <!-- Item 1 -->
+          <div class="gallery-card active" data-index="0">
+            <div class="card-thumb" style="background-image: url('https://images.pexels.com/photos/268533/pexels-photo-268533.jpeg?auto=compress&cs=tinysrgb&w=150');"></div>
+            <div class="card-info">
+              <div class="card-title">Sylvan Sanctuary</div>
+              <div class="card-artist">Nature</div>
+            </div>
+          </div>
+          <!-- Item 2 -->
+          <div class="gallery-card" data-index="1">
+            <div class="card-thumb" style="background-image: url('assets/cityscape.png');"></div>
+            <div class="card-info">
+              <div class="card-title">Neo-Tokyo Noir</div>
+              <div class="card-artist">Cyberpunk</div>
+            </div>
+          </div>
+          <!-- Item 3 -->
+          <div class="gallery-card" data-index="2">
+            <div class="card-thumb" style="background-image: url('https://images.pexels.com/photos/1279813/pexels-photo-1279813.jpeg?auto=compress&cs=tinysrgb&w=150');"></div>
+            <div class="card-info">
+              <div class="card-title">Cosmic Genesis</div>
+              <div class="card-artist">Abstract</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Zen Mode Toggle -->
+      <button class="zen-btn" id="zenBtn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        <span>Enter Zen Mode</span>
+      </button>
+    </aside>
+  </div>
+
+  <!-- Zen Mode Restore Trigger -->
+  <button class="restore-btn" id="restoreBtn" title="Restore Interface">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3Z"/><path d="M9 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3Z"/></svg>
+  </button>
+
+  <!-- Vertex Shader -->
+  <script id="vsShader" type="x-shader/x-vertex">
+    attribute vec2 position;
+    void main() {
+      gl_Position = vec4(position, 0.0, 1.0);
+    }
+  </script>
+
+  <!-- Enhanced Fragment Shader -->
+  <script id="fragShader" type="x-shader/x-fragment">
+    precision mediump float;
+
+    uniform vec3 iResolution;
+    uniform float iTime;
+    uniform vec4 iMouse;
+    uniform sampler2D iChannel0; // Current texture
+    uniform sampler2D iChannel1; // Next texture for crossfading
+    uniform float uTransition;   // Crossfade transition progress (0.0 to 1.0)
+
+    // Interactive lens parameters
+    uniform float uLensScale;      // Lens size modifier
+    uniform float uZoom;           // Magnification power (LENS_MULTIPLIER)
+    uniform float uGlow;           // Bezel glow intensity
+    uniform float uShape;          // Power exponent (2.0 = circle, 6.0 = squircle)
+
+    void mainImage(out vec4 fragColor, in vec2 fragCoord)
+    {
+      // Core math constants
+      const float NUM_ZERO = 0.0;
+      const float NUM_ONE = 1.0;
+      const float NUM_HALF = 0.5;
+      const float NUM_TWO = 2.0;
+      
+      // Calculate multipliers dynamically based on the lens scale.
+      // Scaling down the multipliers increases the lens size.
+      float MASK_MULTIPLIER_1 = 10000.0 * uLensScale;
+      float MASK_MULTIPLIER_2 = 9500.0 * uLensScale;
+      float MASK_MULTIPLIER_3 = 11000.0 * uLensScale;
+      float LENS_MULTIPLIER = uZoom * uLensScale;
+      
+      const float MASK_STRENGTH_1 = 8.0;
+      const float MASK_STRENGTH_2 = 16.0;
+      const float MASK_STRENGTH_3 = 2.0;
+      const float MASK_THRESHOLD_1 = 0.95;
+      const float MASK_THRESHOLD_2 = 0.9;
+      const float MASK_THRESHOLD_3 = 1.5;
+      const float SAMPLE_RANGE = 4.0;
+      const float SAMPLE_OFFSET = 0.5;
+      const float GRADIENT_RANGE = 0.2;
+      const float GRADIENT_OFFSET = 0.1;
+      const float GRADIENT_EXTREME = -1000.0;
+
+      vec2 uv = fragCoord / iResolution.xy;
+      vec2 mouse = iMouse.xy;
+      if (length(mouse) < NUM_ONE) {
+        mouse = iResolution.xy / NUM_TWO;
+      }
+      vec2 m2 = (uv - mouse / iResolution.xy);
+
+      // Squircle distance calculation using dynamic uShape exponent
+      float roundedBox = pow(abs(m2.x * iResolution.x / iResolution.y), uShape) + pow(abs(m2.y), uShape);
+      float rb1 = clamp((NUM_ONE - roundedBox * MASK_MULTIPLIER_1) * MASK_STRENGTH_1, NUM_ZERO, NUM_ONE);
+      float rb2 = clamp((MASK_THRESHOLD_1 - roundedBox * MASK_MULTIPLIER_2) * MASK_STRENGTH_2, NUM_ZERO, NUM_ONE) -
+        clamp(pow(MASK_THRESHOLD_2 - roundedBox * MASK_MULTIPLIER_2, NUM_ONE) * MASK_STRENGTH_2, NUM_ZERO, NUM_ONE);
+      float rb3 = clamp((MASK_THRESHOLD_3 - roundedBox * MASK_MULTIPLIER_3) * MASK_STRENGTH_3, NUM_ZERO, NUM_ONE) -
+        clamp(pow(NUM_ONE - roundedBox * MASK_MULTIPLIER_3, NUM_ONE) * MASK_STRENGTH_3, NUM_ZERO, NUM_ONE);
+
+      fragColor = vec4(NUM_ZERO);
+      float transition = smoothstep(NUM_ZERO, NUM_ONE, rb1 + rb2);
+
+      if (transition > NUM_ZERO) {
+        vec2 lens = ((uv - NUM_HALF) * NUM_ONE * (NUM_ONE - roundedBox * LENS_MULTIPLIER) + NUM_HALF);
+        float total = NUM_ZERO;
+        vec4 blurAccumulator = vec4(NUM_ZERO);
+
+        // Grid sampling inside the lens
+        for (float x = -SAMPLE_RANGE; x <= SAMPLE_RANGE; x++) {
+          for (float y = -SAMPLE_RANGE; y <= SAMPLE_RANGE; y++) {
+            vec2 offset = vec2(x, y) * SAMPLE_OFFSET / iResolution.xy;
+            vec2 sampleUV = offset + lens;
+            
+            // Sample both textures and blend them according to the crossfade progress
+            vec4 color0 = texture2D(iChannel0, sampleUV);
+            vec4 color1 = texture2D(iChannel1, sampleUV);
+            blurAccumulator += mix(color0, color1, uTransition);
+            total += NUM_ONE;
+          }
+        }
+        blurAccumulator /= total;
+        fragColor = blurAccumulator;
+
+        // Apply lens lighting and border reflection gradients
+        float gradient = clamp((clamp(m2.y, NUM_ZERO, GRADIENT_RANGE) + GRADIENT_OFFSET) / NUM_TWO, NUM_ZERO, NUM_ONE) +
+          clamp((clamp(-m2.y, GRADIENT_EXTREME, GRADIENT_RANGE) * rb3 + GRADIENT_OFFSET) / NUM_TWO, NUM_ZERO, NUM_ONE);
+        vec4 lighting = clamp(fragColor + vec4(rb1) * gradient + vec4(rb2) * uGlow, NUM_ZERO, NUM_ONE);
+
+        // Mix base image (crossfaded) with the lit lens effect
+        vec4 baseImage = mix(texture2D(iChannel0, uv), texture2D(iChannel1, uv), uTransition);
+        fragColor = mix(baseImage, lighting, transition);
+      } else {
+        // Outside the lens, just render the base image (crossfaded)
+        fragColor = mix(texture2D(iChannel0, uv), texture2D(iChannel1, uv), uTransition);
+      }
+    }
+
+    void main() {
+      mainImage(gl_FragColor, gl_FragCoord.xy);
+    }
+  </script>
+
+  <script src="app.js"></script>
+</body>
+</html>

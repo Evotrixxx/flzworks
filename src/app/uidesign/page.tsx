@@ -1,659 +1,456 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import Link from "next/link";
+import { useState, useEffect, useCallback } from "react";
 
-interface ShowcaseCard {
-  id: string;
+interface Sample {
   slug: string;
   name: string;
   tagline: string;
   tags: string[];
-  accentColor: string;
-  accentGlow: string;
+  accent: string;
+  glow: string;
   description: string;
-  previewElements: PreviewElement[];
+  /** Standalone static site, served from /public */
+  url: string;
 }
 
-interface PreviewElement {
-  type: "button" | "card" | "input" | "badge" | "slider";
-  label: string;
-  color?: string;
-}
-
-const SHOWCASES: ShowcaseCard[] = [
+const SAMPLES: Sample[] = [
   {
-    id: "lucent-ui",
     slug: "lucent-ui",
     name: "Lucent UI",
-    tagline: "Liquid Glass Asset Library",
-    tags: ["WebGL", "Glassmorphism", "Refraction", "Dark Mode"],
-    accentColor: "#d1b894",
-    accentGlow: "rgba(209, 184, 148, 0.4)",
+    tagline: "Interactive WebGL Lens Gallery",
+    tags: ["WebGL", "Magnifying Lens", "Shader", "Gallery"],
+    accent: "#d1b894",
+    glow: "rgba(209, 184, 148, 0.32)",
     description:
-      "A premium design system featuring physical WebGL refraction. Every component warps and magnifies the background grid as your cursor passes through, creating realistic optical depth.",
-    previewElements: [
-      { type: "button", label: "Refractive Primary", color: "#d1b894" },
-      { type: "card", label: "Glass Panel", color: "rgba(255,255,255,0.06)" },
-      { type: "input", label: "Search Database", color: "#d1b894" },
-      { type: "badge", label: "Active", color: "#34d399" },
-    ],
+      "A full-screen WebGL exhibition where a customizable squircle lens magnifies and refracts the artwork beneath your cursor. Tune lens size, zoom, shape and bezel glow in real time, then crossfade between gallery pieces.",
+    url: "/uidesign/lucent-ui/index.html",
   },
   {
-    id: "liquid-glass",
     slug: "liquid-glass",
     name: "Liquid Glass Player",
-    tagline: "Frosted Music Interface",
-    tags: ["Glassmorphism", "iOS Style", "Animation", "Blur"],
-    accentColor: "#60a5fa",
-    accentGlow: "rgba(96, 165, 250, 0.4)",
+    tagline: "WebGL Glassmorphism Music Player",
+    tags: ["WebGL", "Glassmorphism", "SVG Filter", "Audio UI"],
+    accent: "#60a5fa",
+    glow: "rgba(96, 165, 250, 0.32)",
     description:
-      "A cinematic music player built on layered backdrop-filter blur and frosted glass panels. Rich colour bleeds from album art through every control surface.",
-    previewElements: [
-      { type: "button", label: "▶ Play", color: "#60a5fa" },
-      { type: "slider", label: "Track Position", color: "#60a5fa" },
-      { type: "badge", label: "Now Playing", color: "#818cf8" },
-      { type: "card", label: "Album Art", color: "rgba(96,165,250,0.12)" },
-    ],
+      "A frosted-glass music player floating over a living liquid WebGL backdrop with chromatic aberration and a cursor-driven refraction lens. Animated visualizer, scrubbable timeline, volume and an expandable playlist.",
+    url: "/uidesign/liquid-glass/index.html",
   },
 ];
 
-function MiniPreview({ card }: { card: ShowcaseCard }) {
-  return (
-    <div
-      className="mini-preview"
-      style={
-        {
-          "--accent": card.accentColor,
-          "--glow": card.accentGlow,
-        } as React.CSSProperties
-      }
-    >
-      {/* Ambient glow */}
-      <div
-        className="mini-preview-glow"
-        style={{ background: card.accentGlow }}
-      />
-
-      {/* Grid pattern */}
-      <div className="mini-preview-grid" />
-
-      {/* Floating elements */}
-      <div className="mini-preview-elements">
-        {card.previewElements.map((el, i) => (
-          <div key={i} className={`mini-el mini-el-${el.type}`} style={{ "--c": el.color } as React.CSSProperties}>
-            {el.type === "button" && (
-              <div className="mini-btn" style={{ borderColor: el.color, boxShadow: `0 0 8px ${el.color}40` }}>
-                {el.label}
-              </div>
-            )}
-            {el.type === "card" && (
-              <div className="mini-card" style={{ borderColor: `${el.color}` }}>
-                <div className="mini-card-line" style={{ background: card.accentColor }} />
-                <div className="mini-card-line short" />
-              </div>
-            )}
-            {el.type === "input" && (
-              <div className="mini-input" style={{ borderColor: `${card.accentColor}60` }}>
-                <span style={{ color: `${card.accentColor}80` }}>⌕</span>
-                <span>{el.label}</span>
-              </div>
-            )}
-            {el.type === "badge" && (
-              <div className="mini-badge" style={{ background: `${el.color}18`, borderColor: `${el.color}40`, color: el.color }}>
-                {el.label}
-              </div>
-            )}
-            {el.type === "slider" && (
-              <div className="mini-slider-wrap">
-                <div className="mini-slider-track">
-                  <div className="mini-slider-fill" style={{ background: el.color }} />
-                  <div className="mini-slider-thumb" style={{ background: el.color, boxShadow: `0 0 6px ${el.color}` }} />
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-export default function UiDesignGallery() {
+export default function UiDesignPreviewer() {
   const [active, setActive] = useState(0);
-  const [dir, setDir] = useState<"left" | "right" | null>(null);
-  const [animating, setAnimating] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const navigate = (direction: "left" | "right") => {
-    if (animating) return;
-    setDir(direction);
-    setAnimating(true);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => {
-      setActive((prev) =>
-        direction === "right"
-          ? (prev + 1) % SHOWCASES.length
-          : (prev - 1 + SHOWCASES.length) % SHOWCASES.length
-      );
-      setAnimating(false);
-      setDir(null);
-    }, 320);
-  };
+  const go = useCallback((dir: number) => {
+    setActive((prev) => (prev + dir + SAMPLES.length) % SAMPLES.length);
+  }, []);
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") navigate("right");
-      if (e.key === "ArrowLeft") navigate("left");
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") go(1);
+      else if (e.key === "ArrowLeft") go(-1);
     };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  });
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [go]);
 
-  const card = SHOWCASES[active];
-  const nextCard = SHOWCASES[(active + 1) % SHOWCASES.length];
-  const prevCard = SHOWCASES[(active - 1 + SHOWCASES.length) % SHOWCASES.length];
+  const current = SAMPLES[active];
+  const prev = SAMPLES[(active - 1 + SAMPLES.length) % SAMPLES.length];
+  const next = SAMPLES[(active + 1) % SAMPLES.length];
 
   return (
-    <div className="gallery-root">
-      {/* Background ambient */}
+    <div
+      className="prev-root"
+      style={
+        { "--accent": current.accent, "--glow": current.glow } as React.CSSProperties
+      }
+    >
+      {/* Per-sample ambient wash */}
       <div
-        className="gallery-ambient"
+        className="prev-ambient"
         style={{
-          background: `radial-gradient(ellipse 60% 50% at 50% 60%, ${card.accentGlow}, transparent 70%)`,
-          transition: "background 0.8s ease",
+          background: `radial-gradient(ellipse 60% 55% at 50% 42%, ${current.glow}, transparent 70%)`,
         }}
       />
 
       {/* Navigation arrows */}
       <button
-        className="gallery-arrow gallery-arrow-left"
-        onClick={() => navigate("left")}
-        aria-label="Previous"
+        className="prev-arrow prev-arrow-left"
+        onClick={() => go(-1)}
+        aria-label={`Previous — ${prev.name}`}
       >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="15 18 9 12 15 6" />
         </svg>
-        <span className="gallery-arrow-peek">{prevCard.name}</span>
+        <span className="prev-arrow-peek">{prev.name}</span>
       </button>
-
       <button
-        className="gallery-arrow gallery-arrow-right"
-        onClick={() => navigate("right")}
-        aria-label="Next"
+        className="prev-arrow prev-arrow-right"
+        onClick={() => go(1)}
+        aria-label={`Next — ${next.name}`}
       >
-        <span className="gallery-arrow-peek">{nextCard.name}</span>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <span className="prev-arrow-peek">{next.name}</span>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="9 18 15 12 9 6" />
         </svg>
       </button>
 
-      {/* Main card */}
-      <div
-        className={`gallery-card-wrap ${animating ? `gallery-exit-${dir}` : "gallery-enter"}`}
-        key={active}
-      >
+      {/* Horizontally sliding stage */}
+      <div className="prev-stage">
         <div
-          className="gallery-card"
-          style={
-            {
-              "--accent": card.accentColor,
-              "--glow": card.accentGlow,
-              borderColor: `${card.accentColor}30`,
-              boxShadow: `0 0 80px ${card.accentGlow}, 0 40px 80px rgba(0,0,0,0.6)`,
-            } as React.CSSProperties
-          }
+          className="prev-track"
+          style={{ transform: `translateX(-${active * 100}%)` }}
         >
-          {/* Left: info */}
-          <div className="gallery-card-info">
-            <div className="gallery-card-meta">
-              <span className="gallery-card-index">
-                {String(active + 1).padStart(2, "0")} / {String(SHOWCASES.length).padStart(2, "0")}
-              </span>
-              <div className="gallery-card-tags">
-                {card.tags.map((t) => (
-                  <span key={t} className="gallery-tag">
-                    {t}
+          {SAMPLES.map((s, i) => (
+            <div className="prev-slide" key={s.slug} aria-hidden={i !== active}>
+              {/* Standardized browser frame */}
+              <div
+                className="prev-frame"
+                style={{ borderColor: `${s.accent}33` }}
+              >
+                <div className="prev-browserbar">
+                  <span className="prev-tl" style={{ background: "#ff5f57" }} />
+                  <span className="prev-tl" style={{ background: "#febc2e" }} />
+                  <span className="prev-tl" style={{ background: "#28c840" }} />
+                  <div className="prev-url">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                    flz.works/uidesign/{s.slug}
+                  </div>
+                  <a
+                    className="prev-open"
+                    href={s.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Open standalone in new tab"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                      <polyline points="15 3 21 3 21 9" />
+                      <line x1="10" y1="14" x2="21" y2="3" />
+                    </svg>
+                  </a>
+                </div>
+                <div className="prev-viewport">
+                  {/* Each sample is its own isolated static site */}
+                  <iframe
+                    src={s.url}
+                    title={s.name}
+                    className="prev-iframe"
+                  />
+                </div>
+              </div>
+
+              {/* Standardized caption */}
+              <div className="prev-caption">
+                <div className="prev-cap-left">
+                  <span className="prev-index">
+                    {String(i + 1).padStart(2, "0")} / {String(SAMPLES.length).padStart(2, "0")}
                   </span>
-                ))}
+                  <h1 className="prev-name" style={{ color: s.accent }}>
+                    {s.name}
+                  </h1>
+                  <p className="prev-tagline">{s.tagline}</p>
+                </div>
+                <div className="prev-cap-right">
+                  <p className="prev-desc">{s.description}</p>
+                  <div className="prev-tags">
+                    {s.tags.map((t) => (
+                      <span key={t} className="prev-tag">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="gallery-card-title-wrap">
-              <h1 className="gallery-card-name" style={{ color: card.accentColor }}>
-                {card.name}
-              </h1>
-              <p className="gallery-card-tagline">{card.tagline}</p>
-            </div>
-            <p className="gallery-card-desc">{card.description}</p>
-            <Link
-              href={`/uidesign/${card.slug}`}
-              className="gallery-cta"
-              style={{
-                borderColor: card.accentColor,
-                color: card.accentColor,
-                boxShadow: `0 0 20px ${card.accentGlow}`,
-              }}
-            >
-              View Showcase
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="12 5 19 12 12 19" />
-              </svg>
-            </Link>
-          </div>
-
-          {/* Right: live mini preview */}
-          <div className="gallery-card-preview">
-            <MiniPreview card={card} />
-          </div>
+          ))}
         </div>
       </div>
 
-      {/* Dot indicators */}
-      <div className="gallery-dots">
-        {SHOWCASES.map((_, i) => (
+      {/* Dots + hint */}
+      <div className="prev-dots">
+        {SAMPLES.map((s, i) => (
           <button
-            key={i}
-            className={`gallery-dot ${i === active ? "active" : ""}`}
-            style={i === active ? { background: card.accentColor } : {}}
-            onClick={() => {
-              if (i > active) navigate("right");
-              else if (i < active) navigate("left");
-            }}
-            aria-label={`Go to ${SHOWCASES[i].name}`}
+            key={s.slug}
+            className={`prev-dot ${i === active ? "active" : ""}`}
+            style={i === active ? { background: current.accent } : {}}
+            onClick={() => setActive(i)}
+            aria-label={`Go to ${s.name}`}
           />
         ))}
       </div>
-
-      {/* Keyboard hint */}
-      <div className="gallery-hint">
-        <span>← →</span> arrow keys to navigate
+      <div className="prev-hint">
+        <span>&larr; &rarr;</span> arrow keys to switch sample
       </div>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Inter:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-        .gallery-root {
+        .prev-root {
+          position: relative;
           width: 100%;
           min-height: calc(100vh - 56px);
           display: flex;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
-          position: relative;
           overflow: hidden;
           background: #04040a;
+          font-family: 'Inter', system-ui, sans-serif;
         }
 
-        .gallery-ambient {
+        .prev-ambient {
           position: absolute;
           inset: 0;
           z-index: 0;
           pointer-events: none;
+          transition: background 0.7s ease;
         }
-
-        /* Subtle grid */
-        .gallery-root::before {
+        .prev-root::before {
           content: '';
           position: absolute;
           inset: 0;
-          z-index: 1;
+          z-index: 0;
           pointer-events: none;
           background-image:
             linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
             linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
           background-size: 52px 52px;
-          mask-image: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent 90%);
+          mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, rgba(0,0,0,0.6), transparent 80%);
         }
 
-        .gallery-card-wrap {
+        /* Sliding stage */
+        .prev-stage {
           position: relative;
-          z-index: 10;
+          z-index: 5;
           width: 100%;
-          max-width: 1100px;
-          padding: 0 80px;
-          transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.32s;
-        }
-
-        @keyframes gallerySlideIn {
-          from { opacity: 0; transform: translateX(60px); }
-          to   { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes gallerySlideInLeft {
-          from { opacity: 0; transform: translateX(-60px); }
-          to   { opacity: 1; transform: translateX(0); }
-        }
-        .gallery-enter { animation: gallerySlideIn 0.32s cubic-bezier(0.4, 0, 0.2, 1) both; }
-        .gallery-exit-right { opacity: 0; transform: translateX(-60px); transition: all 0.32s; }
-        .gallery-exit-left  { opacity: 0; transform: translateX(60px); transition: all 0.32s; }
-
-        .gallery-card {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 0;
-          background: rgba(8, 8, 14, 0.75);
-          backdrop-filter: blur(24px);
-          -webkit-backdrop-filter: blur(24px);
-          border: 1px solid;
-          border-radius: 24px;
           overflow: hidden;
-          min-height: 500px;
         }
-
-        .gallery-card-info {
-          padding: 60px 52px;
+        .prev-track {
+          display: flex;
+          width: 100%;
+          transition: transform 0.55s cubic-bezier(0.65, 0, 0.2, 1);
+          will-change: transform;
+        }
+        .prev-slide {
+          flex: 0 0 100%;
+          min-width: 100%;
           display: flex;
           flex-direction: column;
-          gap: 28px;
-          justify-content: center;
+          align-items: center;
+          gap: 22px;
+          padding: 28px 96px 12px;
         }
 
-        .gallery-card-meta {
+        /* Browser frame */
+        .prev-frame {
+          width: 100%;
+          max-width: 1180px;
+          border: 1px solid;
+          border-radius: 16px;
+          overflow: hidden;
+          background: rgba(8, 8, 14, 0.8);
+          box-shadow: 0 0 60px var(--glow), 0 30px 70px rgba(0,0,0,0.55);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+        }
+        .prev-browserbar {
           display: flex;
           align-items: center;
-          gap: 16px;
-          flex-wrap: wrap;
+          gap: 8px;
+          height: 40px;
+          padding: 0 14px;
+          background: rgba(255,255,255,0.03);
+          border-bottom: 1px solid rgba(255,255,255,0.07);
+        }
+        .prev-tl {
+          width: 11px;
+          height: 11px;
+          border-radius: 50%;
+          flex-shrink: 0;
+          opacity: 0.9;
+        }
+        .prev-url {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          margin: 0 auto;
+          padding: 5px 16px;
+          background: rgba(0,0,0,0.3);
+          border: 1px solid rgba(255,255,255,0.06);
+          border-radius: 7px;
+          font-size: 12px;
+          letter-spacing: 0.3px;
+          color: rgba(255,255,255,0.5);
+        }
+        .prev-url svg { color: rgba(255,255,255,0.3); }
+        .prev-open {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 30px;
+          height: 30px;
+          border-radius: 7px;
+          color: rgba(255,255,255,0.45);
+          transition: all 0.2s;
+          flex-shrink: 0;
+        }
+        .prev-open:hover {
+          background: rgba(255,255,255,0.07);
+          color: var(--accent);
+        }
+        .prev-viewport {
+          width: 100%;
+          height: clamp(360px, 56vh, 660px);
+          background: #04040a;
+        }
+        .prev-iframe {
+          width: 100%;
+          height: 100%;
+          border: 0;
+          display: block;
         }
 
-        .gallery-card-index {
+        /* Caption */
+        .prev-caption {
+          width: 100%;
+          max-width: 1180px;
+          display: grid;
+          grid-template-columns: 1fr 1.2fr;
+          gap: 40px;
+          align-items: start;
+          padding: 0 4px;
+        }
+        .prev-cap-left { display: flex; flex-direction: column; gap: 6px; }
+        .prev-index {
           font-size: 11px;
           font-weight: 600;
           letter-spacing: 2px;
           color: rgba(255,255,255,0.25);
+        }
+        .prev-name {
+          margin: 2px 0 0;
+          font-size: 30px;
+          font-weight: 600;
+          letter-spacing: 0.5px;
+          line-height: 1.05;
+        }
+        .prev-tagline {
+          margin: 0;
+          font-size: 13px;
+          letter-spacing: 0.5px;
           text-transform: uppercase;
+          color: rgba(255,255,255,0.4);
         }
-
-        .gallery-card-tags {
-          display: flex;
-          gap: 6px;
-          flex-wrap: wrap;
+        .prev-cap-right { display: flex; flex-direction: column; gap: 14px; }
+        .prev-desc {
+          margin: 0;
+          font-size: 13.5px;
+          line-height: 1.7;
+          color: rgba(255,255,255,0.55);
         }
-
-        .gallery-tag {
+        .prev-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+        .prev-tag {
           font-size: 10px;
           font-weight: 600;
           letter-spacing: 0.5px;
           text-transform: uppercase;
-          color: rgba(255,255,255,0.4);
+          color: rgba(255,255,255,0.45);
           background: rgba(255,255,255,0.04);
           border: 1px solid rgba(255,255,255,0.08);
-          padding: 2px 8px;
+          padding: 3px 9px;
           border-radius: 20px;
         }
 
-        .gallery-card-title-wrap {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .gallery-card-name {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 52px;
-          font-weight: 400;
-          letter-spacing: 2px;
-          line-height: 1.05;
-          margin: 0;
-        }
-
-        .gallery-card-tagline {
-          font-size: 14px;
-          font-weight: 400;
-          letter-spacing: 0.5px;
-          color: rgba(255,255,255,0.45);
-          margin: 0;
-          text-transform: uppercase;
-        }
-
-        .gallery-card-desc {
-          font-size: 14px;
-          line-height: 1.7;
-          color: rgba(255,255,255,0.55);
-          margin: 0;
-          max-width: 380px;
-        }
-
-        .gallery-cta {
-          display: inline-flex;
-          align-items: center;
-          gap: 10px;
-          padding: 14px 32px;
-          border: 1px solid;
-          border-radius: 8px;
-          font-size: 13px;
-          font-weight: 600;
-          letter-spacing: 1.5px;
-          text-transform: uppercase;
-          text-decoration: none;
-          background: rgba(255,255,255,0.03);
-          transition: all 0.25s;
-          width: fit-content;
-        }
-        .gallery-cta:hover {
-          background: rgba(255,255,255,0.08);
-          transform: translateY(-2px);
-          letter-spacing: 2px;
-        }
-
-        .gallery-card-preview {
-          background: rgba(255,255,255,0.012);
-          border-left: 1px solid rgba(255,255,255,0.06);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 40px;
-        }
-
-        /* Mini preview */
-        .mini-preview {
-          width: 100%;
-          aspect-ratio: 1;
-          max-width: 360px;
-          background: rgba(4,4,10,0.8);
-          border: 1px solid rgba(255,255,255,0.07);
-          border-radius: 16px;
-          position: relative;
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-          padding: 28px;
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
-        }
-
-        .mini-preview-glow {
-          position: absolute;
-          width: 200px;
-          height: 200px;
-          border-radius: 50%;
-          top: -60px;
-          right: -40px;
-          filter: blur(60px);
-          opacity: 0.3;
-          pointer-events: none;
-        }
-
-        .mini-preview-grid {
-          position: absolute;
-          inset: 0;
-          background-image:
-            linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-          background-size: 28px 28px;
-          pointer-events: none;
-        }
-
-        .mini-preview-elements {
-          position: relative;
-          z-index: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-        }
-
-        .mini-btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          padding: 9px 20px;
-          border: 1px solid;
-          border-radius: 6px;
-          font-size: 12px;
-          font-weight: 500;
-          letter-spacing: 1px;
-          text-transform: uppercase;
-          background: rgba(255,255,255,0.03);
-          color: rgba(255,255,255,0.9);
-          width: fit-content;
-        }
-
-        .mini-card {
-          background: rgba(255,255,255,0.04);
-          border: 1px solid;
-          border-radius: 10px;
-          padding: 14px 16px;
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-        }
-        .mini-card-line {
-          height: 4px;
-          border-radius: 2px;
-          background: rgba(255,255,255,0.15);
-          width: 70%;
-        }
-        .mini-card-line.short { width: 45%; background: rgba(255,255,255,0.07); }
-
-        .mini-input {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          background: rgba(10,10,18,0.7);
-          border: 1px solid;
-          border-radius: 6px;
-          padding: 9px 14px;
-          font-size: 12px;
-          color: rgba(255,255,255,0.4);
-        }
-
-        .mini-badge {
-          display: inline-flex;
-          align-items: center;
-          padding: 3px 10px;
-          border: 1px solid;
-          border-radius: 20px;
-          font-size: 11px;
-          font-weight: 600;
-          letter-spacing: 0.5px;
-          text-transform: uppercase;
-          width: fit-content;
-        }
-
-        .mini-slider-wrap { width: 100%; }
-        .mini-slider-track {
-          position: relative;
-          height: 4px;
-          background: rgba(255,255,255,0.08);
-          border-radius: 2px;
-        }
-        .mini-slider-fill {
-          position: absolute;
-          left: 0;
-          top: 0;
-          bottom: 0;
-          width: 65%;
-          border-radius: 2px;
-          opacity: 0.8;
-        }
-        .mini-slider-thumb {
-          position: absolute;
-          left: 65%;
-          top: 50%;
-          transform: translate(-50%, -50%);
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-        }
-
-        /* Arrow buttons */
-        .gallery-arrow {
+        /* Arrows */
+        .prev-arrow {
           position: absolute;
           top: 50%;
           transform: translateY(-50%);
-          z-index: 20;
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.08);
-          color: rgba(255,255,255,0.5);
+          z-index: 30;
           width: 52px;
           height: 52px;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.09);
+          color: rgba(255,255,255,0.55);
           cursor: pointer;
           transition: all 0.2s;
-          overflow: visible;
         }
-        .gallery-arrow:hover {
-          background: rgba(255,255,255,0.08);
-          border-color: rgba(255,255,255,0.18);
-          color: rgba(255,255,255,0.9);
+        .prev-arrow:hover {
+          background: rgba(255,255,255,0.09);
+          border-color: var(--accent);
+          color: #fff;
+          box-shadow: 0 0 24px var(--glow);
         }
-        .gallery-arrow-left { left: 24px; }
-        .gallery-arrow-right { right: 24px; }
-
-        .gallery-arrow-peek {
+        .prev-arrow-left { left: 26px; }
+        .prev-arrow-right { right: 26px; }
+        .prev-arrow-peek {
           position: absolute;
           white-space: nowrap;
           font-size: 11px;
           font-weight: 500;
           letter-spacing: 0.5px;
-          color: rgba(255,255,255,0.3);
-          transition: color 0.2s, opacity 0.2s;
+          color: rgba(255,255,255,0.5);
           opacity: 0;
+          transition: opacity 0.2s;
           pointer-events: none;
         }
-        .gallery-arrow-left .gallery-arrow-peek { right: calc(100% + 10px); }
-        .gallery-arrow-right .gallery-arrow-peek { left: calc(100% + 10px); }
-        .gallery-arrow:hover .gallery-arrow-peek { opacity: 1; color: rgba(255,255,255,0.6); }
+        .prev-arrow-left .prev-arrow-peek { left: calc(100% + 12px); }
+        .prev-arrow-right .prev-arrow-peek { right: calc(100% + 12px); }
+        .prev-arrow:hover .prev-arrow-peek { opacity: 1; }
 
-        /* Dots */
-        .gallery-dots {
+        /* Dots + hint */
+        .prev-dots {
           position: absolute;
-          bottom: 40px;
+          bottom: 22px;
           left: 50%;
           transform: translateX(-50%);
-          z-index: 20;
+          z-index: 30;
           display: flex;
-          gap: 10px;
+          gap: 9px;
         }
-
-        .gallery-dot {
+        .prev-dot {
           width: 8px;
           height: 8px;
-          border-radius: 50%;
-          background: rgba(255,255,255,0.15);
+          padding: 0;
           border: none;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.16);
           cursor: pointer;
           transition: all 0.3s;
-          padding: 0;
         }
-        .gallery-dot.active {
-          width: 24px;
-          border-radius: 4px;
-        }
-
-        .gallery-hint {
+        .prev-dot.active { width: 24px; border-radius: 4px; }
+        .prev-hint {
           position: absolute;
-          bottom: 40px;
-          right: 40px;
+          bottom: 22px;
+          right: 32px;
+          z-index: 30;
           font-size: 11px;
-          color: rgba(255,255,255,0.2);
-          letter-spacing: 0.5px;
+          color: rgba(255,255,255,0.22);
+          letter-spacing: 0.4px;
         }
-        .gallery-hint span {
-          font-weight: 600;
-          color: rgba(255,255,255,0.35);
-          letter-spacing: 1px;
+        .prev-hint span { font-weight: 600; color: rgba(255,255,255,0.4); }
+
+        @media (max-width: 900px) {
+          .prev-slide { padding: 18px 64px 12px; }
+          .prev-caption { grid-template-columns: 1fr; gap: 16px; }
+          .prev-viewport { height: clamp(300px, 46vh, 520px); }
+          .prev-name { font-size: 24px; }
+          .prev-hint { display: none; }
+        }
+        @media (max-width: 560px) {
+          .prev-arrow { width: 42px; height: 42px; }
+          .prev-arrow-left { left: 10px; }
+          .prev-arrow-right { right: 10px; }
+          .prev-slide { padding: 14px 56px 12px; }
         }
       `}</style>
     </div>
