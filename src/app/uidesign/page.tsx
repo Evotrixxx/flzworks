@@ -1,877 +1,575 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import Link from "next/link";
+import { useState, useRef, useEffect, useCallback } from "react";
 
-interface ShowcaseCard {
+// ─────────────────────────────────────────────────────────────────────────────
+// Each "style" is a theme: a set of CSS custom properties that re-skin the SAME
+// standardized board of elements below. Switch styles with the arrows to compare
+// how each design language treats identical components.
+// ─────────────────────────────────────────────────────────────────────────────
+interface Theme {
   id: string;
-  slug: string;
   name: string;
   tagline: string;
   tags: string[];
-  accentColor: string;
-  accentGlow: string;
-  description: string;
-  previewElements: PreviewElement[];
+  accent: string;
+  glow: string;
+  /** CSS custom properties applied to the preview, consumed by the board CSS. */
+  vars: Record<string, string>;
 }
 
-interface PreviewElement {
-  type: "button" | "card" | "input" | "badge" | "slider" | "island" | "cc-grid" | "widgets";
-  label: string;
-  color?: string;
-}
-
-const SHOWCASES: ShowcaseCard[] = [
+const THEMES: Theme[] = [
   {
     id: "lucent-ui",
-    slug: "lucent-ui",
     name: "Lucent UI",
     tagline: "Liquid Glass Asset Library",
-    tags: ["WebGL", "Glassmorphism", "Refraction", "Dark Mode"],
-    accentColor: "#d1b894",
-    accentGlow: "rgba(209, 184, 148, 0.4)",
-    description:
-      "A premium design system featuring physical WebGL refraction. Every component warps and magnifies the background grid as your cursor passes through, creating realistic optical depth.",
-    previewElements: [
-      { type: "button", label: "Refractive Primary", color: "#d1b894" },
-      { type: "card", label: "Glass Panel", color: "rgba(255,255,255,0.06)" },
-      { type: "input", label: "Search Database", color: "#d1b894" },
-      { type: "badge", label: "Active", color: "#34d399" },
-    ],
+    tags: ["Glassmorphism", "Saturated Blur", "Dark Mode", "Syne"],
+    accent: "#d1b894",
+    glow: "rgba(209, 184, 148, 0.4)",
+    vars: {
+      "--ds-bg": "radial-gradient(ellipse 90% 70% at 50% 0%, #16140f 0%, #070709 60%)",
+      "--ds-surface": "rgba(13, 13, 17, 0.65)",
+      "--ds-surface-2": "rgba(255, 255, 255, 0.05)",
+      "--ds-border": "rgba(255, 255, 255, 0.10)",
+      "--ds-border-2": "rgba(255, 255, 255, 0.20)",
+      "--ds-text": "#ffffff",
+      "--ds-sub": "#a1a1aa",
+      "--ds-accent": "#d1b894",
+      "--ds-accent-ink": "#070709",
+      "--ds-glow": "rgba(209, 184, 148, 0.4)",
+      "--ds-radius": "12px",
+      "--ds-radius-lg": "20px",
+      "--ds-blur": "24px",
+      "--ds-saturate": "160%",
+      "--ds-shadow": "0 20px 50px rgba(0,0,0,0.5)",
+      "--ds-font": "'Outfit', system-ui, sans-serif",
+      "--ds-font-display": "'Syne', sans-serif",
+      "--ds-ease": "cubic-bezier(0.16, 1, 0.3, 1)",
+    },
   },
   {
     id: "liquid-glass",
-    slug: "liquid-glass",
     name: "Liquid Glass Player",
     tagline: "Frosted Music Interface",
-    tags: ["Glassmorphism", "iOS Style", "Animation", "Blur"],
-    accentColor: "#a78bfa",
-    accentGlow: "rgba(167, 139, 250, 0.4)",
-    description:
-      "A cinematic music player built on layered backdrop-filter blur and frosted glass panels. Rich colour bleeds from album art through every control surface.",
-    previewElements: [
-      { type: "button", label: "▶ Play", color: "#a78bfa" },
-      { type: "slider", label: "Track Position", color: "#a78bfa" },
-      { type: "badge", label: "Now Playing", color: "#818cf8" },
-      { type: "card", label: "Album Art", color: "rgba(167,139,250,0.12)" },
-    ],
+    tags: ["Glassmorphism", "Ultra-round", "Springy", "Blur"],
+    accent: "#a78bfa",
+    glow: "rgba(167, 139, 250, 0.4)",
+    vars: {
+      "--ds-bg": "radial-gradient(ellipse 80% 80% at 70% 20%, #1c1530 0%, #0d0e12 65%)",
+      "--ds-surface": "rgba(255, 255, 255, 0.08)",
+      "--ds-surface-2": "rgba(255, 255, 255, 0.10)",
+      "--ds-border": "rgba(255, 255, 255, 0.18)",
+      "--ds-border-2": "rgba(255, 255, 255, 0.32)",
+      "--ds-text": "#ffffff",
+      "--ds-sub": "rgba(255, 255, 255, 0.6)",
+      "--ds-accent": "#a78bfa",
+      "--ds-accent-ink": "#1a1030",
+      "--ds-glow": "rgba(167, 139, 250, 0.4)",
+      "--ds-radius": "18px",
+      "--ds-radius-lg": "28px",
+      "--ds-blur": "30px",
+      "--ds-saturate": "120%",
+      "--ds-shadow": "0 20px 50px rgba(0,0,0,0.35), 0 0 80px rgba(255,255,255,0.04)",
+      "--ds-font": "'Outfit', system-ui, sans-serif",
+      "--ds-font-display": "'Outfit', sans-serif",
+      "--ds-ease": "cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+    },
   },
   {
     id: "dynamic-island",
-    slug: "dynamic-island",
     name: "Dynamic Island HUD",
     tagline: "Fluid Morphing Interface",
-    tags: ["iOS HUD", "Fluid Physics", "Morphing", "Micro-alerts"],
-    accentColor: "#34d399",
-    accentGlow: "rgba(52, 211, 153, 0.4)",
-    description:
-      "A fluid, physics-based notification space that expands, shrinks, and splits based on real-time triggers. Features FaceID scans, incoming call banners, and mini music controls.",
-    previewElements: [
-      { type: "island", label: "Dynamic Island HUD", color: "#34d399" }
-    ]
+    tags: ["iOS HUD", "Pill Shapes", "Spring", "Micro-alerts"],
+    accent: "#34d399",
+    glow: "rgba(52, 211, 153, 0.4)",
+    vars: {
+      "--ds-bg": "radial-gradient(ellipse 70% 60% at 50% 30%, #0a1410 0%, #000000 60%)",
+      "--ds-surface": "rgba(18, 18, 20, 0.85)",
+      "--ds-surface-2": "rgba(255, 255, 255, 0.08)",
+      "--ds-border": "rgba(255, 255, 255, 0.08)",
+      "--ds-border-2": "rgba(255, 255, 255, 0.16)",
+      "--ds-text": "#ffffff",
+      "--ds-sub": "rgba(255, 255, 255, 0.5)",
+      "--ds-accent": "#34d399",
+      "--ds-accent-ink": "#00130c",
+      "--ds-glow": "rgba(52, 211, 153, 0.4)",
+      "--ds-radius": "999px",
+      "--ds-radius-lg": "30px",
+      "--ds-blur": "18px",
+      "--ds-saturate": "140%",
+      "--ds-shadow": "0 16px 40px rgba(0,0,0,0.6)",
+      "--ds-font": "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
+      "--ds-font-display": "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
+      "--ds-ease": "cubic-bezier(0.34, 1.56, 0.64, 1)",
+    },
   },
   {
     id: "control-center",
-    slug: "control-center",
     name: "iOS Control Center",
     tagline: "Tactile Toggles & Sliders",
-    tags: ["iOS Control", "Frosted Glass", "Tactile Sliders", "Toggle Grids"],
-    accentColor: "#60a5fa",
-    accentGlow: "rgba(96, 165, 250, 0.4)",
-    description:
-      "A tactile dashboard featuring wide vertical brightness/volume sliders and a toggle grid for connectivity (Wi-Fi, Bluetooth, Cellular, AirDrop) with premium frosted glassmorphism.",
-    previewElements: [
-      { type: "cc-grid", label: "Control Grid", color: "#60a5fa" }
-    ]
+    tags: ["iOS Control", "Frosted Glass", "Tiles", "System Font"],
+    accent: "#60a5fa",
+    glow: "rgba(96, 165, 250, 0.4)",
+    vars: {
+      "--ds-bg": "linear-gradient(135deg, #243049 0%, #0f1622 70%)",
+      "--ds-surface": "rgba(255, 255, 255, 0.12)",
+      "--ds-surface-2": "rgba(255, 255, 255, 0.16)",
+      "--ds-border": "rgba(255, 255, 255, 0.18)",
+      "--ds-border-2": "rgba(255, 255, 255, 0.28)",
+      "--ds-text": "#ffffff",
+      "--ds-sub": "rgba(255, 255, 255, 0.65)",
+      "--ds-accent": "#60a5fa",
+      "--ds-accent-ink": "#04122b",
+      "--ds-glow": "rgba(96, 165, 250, 0.4)",
+      "--ds-radius": "16px",
+      "--ds-radius-lg": "22px",
+      "--ds-blur": "30px",
+      "--ds-saturate": "180%",
+      "--ds-shadow": "0 16px 44px rgba(0,0,0,0.4)",
+      "--ds-font": "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
+      "--ds-font-display": "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
+      "--ds-ease": "cubic-bezier(0.32, 0.72, 0, 1)",
+    },
   },
   {
     id: "widget-space",
-    slug: "widget-space",
     name: "iOS Widget Space",
     tagline: "Frosted Desktop Widgets",
-    tags: ["iOS Widgets", "Home Screen", "SVG Rings", "Weather HUD"],
-    accentColor: "#f472b6",
-    accentGlow: "rgba(244, 114, 182, 0.4)",
-    description:
-      "A modular workspace of glassmorphic home screen widgets, featuring animated weather updates, SVG fitness/activity rings, and circular battery indicators for connected devices.",
-    previewElements: [
-      { type: "widgets", label: "Widget Desk", color: "#f472b6" }
-    ]
-  }
+    tags: ["iOS Widgets", "Soft Frost", "Rounded", "Home Screen"],
+    accent: "#f472b6",
+    glow: "rgba(244, 114, 182, 0.4)",
+    vars: {
+      "--ds-bg": "linear-gradient(160deg, #2c2030 0%, #161019 70%)",
+      "--ds-surface": "rgba(255, 255, 255, 0.10)",
+      "--ds-surface-2": "rgba(255, 255, 255, 0.14)",
+      "--ds-border": "rgba(255, 255, 255, 0.16)",
+      "--ds-border-2": "rgba(255, 255, 255, 0.26)",
+      "--ds-text": "#ffffff",
+      "--ds-sub": "rgba(255, 255, 255, 0.6)",
+      "--ds-accent": "#f472b6",
+      "--ds-accent-ink": "#2a0418",
+      "--ds-glow": "rgba(244, 114, 182, 0.4)",
+      "--ds-radius": "18px",
+      "--ds-radius-lg": "26px",
+      "--ds-blur": "26px",
+      "--ds-saturate": "150%",
+      "--ds-shadow": "0 18px 46px rgba(0,0,0,0.4)",
+      "--ds-font": "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
+      "--ds-font-display": "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
+      "--ds-ease": "cubic-bezier(0.32, 0.72, 0, 1)",
+    },
+  },
 ];
 
-function MiniPreview({ card }: { card: ShowcaseCard }) {
+// ── Interactive bits so every themed board feels alive ──────────────────────
+function Toggle({ defaultOn }: { defaultOn: boolean }) {
+  const [on, setOn] = useState(defaultOn);
   return (
-    <div
-      className="mini-preview"
-      style={
-        {
-          "--accent": card.accentColor,
-          "--glow": card.accentGlow,
-        } as React.CSSProperties
-      }
+    <button
+      type="button"
+      className={`ds-toggle ${on ? "on" : ""}`}
+      onClick={() => setOn((v) => !v)}
+      aria-pressed={on}
+      aria-label="Toggle"
     >
-      {/* Ambient glow */}
-      <div
-        className="mini-preview-glow"
-        style={{ background: card.accentGlow }}
-      />
+      <span className="ds-knob" />
+    </button>
+  );
+}
 
-      {/* Grid pattern */}
-      <div className="mini-preview-grid" />
+function Slider({ defaultValue }: { defaultValue: number }) {
+  const [val, setVal] = useState(defaultValue);
+  const trackRef = useRef<HTMLDivElement>(null);
 
-      {/* Floating elements */}
-      <div className="mini-preview-elements">
-        {card.previewElements.map((el, i) => (
-          <div key={i} className={`mini-el mini-el-${el.type}`} style={{ "--c": el.color } as React.CSSProperties}>
-            {el.type === "button" && (
-              <div className="mini-btn" style={{ borderColor: el.color, boxShadow: `0 0 8px ${el.color}40` }}>
-                {el.label}
-              </div>
-            )}
-            {el.type === "card" && (
-              <div className="mini-card" style={{ borderColor: `${el.color}` }}>
-                <div className="mini-card-line" style={{ background: card.accentColor }} />
-                <div className="mini-card-line short" />
-              </div>
-            )}
-            {el.type === "input" && (
-              <div className="mini-input" style={{ borderColor: `${card.accentColor}60` }}>
-                <span style={{ color: `${card.accentColor}80` }}>⌕</span>
-                <span>{el.label}</span>
-              </div>
-            )}
-            {el.type === "badge" && (
-              <div className="mini-badge" style={{ background: `${el.color}18`, borderColor: `${el.color}40`, color: el.color }}>
-                {el.label}
-              </div>
-            )}
-            {el.type === "slider" && (
-              <div className="mini-slider-wrap">
-                <div className="mini-slider-track">
-                  <div className="mini-slider-fill" style={{ background: el.color }} />
-                  <div className="mini-slider-thumb" style={{ background: el.color, boxShadow: `0 0 6px ${el.color}` }} />
-                </div>
-              </div>
-            )}
-            {el.type === "island" && (
-              <div className="mini-island-container">
-                <div className="mini-island-capsule">
-                  <span className="mini-island-camera" />
-                  <span className="mini-island-indicator" style={{ background: card.accentColor }} />
-                </div>
-                <div className="mini-island-card">
-                  <div className="mini-island-check" style={{ color: card.accentColor }}>✓</div>
-                  <div className="mini-island-text">FaceID</div>
-                </div>
-              </div>
-            )}
-            {el.type === "cc-grid" && (
-              <div className="mini-cc-container">
-                <div className="mini-cc-quad">
-                  <div className="mini-cc-btn active" style={{ color: el.color, background: `${el.color}20` }}>✦</div>
-                  <div className="mini-cc-btn">📶</div>
-                  <div className="mini-cc-btn">🦷</div>
-                  <div className="mini-cc-btn">✈</div>
-                </div>
-                <div className="mini-cc-sliders">
-                  <div className="mini-cc-vertical-slider">
-                    <div className="mini-cc-vs-fill" style={{ background: el.color }} />
-                  </div>
-                  <div className="mini-cc-vertical-slider">
-                    <div className="mini-cc-vs-fill" />
-                  </div>
-                </div>
-              </div>
-            )}
-            {el.type === "widgets" && (
-              <div className="mini-widgets-container">
-                <div className="mini-w-box mini-w-weather">
-                  <span className="mini-w-icon">☀️</span>
-                  <span className="mini-w-temp">24°</span>
-                </div>
-                <div className="mini-w-box mini-w-fitness">
-                  <svg className="mini-fitness-svg" viewBox="0 0 36 36">
-                    <circle className="mini-fit-bg" cx="18" cy="18" r="14" />
-                    <circle className="mini-fit-fill" cx="18" cy="18" r="14" stroke={card.accentColor} />
-                  </svg>
-                </div>
-              </div>
-            )}
+  const setFromX = useCallback((clientX: number) => {
+    const el = trackRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const pct = Math.min(100, Math.max(0, ((clientX - r.left) / r.width) * 100));
+    setVal(pct);
+  }, []);
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    setFromX(e.clientX);
+    const move = (ev: PointerEvent) => setFromX(ev.clientX);
+    const up = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  };
+
+  return (
+    <div className="ds-slider" ref={trackRef} onPointerDown={onPointerDown} role="slider" aria-valuenow={Math.round(val)} aria-valuemin={0} aria-valuemax={100} tabIndex={0}>
+      <div className="ds-slider-fill" style={{ width: `${val}%` }} />
+      <div className="ds-slider-thumb" style={{ left: `${val}%` }} />
+    </div>
+  );
+}
+
+// ── The standardized board — identical markup for every theme ───────────────
+function PreviewBoard({ theme }: { theme: Theme }) {
+  return (
+    <div className="ds-preview" style={theme.vars as React.CSSProperties}>
+      <div className="ds-panel">
+        <div className="ds-panel-head">
+          <div className="ds-panel-title">{theme.name}</div>
+          <span className="ds-badge ds-badge-accent">Live</span>
+        </div>
+
+        {/* Buttons */}
+        <div className="ds-group-label">Buttons</div>
+        <div className="ds-btns">
+          <button type="button" className="ds-btn ds-btn-primary">Primary</button>
+          <button type="button" className="ds-btn ds-btn-secondary">Secondary</button>
+          <button type="button" className="ds-btn ds-btn-ghost">Ghost</button>
+        </div>
+
+        {/* Nested card */}
+        <div className="ds-card">
+          <div className="ds-card-title">Card / Surface</div>
+          <div className="ds-card-body">
+            The panel, this card, borders, radius, blur and shadow all come from
+            the active style — only the skin changes between samples.
           </div>
-        ))}
+        </div>
+
+        {/* Inputs */}
+        <div className="ds-group-label">Inputs</div>
+        <div className="ds-fields">
+          <input className="ds-input" type="text" placeholder="Text input" />
+          <div className="ds-search">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <circle cx="11" cy="11" r="7" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input className="ds-input ds-input-bare" type="text" placeholder="Search…" />
+          </div>
+        </div>
+
+        {/* Controls */}
+        <div className="ds-group-label">Controls</div>
+        <div className="ds-controls">
+          <div className="ds-control-row">
+            <span className="ds-control-name">Notifications</span>
+            <Toggle defaultOn />
+          </div>
+          <div className="ds-control-row">
+            <span className="ds-control-name">Airplane Mode</span>
+            <Toggle defaultOn={false} />
+          </div>
+          <div className="ds-control-row ds-slider-row">
+            <span className="ds-control-name">Volume</span>
+            <Slider defaultValue={64} />
+          </div>
+        </div>
+
+        {/* Badges / chips */}
+        <div className="ds-group-label">Badges</div>
+        <div className="ds-chips">
+          <span className="ds-badge ds-badge-accent">Accent</span>
+          <span className="ds-badge">Default</span>
+          <span className="ds-badge">New</span>
+          <span className="ds-badge ds-badge-dot"><i />Active</span>
+        </div>
       </div>
     </div>
   );
 }
 
-export default function UiDesignGallery() {
+export default function UiDesignBoard() {
   const [active, setActive] = useState(0);
-  const [dir, setDir] = useState<"left" | "right" | null>(null);
-  const [animating, setAnimating] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const navigate = (direction: "left" | "right") => {
-    if (animating) return;
-    setDir(direction);
-    setAnimating(true);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => {
-      setActive((prev) =>
-        direction === "right"
-          ? (prev + 1) % SHOWCASES.length
-          : (prev - 1 + SHOWCASES.length) % SHOWCASES.length
-      );
-      setAnimating(false);
-      setDir(null);
-    }, 320);
-  };
+  const go = useCallback((dir: number) => {
+    setActive((prev) => (prev + dir + THEMES.length) % THEMES.length);
+  }, []);
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") navigate("right");
-      if (e.key === "ArrowLeft") navigate("left");
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") go(1);
+      else if (e.key === "ArrowLeft") go(-1);
     };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  });
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [go]);
 
-  const card = SHOWCASES[active];
-  const nextCard = SHOWCASES[(active + 1) % SHOWCASES.length];
-  const prevCard = SHOWCASES[(active - 1 + SHOWCASES.length) % SHOWCASES.length];
+  const cur = THEMES[active];
+  const prev = THEMES[(active - 1 + THEMES.length) % THEMES.length];
+  const next = THEMES[(active + 1) % THEMES.length];
 
   return (
-    <div className="gallery-root">
-      {/* Background ambient */}
+    <div
+      className="ds-root"
+      style={{ "--cur-accent": cur.accent, "--cur-glow": cur.glow } as React.CSSProperties}
+    >
       <div
-        className="gallery-ambient"
-        style={{
-          background: `radial-gradient(ellipse 60% 50% at 50% 60%, ${card.accentGlow}, transparent 70%)`,
-          transition: "background 0.8s ease",
-        }}
+        className="ds-ambient"
+        style={{ background: `radial-gradient(ellipse 55% 50% at 50% 42%, ${cur.glow}, transparent 70%)` }}
       />
 
-      {/* Navigation arrows */}
-      <button
-        className="gallery-arrow gallery-arrow-left"
-        onClick={() => navigate("left")}
-        aria-label="Previous"
-      >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      {/* Arrows */}
+      <button className="ds-arrow ds-arrow-left" onClick={() => go(-1)} aria-label={`Previous — ${prev.name}`}>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="15 18 9 12 15 6" />
         </svg>
-        <span className="gallery-arrow-peek">{prevCard.name}</span>
+        <span className="ds-arrow-peek">{prev.name}</span>
       </button>
-
-      <button
-        className="gallery-arrow gallery-arrow-right"
-        onClick={() => navigate("right")}
-        aria-label="Next"
-      >
-        <span className="gallery-arrow-peek">{nextCard.name}</span>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <button className="ds-arrow ds-arrow-right" onClick={() => go(1)} aria-label={`Next — ${next.name}`}>
+        <span className="ds-arrow-peek">{next.name}</span>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="9 18 15 12 9 6" />
         </svg>
       </button>
 
-      {/* Main card */}
-      <div
-        className={`gallery-card-wrap ${animating ? `gallery-exit-${dir}` : "gallery-enter"}`}
-        key={active}
-      >
-        <div
-          className="gallery-card"
-          style={
-            {
-              "--accent": card.accentColor,
-              "--glow": card.accentGlow,
-              borderColor: `${card.accentColor}30`,
-              boxShadow: `0 0 80px ${card.accentGlow}, 0 40px 80px rgba(0,0,0,0.6)`,
-            } as React.CSSProperties
-          }
-        >
-          {/* Left: info */}
-          <div className="gallery-card-info">
-            <div className="gallery-card-meta">
-              <span className="gallery-card-index">
-                {String(active + 1).padStart(2, "0")} / {String(SHOWCASES.length).padStart(2, "0")}
-              </span>
-              <div className="gallery-card-tags">
-                {card.tags.map((t) => (
-                  <span key={t} className="gallery-tag">
-                    {t}
-                  </span>
-                ))}
+      {/* Sliding track of identical boards, one per theme */}
+      <div className="ds-stage">
+        <div className="ds-track" style={{ transform: `translateX(-${active * 100}%)` }}>
+          {THEMES.map((theme, i) => (
+            <div className="ds-slide" key={theme.id} aria-hidden={i !== active}>
+              <PreviewBoard theme={theme} />
+              <div className="ds-caption">
+                <span className="ds-index">
+                  {String(i + 1).padStart(2, "0")} / {String(THEMES.length).padStart(2, "0")}
+                </span>
+                <h1 className="ds-name" style={{ color: theme.accent }}>{theme.name}</h1>
+                <p className="ds-tagline">{theme.tagline}</p>
+                <div className="ds-cap-tags">
+                  {theme.tags.map((t) => (
+                    <span key={t} className="ds-cap-tag">{t}</span>
+                  ))}
+                </div>
               </div>
             </div>
-            <div className="gallery-card-title-wrap">
-              <h1 className="gallery-card-name" style={{ color: card.accentColor }}>
-                {card.name}
-              </h1>
-              <p className="gallery-card-tagline">{card.tagline}</p>
-            </div>
-            <p className="gallery-card-desc">{card.description}</p>
-            <Link
-              href={`/uidesign/${card.slug}`}
-              className="gallery-cta"
-              style={{
-                borderColor: card.accentColor,
-                color: card.accentColor,
-                boxShadow: `0 0 20px ${card.accentGlow}`,
-              }}
-            >
-              View Showcase
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="12 5 19 12 12 19" />
-              </svg>
-            </Link>
-          </div>
-
-          {/* Right: live mini preview */}
-          <div className="gallery-card-preview">
-            <MiniPreview card={card} />
-          </div>
+          ))}
         </div>
       </div>
 
-      {/* Dot indicators */}
-      <div className="gallery-dots">
-        {SHOWCASES.map((_, i) => (
+      {/* Dots + hint */}
+      <div className="ds-dots">
+        {THEMES.map((t, i) => (
           <button
-            key={i}
-            className={`gallery-dot ${i === active ? "active" : ""}`}
-            style={i === active ? { background: card.accentColor } : {}}
-            onClick={() => {
-              if (i > active) navigate("right");
-              else if (i < active) navigate("left");
-            }}
-            aria-label={`Go to ${SHOWCASES[i].name}`}
+            key={t.id}
+            className={`ds-dot ${i === active ? "active" : ""}`}
+            style={i === active ? { background: cur.accent, width: "24px" } : {}}
+            onClick={() => setActive(i)}
+            aria-label={`Go to ${t.name}`}
           />
         ))}
       </div>
-
-      {/* Keyboard hint */}
-      <div className="gallery-hint">
-        <span>← →</span> arrow keys to navigate
-      </div>
+      <div className="ds-hint"><span>&larr; &rarr;</span> compare styles</div>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Inter:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap');
 
-        .gallery-root {
+        .ds-root {
+          position: relative;
           width: 100%;
           min-height: calc(100vh - 56px);
           display: flex;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
-          position: relative;
           overflow: hidden;
           background: #04040a;
+          font-family: 'Inter', system-ui, sans-serif;
+        }
+        .ds-ambient { position: absolute; inset: 0; z-index: 0; pointer-events: none; transition: background 0.7s ease; }
+
+        /* Sliding stage */
+        .ds-stage { position: relative; z-index: 5; width: 100%; overflow: hidden; }
+        .ds-track {
+          display: flex; width: 100%;
+          transition: transform 0.6s cubic-bezier(0.65, 0, 0.2, 1);
+          will-change: transform;
+        }
+        .ds-slide {
+          flex: 0 0 100%; min-width: 100%;
+          display: flex; flex-direction: column; align-items: center;
+          gap: 20px; padding: 24px 100px 14px;
         }
 
-        .gallery-ambient {
-          position: absolute;
-          inset: 0;
-          z-index: 0;
-          pointer-events: none;
+        /* Themed preview area (the style's own backdrop) */
+        .ds-preview {
+          width: 100%; max-width: 560px;
+          background: var(--ds-bg);
+          border-radius: 26px;
+          padding: 34px;
+          display: flex; justify-content: center;
+          box-shadow: 0 30px 70px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04) inset;
         }
 
-        /* Subtle grid */
-        .gallery-root::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          z-index: 1;
-          pointer-events: none;
-          background-image:
-            linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-          background-size: 52px 52px;
-          mask-image: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent 90%);
-        }
-
-        .gallery-card-wrap {
-          position: relative;
-          z-index: 10;
+        /* ── Standardized board (skinned by theme vars) ───────────────────── */
+        .ds-panel {
           width: 100%;
-          max-width: 1100px;
-          padding: 0 80px;
-          transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.32s;
+          font-family: var(--ds-font);
+          color: var(--ds-text);
+          background: var(--ds-surface);
+          -webkit-backdrop-filter: blur(var(--ds-blur)) saturate(var(--ds-saturate));
+          backdrop-filter: blur(var(--ds-blur)) saturate(var(--ds-saturate));
+          border: 1px solid var(--ds-border);
+          border-radius: var(--ds-radius-lg);
+          box-shadow: var(--ds-shadow);
+          padding: 22px;
+          display: flex; flex-direction: column; gap: 12px;
+        }
+        .ds-panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
+        .ds-panel-title { font-family: var(--ds-font-display); font-size: 18px; font-weight: 700; letter-spacing: 0.4px; }
+
+        .ds-group-label {
+          font-size: 9.5px; font-weight: 600; letter-spacing: 1.6px; text-transform: uppercase;
+          color: var(--ds-sub); margin-top: 6px;
         }
 
-        @keyframes gallerySlideIn {
-          from { opacity: 0; transform: translateX(60px); }
-          to   { opacity: 1; transform: translateX(0); }
+        /* Buttons */
+        .ds-btns { display: flex; gap: 9px; flex-wrap: wrap; }
+        .ds-btn {
+          font-family: var(--ds-font); font-size: 12.5px; font-weight: 600; letter-spacing: 0.3px;
+          padding: 9px 16px; border-radius: var(--ds-radius); cursor: pointer;
+          transition: transform 0.25s var(--ds-ease), background 0.25s var(--ds-ease), box-shadow 0.25s var(--ds-ease), border-color 0.25s var(--ds-ease);
+          border: 1px solid transparent;
         }
-        @keyframes gallerySlideInLeft {
-          from { opacity: 0; transform: translateX(-60px); }
-          to   { opacity: 1; transform: translateX(0); }
-        }
-        .gallery-enter { animation: gallerySlideIn 0.32s cubic-bezier(0.4, 0, 0.2, 1) both; }
-        .gallery-exit-right { opacity: 0; transform: translateX(-60px); transition: all 0.32s; }
-        .gallery-exit-left  { opacity: 0; transform: translateX(60px); transition: all 0.32s; }
+        .ds-btn:hover { transform: translateY(-2px); }
+        .ds-btn:active { transform: translateY(0) scale(0.97); }
+        .ds-btn-primary { background: var(--ds-accent); color: var(--ds-accent-ink); box-shadow: 0 6px 18px var(--ds-glow); }
+        .ds-btn-primary:hover { box-shadow: 0 10px 26px var(--ds-glow); }
+        .ds-btn-secondary { background: var(--ds-surface-2); color: var(--ds-text); border-color: var(--ds-border-2); }
+        .ds-btn-secondary:hover { border-color: var(--ds-accent); }
+        .ds-btn-ghost { background: transparent; color: var(--ds-sub); }
+        .ds-btn-ghost:hover { background: var(--ds-surface-2); color: var(--ds-text); }
 
-        .gallery-card {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 0;
-          background: rgba(8, 8, 14, 0.75);
-          backdrop-filter: blur(24px);
-          -webkit-backdrop-filter: blur(24px);
-          border: 1px solid;
-          border-radius: 24px;
-          overflow: hidden;
-          min-height: 500px;
+        /* Card */
+        .ds-card {
+          background: var(--ds-surface-2);
+          border: 1px solid var(--ds-border);
+          border-radius: var(--ds-radius);
+          padding: 14px 16px; display: flex; flex-direction: column; gap: 6px;
         }
+        .ds-card-title { font-size: 13px; font-weight: 600; }
+        .ds-card-body { font-size: 12px; line-height: 1.55; color: var(--ds-sub); }
 
-        .gallery-card-info {
-          padding: 60px 52px;
-          display: flex;
-          flex-direction: column;
-          gap: 28px;
-          justify-content: center;
+        /* Inputs */
+        .ds-fields { display: flex; flex-direction: column; gap: 9px; }
+        .ds-input {
+          width: 100%; font-family: var(--ds-font); font-size: 13px;
+          color: var(--ds-text);
+          background: var(--ds-surface-2);
+          border: 1px solid var(--ds-border);
+          border-radius: var(--ds-radius);
+          padding: 10px 14px; outline: none;
+          transition: border-color 0.25s var(--ds-ease), box-shadow 0.25s var(--ds-ease);
         }
-
-        .gallery-card-meta {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          flex-wrap: wrap;
+        .ds-input::placeholder { color: var(--ds-sub); opacity: 0.7; }
+        .ds-input:focus { border-color: var(--ds-accent); box-shadow: 0 0 0 3px var(--ds-glow); }
+        .ds-search {
+          display: flex; align-items: center; gap: 9px;
+          background: var(--ds-surface-2);
+          border: 1px solid var(--ds-border);
+          border-radius: var(--ds-radius);
+          padding: 0 14px; color: var(--ds-sub);
+          transition: border-color 0.25s var(--ds-ease);
         }
+        .ds-search:focus-within { border-color: var(--ds-accent); }
+        .ds-input-bare { background: transparent; border: 0; padding: 10px 0; border-radius: 0; }
+        .ds-input-bare:focus { box-shadow: none; }
 
-        .gallery-card-index {
-          font-size: 11px;
-          font-weight: 600;
-          letter-spacing: 2px;
-          color: rgba(255,255,255,0.25);
-          text-transform: uppercase;
+        /* Controls */
+        .ds-controls { display: flex; flex-direction: column; gap: 11px; }
+        .ds-control-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+        .ds-control-name { font-size: 12.5px; font-weight: 500; color: var(--ds-text); }
+
+        .ds-toggle {
+          position: relative; width: 44px; height: 26px; flex-shrink: 0;
+          border-radius: 999px; cursor: pointer; padding: 0;
+          background: var(--ds-surface-2); border: 1px solid var(--ds-border);
+          transition: background 0.3s var(--ds-ease), border-color 0.3s var(--ds-ease);
         }
-
-        .gallery-card-tags {
-          display: flex;
-          gap: 6px;
-          flex-wrap: wrap;
+        .ds-toggle.on { background: var(--ds-accent); border-color: transparent; box-shadow: 0 0 14px var(--ds-glow); }
+        .ds-knob {
+          position: absolute; top: 50%; left: 3px; transform: translateY(-50%);
+          width: 20px; height: 20px; border-radius: 50%; background: #fff;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+          transition: left 0.3s var(--ds-ease);
         }
+        .ds-toggle.on .ds-knob { left: calc(100% - 23px); }
 
-        .gallery-tag {
-          font-size: 10px;
-          font-weight: 600;
-          letter-spacing: 0.5px;
-          text-transform: uppercase;
-          color: rgba(255,255,255,0.4);
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.08);
-          padding: 2px 8px;
-          border-radius: 20px;
+        .ds-slider-row { gap: 16px; }
+        .ds-slider {
+          position: relative; flex: 1; height: 8px;
+          background: var(--ds-surface-2); border-radius: 999px; cursor: pointer;
+          border: 1px solid var(--ds-border);
         }
-
-        .gallery-card-title-wrap {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
+        .ds-slider-fill {
+          position: absolute; left: 0; top: 0; bottom: 0;
+          background: var(--ds-accent); border-radius: 999px; box-shadow: 0 0 12px var(--ds-glow);
         }
-
-        .gallery-card-name {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 52px;
-          font-weight: 400;
-          letter-spacing: 2px;
-          line-height: 1.05;
-          margin: 0;
-        }
-
-        .gallery-card-tagline {
-          font-size: 14px;
-          font-weight: 400;
-          letter-spacing: 0.5px;
-          color: rgba(255,255,255,0.45);
-          margin: 0;
-          text-transform: uppercase;
+        .ds-slider-thumb {
+          position: absolute; top: 50%; transform: translate(-50%, -50%);
+          width: 16px; height: 16px; border-radius: 50%; background: #fff;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.5);
         }
 
-        .gallery-card-desc {
-          font-size: 14px;
-          line-height: 1.7;
-          color: rgba(255,255,255,0.55);
-          margin: 0;
-          max-width: 380px;
+        /* Badges / chips */
+        .ds-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+        .ds-badge {
+          display: inline-flex; align-items: center; gap: 5px;
+          font-size: 11px; font-weight: 600; letter-spacing: 0.2px;
+          padding: 3px 10px; border-radius: 999px;
+          background: var(--ds-surface-2); border: 1px solid var(--ds-border); color: var(--ds-sub);
+        }
+        .ds-badge-accent {
+          color: var(--ds-accent);
+          background: color-mix(in srgb, var(--ds-accent) 16%, transparent);
+          border-color: color-mix(in srgb, var(--ds-accent) 40%, transparent);
+        }
+        .ds-badge-dot i {
+          width: 6px; height: 6px; border-radius: 50%;
+          background: var(--ds-accent); box-shadow: 0 0 8px var(--ds-accent);
         }
 
-        .gallery-cta {
-          display: inline-flex;
-          align-items: center;
-          gap: 10px;
-          padding: 14px 32px;
-          border: 1px solid;
-          border-radius: 8px;
-          font-size: 13px;
-          font-weight: 600;
-          letter-spacing: 1.5px;
-          text-transform: uppercase;
-          text-decoration: none;
-          background: rgba(255,255,255,0.03);
-          transition: all 0.25s;
-          width: fit-content;
-        }
-        .gallery-cta:hover {
-          background: rgba(255,255,255,0.08);
-          transform: translateY(-2px);
-          letter-spacing: 2px;
+        /* Caption */
+        .ds-caption { width: 100%; max-width: 560px; display: flex; flex-direction: column; gap: 5px; align-items: center; text-align: center; }
+        .ds-index { font-size: 10.5px; font-weight: 600; letter-spacing: 2px; color: rgba(255,255,255,0.25); }
+        .ds-name { margin: 1px 0 0; font-size: 24px; font-weight: 600; letter-spacing: 0.4px; }
+        .ds-tagline { margin: 0; font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; color: rgba(255,255,255,0.4); }
+        .ds-cap-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 6px; }
+        .ds-cap-tag {
+          font-size: 10px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase;
+          color: rgba(255,255,255,0.45); background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.08); padding: 3px 9px; border-radius: 20px;
         }
 
-        .gallery-card-preview {
-          background: rgba(255,255,255,0.012);
-          border-left: 1px solid rgba(255,255,255,0.06);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 40px;
+        /* Arrows */
+        .ds-arrow {
+          position: absolute; top: 50%; transform: translateY(-50%); z-index: 30;
+          width: 52px; height: 52px; border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09);
+          color: rgba(255,255,255,0.55); cursor: pointer; transition: all 0.2s ease;
         }
+        .ds-arrow:hover { background: rgba(255,255,255,0.09); border-color: var(--cur-accent); color: #fff; box-shadow: 0 0 24px var(--cur-glow); }
+        .ds-arrow-left { left: 26px; }
+        .ds-arrow-right { right: 26px; }
+        .ds-arrow-peek { position: absolute; white-space: nowrap; font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.5); opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+        .ds-arrow-left .ds-arrow-peek { left: calc(100% + 12px); }
+        .ds-arrow-right .ds-arrow-peek { right: calc(100% + 12px); }
+        .ds-arrow:hover .ds-arrow-peek { opacity: 1; }
 
-        /* Mini preview */
-        .mini-preview {
-          width: 100%;
-          aspect-ratio: 1;
-          max-width: 360px;
-          background: rgba(4,4,10,0.8);
-          border: 1px solid rgba(255,255,255,0.07);
-          border-radius: 16px;
-          position: relative;
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-          padding: 28px;
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
-        }
+        /* Dots + hint */
+        .ds-dots { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 30; display: flex; gap: 9px; }
+        .ds-dot { width: 8px; height: 8px; padding: 0; border: none; border-radius: 999px; background: rgba(255,255,255,0.16); cursor: pointer; transition: all 0.3s ease; }
+        .ds-hint { position: absolute; bottom: 20px; right: 30px; z-index: 30; font-size: 11px; color: rgba(255,255,255,0.22); letter-spacing: 0.4px; }
+        .ds-hint span { font-weight: 600; color: rgba(255,255,255,0.4); }
 
-        .mini-preview-glow {
-          position: absolute;
-          width: 200px;
-          height: 200px;
-          border-radius: 50%;
-          top: -60px;
-          right: -40px;
-          filter: blur(60px);
-          opacity: 0.3;
-          pointer-events: none;
+        @media (max-width: 760px) {
+          .ds-slide { padding: 18px 60px 12px; }
+          .ds-preview { padding: 22px; }
+          .ds-hint { display: none; }
         }
-
-        .mini-preview-grid {
-          position: absolute;
-          inset: 0;
-          background-image:
-            linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-          background-size: 28px 28px;
-          pointer-events: none;
-        }
-
-        .mini-preview-elements {
-          position: relative;
-          z-index: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-          width: 100%;
-          height: 100%;
-          justify-content: center;
-        }
-
-        .mini-btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          padding: 9px 20px;
-          border: 1px solid;
-          border-radius: 6px;
-          font-size: 12px;
-          font-weight: 500;
-          letter-spacing: 1px;
-          text-transform: uppercase;
-          background: rgba(255,255,255,0.03);
-          color: rgba(255,255,255,0.9);
-          width: fit-content;
-        }
-
-        .mini-card {
-          background: rgba(255,255,255,0.04);
-          border: 1px solid;
-          border-radius: 10px;
-          padding: 14px 16px;
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-        }
-        .mini-card-line {
-          height: 4px;
-          border-radius: 2px;
-          background: rgba(255,255,255,0.15);
-          width: 70%;
-        }
-        .mini-card-line.short { width: 45%; background: rgba(255,255,255,0.07); }
-
-        .mini-input {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          background: rgba(10,10,18,0.7);
-          border: 1px solid;
-          border-radius: 6px;
-          padding: 9px 14px;
-          font-size: 12px;
-          color: rgba(255,255,255,0.4);
-        }
-
-        .mini-badge {
-          display: inline-flex;
-          align-items: center;
-          padding: 3px 10px;
-          border: 1px solid;
-          border-radius: 20px;
-          font-size: 11px;
-          font-weight: 600;
-          letter-spacing: 0.5px;
-          text-transform: uppercase;
-          width: fit-content;
-        }
-
-        .mini-slider-wrap { width: 100%; }
-        .mini-slider-track {
-          position: relative;
-          height: 4px;
-          background: rgba(255,255,255,0.08);
-          border-radius: 2px;
-        }
-        .mini-slider-fill {
-          position: absolute;
-          left: 0;
-          top: 0;
-          bottom: 0;
-          width: 65%;
-          border-radius: 2px;
-          opacity: 0.8;
-        }
-        .mini-slider-thumb {
-          position: absolute;
-          left: 65%;
-          top: 50%;
-          transform: translate(-50%, -50%);
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-        }
-
-        /* Dynamic Island Preview */
-        .mini-island-container {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 16px;
-        }
-        .mini-island-capsule {
-          width: 120px;
-          height: 30px;
-          background: #000;
-          border-radius: 30px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0 16px;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 0.5px 0 rgba(255,255,255,0.1);
-        }
-        .mini-island-camera {
-          width: 8px;
-          height: 8px;
-          background: #111;
-          border-radius: 50%;
-        }
-        .mini-island-indicator {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          animation: miniPulse 1.5s infinite;
-        }
-        @keyframes miniPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
-        .mini-island-card {
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 12px;
-          padding: 10px 16px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 11px;
-        }
-
-        /* Control Center Preview */
-        .mini-cc-container {
-          display: flex;
-          gap: 12px;
-          justify-content: center;
-          align-items: center;
-        }
-        .mini-cc-quad {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 6px;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.06);
-          border-radius: 12px;
-          padding: 6px;
-        }
-        .mini-cc-btn {
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          background: rgba(255,255,255,0.05);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 9px;
-        }
-        .mini-cc-btn.active {
-          box-shadow: 0 0 8px var(--accent);
-        }
-        .mini-cc-sliders {
-          display: flex;
-          gap: 6px;
-        }
-        .mini-cc-vertical-slider {
-          width: 14px;
-          height: 52px;
-          background: rgba(255,255,255,0.06);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 8px;
-          position: relative;
-          overflow: hidden;
-        }
-        .mini-cc-vs-fill {
-          position: absolute;
-          left: 0; right: 0; bottom: 0;
-          height: 60%;
-          background: rgba(255,255,255,0.3);
-        }
-
-        /* Widgets Preview */
-        .mini-widgets-container {
-          display: flex;
-          gap: 12px;
-          justify-content: center;
-        }
-        .mini-w-box {
-          width: 64px;
-          height: 64px;
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 12px;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          gap: 4px;
-        }
-        .mini-w-icon { font-size: 18px; }
-        .mini-w-temp { font-size: 10px; font-weight: 600; }
-        .mini-fitness-svg {
-          width: 32px;
-          height: 32px;
-          transform: rotate(-90deg);
-        }
-        .mini-fit-bg {
-          fill: none;
-          stroke: rgba(255,255,255,0.04);
-          stroke-width: 4;
-        }
-        .mini-fit-fill {
-          fill: none;
-          stroke-width: 4;
-          stroke-dasharray: 88;
-          stroke-dashoffset: 22;
-          stroke-linecap: round;
-        }
-
-        /* Arrow buttons */
-        .gallery-arrow {
-          position: absolute;
-          top: 50%;
-          transform: translateY(-50%);
-          z-index: 20;
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.08);
-          color: rgba(255,255,255,0.5);
-          width: 52px;
-          height: 52px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.2s;
-          overflow: visible;
-        }
-        .gallery-arrow:hover {
-          background: rgba(255,255,255,0.08);
-          border-color: rgba(255,255,255,0.18);
-          color: rgba(255,255,255,0.9);
-        }
-        .gallery-arrow-left { left: 24px; }
-        .gallery-arrow-right { right: 24px; }
-
-        .gallery-arrow-peek {
-          position: absolute;
-          white-space: nowrap;
-          font-size: 11px;
-          font-weight: 500;
-          letter-spacing: 0.5px;
-          color: rgba(255,255,255,0.3);
-          transition: color 0.2s, opacity 0.2s;
-          opacity: 0;
-          pointer-events: none;
-        }
-        .gallery-arrow-left .gallery-arrow-peek { right: calc(100% + 10px); }
-        .gallery-arrow-right .gallery-arrow-peek { left: calc(100% + 10px); }
-        .gallery-arrow:hover .gallery-arrow-peek { opacity: 1; color: rgba(255,255,255,0.6); }
-
-        /* Dots */
-        .gallery-dots {
-          position: absolute;
-          bottom: 40px;
-          left: 50%;
-          transform: translateX(-50%);
-          z-index: 20;
-          display: flex;
-          gap: 10px;
-        }
-
-        .gallery-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: rgba(255,255,255,0.15);
-          border: none;
-          cursor: pointer;
-          transition: all 0.3s;
-          padding: 0;
-        }
-        .gallery-dot.active {
-          width: 24px;
-          border-radius: 4px;
-        }
-
-        .gallery-hint {
-          position: absolute;
-          bottom: 40px;
-          right: 40px;
-          font-size: 11px;
-          color: rgba(255,255,255,0.2);
-          letter-spacing: 0.5px;
-        }
-        .gallery-hint span {
-          font-weight: 600;
-          color: rgba(255,255,255,0.35);
-          letter-spacing: 1px;
+        @media (max-width: 520px) {
+          .ds-arrow { width: 42px; height: 42px; }
+          .ds-arrow-left { left: 8px; } .ds-arrow-right { right: 8px; }
+          .ds-slide { padding: 14px 52px 12px; }
         }
       `}</style>
     </div>
