@@ -1,389 +1,333 @@
-// LUCENT UI: WebGL Lens Showcase Application
-import { vsSource, fsSource } from './shaders.js';
+// Gallery data configuration
+const galleryData = [
+  {
+    title: "Sylvan Sanctuary",
+    artist: "By Pixabay &bull; 2024",
+    desc: "A serene exploration of light filtering through a dense forest canopy. Move your cursor to focus the lens and reveal the hidden textures of nature.",
+    url: "https://images.pexels.com/photos/268533/pexels-photo-268533.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+  },
+  {
+    title: "Neo-Tokyo Noir",
+    artist: "By Antigravity &bull; 2026",
+    desc: "A cinematic, rain-soaked cyberpunk street illuminated by neon signage. Peer through the lens to inspect the intricate details of a futuristic city.",
+    url: "assets/cityscape.png"
+  },
+  {
+    title: "Cosmic Genesis",
+    artist: "By Pexels &bull; 2024",
+    desc: "A mesmerizing stellar nursery overflowing with cosmic gas clouds. Zoom in with the lens to resolve distant stars and microscopic celestial dust.",
+    url: "https://images.pexels.com/photos/1279813/pexels-photo-1279813.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+  }
+];
 
-// Application State
-let mouseCurrent = [window.innerWidth / 2, window.innerHeight / 2];
-let mouseTarget = [window.innerWidth / 2, window.innerHeight / 2];
-let mouseReal = [window.innerWidth / 2, window.innerHeight / 2];
+// UI elements
+const elArtTitle = document.getElementById("artTitle");
+const elArtMeta = document.getElementById("artMeta");
+const elArtDesc = document.getElementById("artDesc");
 
-// Morphing Lens Targets
-let currentAspect = 1.0;
-let targetAspect = 1.0;
-let currentSize = 1.0;
-let targetSize = 1.0;
-let currentExponent = 6.0;
-let targetExponent = 6.0;
+const paramSize = document.getElementById("paramSize");
+const paramZoom = document.getElementById("paramZoom");
+const paramShape = document.getElementById("paramShape");
+const paramGlow = document.getElementById("paramGlow");
 
-// WebGL variables
-let gl, program, positionBuffer, mainTexture;
-let uniforms = {};
+const valSize = document.getElementById("valSize");
+const valZoom = document.getElementById("valZoom");
+const valShape = document.getElementById("valShape");
+const valGlow = document.getElementById("valGlow");
 
-// DOM Elements
+const cards = document.querySelectorAll(".gallery-card");
+const zenBtn = document.getElementById("zenBtn");
+const restoreBtn = document.getElementById("restoreBtn");
+
+// WebGL Context setup
 const canvas = document.getElementById("canvas");
-const cursor = document.getElementById("custom-cursor");
-const toast = document.getElementById("toast");
-const toastMsg = document.getElementById("toast-message");
-const infoBtn = document.getElementById("info-btn");
-const infoModal = document.getElementById("info-modal");
-const closeModalBtn = document.getElementById("close-modal-btn");
-const refractionSource = document.getElementById("refraction-source");
+const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
 
-// Global Sliders
-const sliderSize = document.getElementById("slider-size");
-const sliderMag = document.getElementById("slider-mag");
-const sliderBlur = document.getElementById("slider-blur");
-const sliderGlow = document.getElementById("slider-glow");
-const sliderAberration = document.getElementById("slider-aberration");
-
-// Value Labels
-const valSize = document.getElementById("val-size");
-const valMag = document.getElementById("val-mag");
-const valBlur = document.getElementById("val-blur");
-const valGlow = document.getElementById("val-glow");
-const valAberration = document.getElementById("val-aberration");
-
-// --- Initialization ---
-
-function init() {
-  initWebGL();
-  setupEventListeners();
-  setupHoverTracking();
-  initUI();
-  
-  // Show intro modal on first visit
-  setTimeout(() => {
-    infoModal.style.display = "flex";
-    setTimeout(() => infoModal.style.opacity = "1", 50);
-  }, 500);
-
-  // Start render loop
-  requestAnimationFrame(render);
+if (!gl) {
+  alert("WebGL not supported in this browser.");
 }
 
-function initWebGL() {
-  gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-  if (!gl) {
-    showToast("WebGL not supported in your browser.", true);
-    return;
-  }
+// Set canvas dimensions
+const setCanvasSize = () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+};
+setCanvasSize();
+window.addEventListener("resize", () => {
+  setCanvasSize();
+});
 
-  resizeCanvas();
+// Create and compile shaders
+const vsSource = document.getElementById("vsShader").textContent;
+const fsSource = document.getElementById("fragShader").textContent;
 
-  // Create shaders
-  const vs = compileShader(gl.VERTEX_SHADER, vsSource);
-  const fs = compileShader(gl.FRAGMENT_SHADER, fsSource);
-  
-  if (!vs || !fs) {
-    showToast("Failed to compile shaders.", true);
-    return;
-  }
-
-  // Create program
-  program = gl.createProgram();
-  gl.attachShader(program, vs);
-  gl.attachShader(program, fs);
-  gl.linkProgram(program);
-
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    console.error("Program linking failed:", gl.getProgramInfoLog(program));
-    return;
-  }
-  gl.useProgram(program);
-
-  // Set up position buffer (full-screen quad)
-  positionBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-  gl.bufferData(
-    gl.ARRAY_BUFFER,
-    new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]),
-    gl.STATIC_DRAW
-  );
-
-  const positionLocation = gl.getAttribLocation(program, "position");
-  gl.enableVertexAttribArray(positionLocation);
-  gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
-
-  // Retrieve uniform locations
-  const uniformNames = [
-    "iResolution", "iTime", "iMouse", "iChannel0",
-    "uPowerExponent", "uMaskMultiplier1", "uMaskMultiplier2", "uMaskMultiplier3",
-    "uLensMultiplier", "uMaskStrength1", "uMaskStrength2", "uMaskStrength3",
-    "uMaskThreshold1", "uMaskThreshold2", "uMaskThreshold3",
-    "uSampleOffset", "uGradientRange", "uGradientOffset", "uGradientExtreme",
-    "uLightingIntensity", "uAberration", "uLensAspect"
-  ];
-
-  uniformNames.forEach(name => {
-    uniforms[name] = gl.getUniformLocation(program, name);
-  });
-
-  // Create WebGL texture
-  mainTexture = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, mainTexture);
-  
-  // Set placeholder color while loading
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([5, 5, 8, 255]));
-  
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-  // Load default refraction background
-  if (refractionSource.complete) {
-    updateWebGLTexture(refractionSource);
-  } else {
-    refractionSource.onload = () => updateWebGLTexture(refractionSource);
-  }
-}
-
-function compileShader(type, source) {
+const createShader = (type, source) => {
   const shader = gl.createShader(type);
   gl.shaderSource(shader, source);
   gl.compileShader(shader);
-
   if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    console.error(`Shader compilation error (${type === gl.VERTEX_SHADER ? 'VERTEX' : 'FRAGMENT'}):`, gl.getShaderInfoLog(shader));
+    console.error("Shader compilation error:", gl.getShaderInfoLog(shader));
     gl.deleteShader(shader);
     return null;
   }
   return shader;
-}
+};
 
-function resizeCanvas() {
-  const displayWidth = window.innerWidth;
-  const displayHeight = window.innerHeight;
+const vs = createShader(gl.VERTEX_SHADER, vsSource);
+const fs = createShader(gl.FRAGMENT_SHADER, fsSource);
+const program = gl.createProgram();
+
+gl.attachShader(program, vs);
+gl.attachShader(program, fs);
+gl.linkProgram(program);
+
+if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+  console.error("Shader program linking error:", gl.getProgramInfoLog(program));
+}
+gl.useProgram(program);
+
+// Quad buffer setup (draws over the entire viewport)
+const buffer = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+gl.bufferData(
+  gl.ARRAY_BUFFER,
+  new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]),
+  gl.STATIC_DRAW
+);
+
+const position = gl.getAttribLocation(program, "position");
+gl.enableVertexAttribArray(position);
+gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+
+// Get uniform locations
+const uniforms = {
+  resolution: gl.getUniformLocation(program, "iResolution"),
+  time: gl.getUniformLocation(program, "iTime"),
+  mouse: gl.getUniformLocation(program, "iMouse"),
+  channel0: gl.getUniformLocation(program, "iChannel0"),
+  channel1: gl.getUniformLocation(program, "iChannel1"),
+  transition: gl.getUniformLocation(program, "uTransition"),
+  lensScale: gl.getUniformLocation(program, "uLensScale"),
+  zoom: gl.getUniformLocation(program, "uZoom"),
+  glow: gl.getUniformLocation(program, "uGlow"),
+  shape: gl.getUniformLocation(program, "uShape")
+};
+
+// Texture management
+const textures = [];
+let currentTexIdx = 0;
+let targetTexIdx = 0;
+let transitionVal = 0.0;
+let isTransitioning = false;
+const transitionDuration = 0.8; // seconds
+let transitionStartTime = 0;
+
+// Load textures
+const loadTexture = (url, index) => {
+  const tex = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, tex);
   
-  if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
-    canvas.width = displayWidth;
-    canvas.height = displayHeight;
-    gl.viewport(0, 0, canvas.width, canvas.height);
+  // Set placeholder color while loading (black)
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    0,
+    gl.RGBA,
+    1,
+    1,
+    0,
+    gl.RGBA,
+    gl.UNSIGNED_BYTE,
+    new Uint8Array([0, 0, 0, 255])
+  );
+
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.onload = () => {
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  };
+  img.src = url;
+  textures[index] = tex;
+};
+
+// Load all gallery items
+galleryData.forEach((item, idx) => {
+  loadTexture(item.url, idx);
+});
+
+// Interactive state & mouse easing (inertia)
+let mouseTarget = [window.innerWidth / 2, window.innerHeight / 2];
+let mouseCurrent = [window.innerWidth / 2, window.innerHeight / 2];
+const mouseEasingFactor = 0.08; // Lower = more lag/inertia
+
+window.addEventListener("mousemove", (e) => {
+  mouseTarget = [e.clientX, window.innerHeight - e.clientY];
+});
+
+// Touch support for mobile
+window.addEventListener("touchmove", (e) => {
+  if (e.touches.length > 0) {
+    mouseTarget = [e.touches[0].clientX, window.innerHeight - e.touches[0].clientY];
   }
-}
+});
 
-function updateWebGLTexture(imageSource) {
-  gl.bindTexture(gl.TEXTURE_2D, mainTexture);
-  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, imageSource);
-}
+// Slider handlers & value scaling
+let sliderLensScale = parseFloat(paramSize.value);
+let sliderZoom = parseFloat(paramZoom.value);
+let sliderShape = parseFloat(paramShape.value);
+let sliderGlow = parseFloat(paramGlow.value);
 
-// --- Hover Tracking for Lens Morphing ---
+const updateLabels = () => {
+  // Size label
+  if (sliderLensScale < 0.7) valSize.textContent = "Small";
+  else if (sliderLensScale < 1.3) valSize.textContent = "Medium";
+  else if (sliderLensScale < 1.8) valSize.textContent = "Large";
+  else valSize.textContent = "Cinema";
 
-function setupHoverTracking() {
-  const cards = document.querySelectorAll(".component-card");
-  
-  cards.forEach(card => {
-    card.addEventListener("mouseenter", () => {
-      const rect = card.getBoundingClientRect();
-      // Calculate aspect ratio (capped at 2.0 to prevent overly distorted lenses)
-      const aspect = Math.min(rect.width / rect.height, 2.2);
-      
-      // Fetch custom attributes
-      const expand = parseFloat(card.getAttribute("data-lens-expand")) || 1.0;
-      const shape = parseFloat(card.getAttribute("data-lens-shape")) || 8.0;
+  // Zoom label
+  valZoom.textContent = `${(sliderZoom / 2500).toFixed(1)}x`;
 
-      targetAspect = aspect;
-      targetSize = expand * 1.25; // Slightly larger when hovering cards
-      targetExponent = shape;
-    });
+  // Shape label
+  if (sliderShape <= 2.5) valShape.textContent = "Circle";
+  else if (sliderShape <= 4.5) valShape.textContent = "Rounded Circle";
+  else if (sliderShape <= 8.0) valShape.textContent = "Squircle";
+  else valShape.textContent = "Box";
 
-    card.addEventListener("mouseleave", () => {
-      // Revert to global slider settings
-      resetLensToGlobal();
-    });
-  });
-}
+  // Glow label
+  valGlow.textContent = `${Math.round(sliderGlow * 100)}%`;
+};
+updateLabels();
 
-function resetLensToGlobal() {
-  targetAspect = 1.0; // Perfect circle/square based on shape
-  targetSize = parseFloat(sliderSize.value);
-  targetExponent = 6.0; // Standard circle
-}
+paramSize.addEventListener("input", (e) => {
+  sliderLensScale = parseFloat(e.target.value);
+  updateLabels();
+});
+paramZoom.addEventListener("input", (e) => {
+  sliderZoom = parseFloat(e.target.value);
+  updateLabels();
+});
+paramShape.addEventListener("input", (e) => {
+  sliderShape = parseFloat(e.target.value);
+  updateLabels();
+});
+paramGlow.addEventListener("input", (e) => {
+  sliderGlow = parseFloat(e.target.value);
+  updateLabels();
+});
 
-// --- UI Controls & Event Listeners ---
+// Gallery selection & transitions
+const switchArtwork = (newIdx) => {
+  if (newIdx === currentTexIdx || isTransitioning) return;
 
-function setupEventListeners() {
-  // Mouse movement
-  window.addEventListener("mousemove", (e) => {
-    mouseReal = [e.clientX, canvas.height - e.clientY];
-    mouseTarget = mouseReal;
-  });
+  targetTexIdx = newIdx;
+  isTransitioning = true;
+  transitionStartTime = performance.now();
 
-  // Touch support for mobile
-  window.addEventListener("touchmove", (e) => {
-    if (e.touches.length > 0) {
-      const t = e.touches[0];
-      mouseReal = [t.clientX, canvas.height - t.clientY];
-      mouseTarget = mouseReal;
-    }
-  }, { passive: true });
+  // Update active card styling
+  cards.forEach(card => card.classList.remove("active"));
+  cards[newIdx].classList.add("active");
 
-  // Custom Cursor Hover Effect
-  document.querySelectorAll(".interactive-ui, input, button, a").forEach(el => {
-    el.addEventListener("mouseenter", () => cursor.classList.add("active"));
-    el.addEventListener("mouseleave", () => cursor.classList.remove("active"));
-  });
+  // Animate text info with a sleek CSS transition
+  const infoSection = document.querySelector(".artwork-info");
+  infoSection.style.opacity = 0;
+  infoSection.style.transform = "translateY(10px)";
+  infoSection.style.transition = "opacity 0.3s ease, transform 0.3s ease";
 
-  // Handle Resizing
-  window.addEventListener("resize", () => {
-    resizeCanvas();
-  });
-
-  // Info Modal
-  infoBtn.addEventListener("click", () => {
-    infoModal.style.display = "flex";
-    setTimeout(() => infoModal.style.opacity = "1", 10);
-  });
-
-  closeModalBtn.addEventListener("click", () => {
-    infoModal.style.opacity = "0";
-    setTimeout(() => infoModal.style.display = "none", 300);
-  });
-
-  // Copy Code Functionality
-  document.querySelectorAll(".btn-copy").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const targetId = btn.getAttribute("data-copy-target");
-      const codeElement = document.getElementById(`code-${targetId}`);
-      
-      if (codeElement) {
-        const codeText = codeElement.textContent;
-        navigator.clipboard.writeText(codeText)
-          .then(() => {
-            const isHTML = targetId.startsWith("html");
-            showToast(`Copied ${isHTML ? "HTML" : "CSS"} template to clipboard!`);
-          })
-          .catch(err => {
-            showToast("Failed to copy code.", true);
-            console.error(err);
-          });
-      }
-    });
-  });
-
-  // Sliders Change
-  const sliders = [sliderSize, sliderMag, sliderBlur, sliderGlow, sliderAberration];
-  sliders.forEach(slider => {
-    slider.addEventListener("input", () => {
-      updateLabelValues();
-      if (targetAspect === 1.0) {
-        // Only update targetSize if we aren't currently hovering over a card
-        targetSize = parseFloat(sliderSize.value);
-      }
-    });
-  });
-}
-
-function updateLabelValues() {
-  valSize.textContent = parseFloat(sliderSize.value).toFixed(1);
-  valMag.textContent = parseFloat(sliderMag.value).toFixed(1) + "x";
-
-  const blurVal = parseFloat(sliderBlur.value);
-  if (blurVal === 0.0) valBlur.textContent = "None";
-  else if (blurVal <= 0.4) valBlur.textContent = "Subtle";
-  else if (blurVal <= 0.8) valBlur.textContent = "Medium";
-  else valBlur.textContent = "Deep";
-
-  valGlow.textContent = parseFloat(sliderGlow.value).toFixed(2);
-
-  const abVal = parseFloat(sliderAberration.value);
-  if (abVal === 0) valAberration.textContent = "None";
-  else if (abVal <= 0.5) valAberration.textContent = "Subtle";
-  else if (abVal <= 1.2) valAberration.textContent = "Prismatic";
-  else valAberration.textContent = "Extreme";
-}
-
-function showToast(message, isError = false) {
-  toastMsg.textContent = message;
-  toast.style.borderColor = isError ? "#ef4444" : "var(--accent-color)";
-  toast.style.boxShadow = isError ? "0 0 15px rgba(239, 68, 68, 0.3)" : "0 0 15px var(--accent-glow)";
-  toast.classList.add("show");
-  
   setTimeout(() => {
-    toast.classList.remove("show");
-  }, 3000);
-}
+    const data = galleryData[newIdx];
+    elArtTitle.innerHTML = data.title;
+    elArtMeta.innerHTML = data.artist;
+    elArtDesc.innerHTML = data.desc;
 
-function initUI() {
-  updateLabelValues();
-  resetLensToGlobal();
-}
+    infoSection.style.opacity = 1;
+    infoSection.style.transform = "translateY(0)";
+  }, 300);
+};
 
-// --- Rendering Loop ---
+cards.forEach(card => {
+  card.addEventListener("click", () => {
+    const idx = parseInt(card.getAttribute("data-index"), 10);
+    switchArtwork(idx);
+  });
+});
 
+// Zen Mode Toggle
+zenBtn.addEventListener("click", () => {
+  document.body.classList.add("zen-mode");
+});
+
+restoreBtn.addEventListener("click", () => {
+  document.body.classList.remove("zen-mode");
+});
+
+// Main Render Loop
 const startTime = performance.now();
 
-function render(timestamp) {
-  const currentTime = (timestamp - startTime) / 1000;
+const render = () => {
+  const timeTotal = (performance.now() - startTime) / 1000;
 
-  // LERP mouse position for smooth gliding
-  const mouseLerp = 0.12;
-  mouseCurrent[0] += (mouseTarget[0] - mouseCurrent[0]) * mouseLerp;
-  mouseCurrent[1] += (mouseTarget[1] - mouseCurrent[1]) * mouseLerp;
+  // Handle transition interpolation
+  if (isTransitioning) {
+    const elapsed = (performance.now() - transitionStartTime) / 1000;
+    transitionVal = Math.min(elapsed / transitionDuration, 1.0);
+    
+    // Smoothstep transition curve
+    const t = transitionVal;
+    const smoothT = t * t * (3 - 2 * t);
 
-  // LERP lens shape and aspect ratios for fluid morphing
-  const morphLerp = 0.08; // Smooth, slow morphing transition
-  currentAspect += (targetAspect - currentAspect) * morphLerp;
-  currentSize += (targetSize - currentSize) * morphLerp;
-  currentExponent += (targetExponent - currentExponent) * morphLerp;
+    gl.uniform1f(uniforms.transition, smoothT);
 
-  // Update Custom Cursor Position
-  cursor.style.left = `${mouseCurrent[0]}px`;
-  cursor.style.top = `${canvas.height - mouseCurrent[1]}px`;
+    if (transitionVal >= 1.0) {
+      currentTexIdx = targetTexIdx;
+      isTransitioning = false;
+      transitionVal = 0.0;
+      gl.uniform1f(uniforms.transition, 0.0);
+    }
+  } else {
+    gl.uniform1f(uniforms.transition, 0.0);
+  }
 
-  // Draw WebGL
+  // Smooth mouse inertia
+  mouseCurrent[0] += (mouseTarget[0] - mouseCurrent[0]) * mouseEasingFactor;
+  mouseCurrent[1] += (mouseTarget[1] - mouseCurrent[1]) * mouseEasingFactor;
+
+  // Set viewport
+  gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clear(gl.COLOR_BUFFER_BIT);
 
-  // Pass basic uniforms
-  gl.uniform3f(uniforms.iResolution, canvas.width, canvas.height, 1.0);
-  gl.uniform1f(uniforms.iTime, currentTime);
-  gl.uniform4f(uniforms.iMouse, mouseCurrent[0], mouseCurrent[1], 0, 0);
+  // Set standard uniforms
+  gl.uniform3f(uniforms.resolution, canvas.width, canvas.height, 1.0);
+  gl.uniform1f(uniforms.time, timeTotal);
+  gl.uniform4f(uniforms.mouse, mouseCurrent[0], mouseCurrent[1], 0, 0);
 
-  // Active texture (refraction background)
+  // Set customizer uniforms
+  // Invert size so that a higher slider value = larger lens (smaller divisor in shader)
+  const lensScaleUniform = 1.0 / sliderLensScale;
+  gl.uniform1f(uniforms.lensScale, lensScaleUniform);
+  gl.uniform1f(uniforms.zoom, sliderZoom);
+  gl.uniform1f(uniforms.shape, sliderShape);
+  gl.uniform1f(uniforms.glow, sliderGlow);
+
+  // Bind textures
+  // Texture 0: Current active image
   gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, mainTexture);
-  gl.uniform1i(uniforms.iChannel0, 0);
+  gl.bindTexture(gl.TEXTURE_2D, textures[currentTexIdx] || null);
+  gl.uniform1i(uniforms.channel0, 0);
 
-  // Fetch slider values
-  const mag = parseFloat(sliderMag.value);
-  const blur = parseFloat(sliderBlur.value);
-  const glow = parseFloat(sliderGlow.value);
-  const aberration = parseFloat(sliderAberration.value);
+  // Texture 1: Target image (only relevant during transitions)
+  gl.activeTexture(gl.TEXTURE1);
+  gl.bindTexture(gl.TEXTURE_2D, textures[targetTexIdx] || null);
+  gl.uniform1i(uniforms.channel1, 1);
 
-  // Scale multipliers based on current size and exponent to maintain crisp boundaries
-  const scale = 1.0 / Math.pow(currentSize, currentExponent);
-
-  gl.uniform1f(uniforms.uPowerExponent, currentExponent);
-  gl.uniform1f(uniforms.uLensAspect, currentAspect);
-  
-  gl.uniform1f(uniforms.uMaskMultiplier1, 10000.0 * scale);
-  gl.uniform1f(uniforms.uMaskMultiplier2, 9500.0 * scale);
-  gl.uniform1f(uniforms.uMaskMultiplier3, 11000.0 * scale);
-  gl.uniform1f(uniforms.uLensMultiplier, 5000.0 * scale * mag);
-  
-  // Base strengths
-  gl.uniform1f(uniforms.uMaskStrength1, 8.0);
-  gl.uniform1f(uniforms.uMaskStrength2, 16.0);
-  gl.uniform1f(uniforms.uMaskStrength3, 2.0);
-  
-  // Thresholds
-  gl.uniform1f(uniforms.uMaskThreshold1, 0.95);
-  gl.uniform1f(uniforms.uMaskThreshold2, 0.9);
-  gl.uniform1f(uniforms.uMaskThreshold3, 1.5);
-  
-  // Custom controls
-  gl.uniform1f(uniforms.uSampleOffset, blur);
-  gl.uniform1f(uniforms.uGradientRange, 0.2);
-  gl.uniform1f(uniforms.uGradientOffset, 0.1);
-  gl.uniform1f(uniforms.uGradientExtreme, -1000.0);
-  gl.uniform1f(uniforms.uLightingIntensity, glow);
-  gl.uniform1f(uniforms.uAberration, aberration);
-
-  // Draw full screen quad
-  gl.drawArrays(gl.TRIANGLES, 0, 6);
+  // Draw quad
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
   requestAnimationFrame(render);
-}
+};
 
-// Launch the app
-window.onload = init;
+// Start WebGL render loop once initial texture loading kicks off
+requestAnimationFrame(render);
