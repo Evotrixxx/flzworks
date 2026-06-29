@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import type { InstagramMediaItem } from "@/lib/instagram";
 import Image from "next/image";
 import type { PortfolioArticleWithImages } from "@/lib/portfolio-sync";
-import { Image as ImageIcon, Eye, ArrowUpRight, Radio, Zap, X, Calendar, ChevronDown } from "lucide-react";
+import { Image as ImageIcon, ArrowUpRight, X, Zap } from "lucide-react";
 import { LandingParallax } from "./landing-parallax";
 
 interface PortfolioOnepagerProps {
@@ -22,6 +22,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
   const [selectedCategory, setSelectedCategory] = useState<"ALL" | "AUTOMOTIVE" | "BRICKWORKS" | "GAMES" | "MEDIA">("ALL");
   const [uiHidden, setUiHidden] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [activeSection, setActiveSection] = useState("hero");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -86,6 +87,44 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [activeGallery]);
 
+  // IntersectionObserver for scroll reveals
+  useEffect(() => {
+    const reveals = document.querySelectorAll(".reveal");
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add("visible");
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    reveals.forEach(el => io.observe(el));
+    return () => io.disconnect();
+  }, [selectedCategory]); // re-run when category changes (re-renders grid)
+
+  // IntersectionObserver to set active section for side scroll dots
+  useEffect(() => {
+    const sections = ["hero", "process", "archive", "signals"];
+    const observers = sections.map(id => {
+      const el = document.getElementById(id);
+      if (!el) return null;
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            setActiveSection(id);
+          }
+        });
+      }, { threshold: 0.2 });
+      observer.observe(el);
+      return { observer, el, id };
+    });
+    return () => {
+      observers.forEach(obs => {
+        if (obs) obs.observer.unobserve(obs.el);
+      });
+    };
+  }, []);
+
   const publicArticles = articles.filter((a) => a.visible);
   const filteredArticles = publicArticles.filter((article) => {
     const cat = article.category.toUpperCase();
@@ -129,88 +168,122 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
     <div className="portfolio-shell min-h-screen text-white font-sans overflow-x-hidden selection:bg-white/20 selection:text-white">
       <LandingParallax />
 
-      {/* ── Navigation ── */}
-      <header
-        className={`fixed top-0 left-0 right-0 z-40 w-full border-b border-white/5 bg-black/40 backdrop-blur-md transition-all duration-700 ${
-          uiHidden ? "opacity-0 -translate-y-full pointer-events-none" : "opacity-100 translate-y-0"
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-8 md:px-20 h-16 flex items-center justify-between">
-          <button
-            onClick={() => {
-              setSelectedCategory("ALL");
-              scrollToSection("hero");
-            }}
-            className="font-serif text-[18px] font-semibold tracking-[0.15em] text-white hover:opacity-80 transition-opacity cursor-pointer uppercase select-none"
-          >
-            FLZ
-          </button>
-          <nav className="flex items-center gap-6 md:gap-8">
-            {[
-              { label: "Automotive", category: "AUTOMOTIVE" as const },
-              { label: "Brickworks", category: "BRICKWORKS" as const },
-              { label: "Games", category: "GAMES" as const },
-              { label: "Media", category: "MEDIA" as const },
-            ].map((item) => (
-              <button
-                key={item.category}
-                onClick={() => {
-                  setSelectedCategory(item.category);
-                  scrollToSection("archive");
-                }}
-                className={`font-mono text-[9px] tracking-[0.25em] uppercase transition-all duration-350 cursor-pointer ${
-                  selectedCategory === item.category
-                    ? "text-white font-medium border-b border-white/30 pb-1 -mb-1"
-                    : "text-white/45 hover:text-white/90"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-            <button
-              onClick={() => scrollToSection("signals")}
-              className="font-mono text-[9px] tracking-[0.25em] uppercase text-white/45 hover:text-white/90 transition-all duration-350 cursor-pointer"
-            >
-              Kontakt
-            </button>
-          </nav>
-        </div>
-        <div
-          className="h-[1px] bg-white/25 transition-all duration-75"
-          style={{ width: `${scrollProgress}%` }}
-        />
-      </header>
+      {/* ── Floating Pill Nav ── */}
+      <nav className={`nav ${uiHidden ? "opacity-0 -translate-y-full pointer-events-none" : "opacity-100 translate-y-0"}`}>
+        <span className="nav-logo" onClick={() => scrollToSection("hero")} style={{ cursor: "pointer" }}>FLZ</span>
+        <button onClick={() => scrollToSection("hero")} className={`nav-link ${activeSection === "hero" ? "active" : ""}`}>Home</button>
+        <button onClick={() => scrollToSection("archive")} className={`nav-link ${activeSection === "archive" ? "active" : ""}`}>Archive</button>
+        <button onClick={() => scrollToSection("process")} className={`nav-link ${activeSection === "process" ? "active" : ""}`}>Process</button>
+        <button onClick={() => scrollToSection("signals")} className={`nav-link ${activeSection === "signals" ? "active" : ""}`}>Contact</button>
+      </nav>
 
-      <main
-        className={`relative z-10 pb-24 transition-all duration-700 ${
-          uiHidden ? "opacity-0 scale-[0.98] pointer-events-none" : "opacity-100 scale-100"
-        }`}
-      >
+      <main className={`relative z-10 pb-24 transition-all duration-700 ${uiHidden ? "opacity-0 scale-[0.98] pointer-events-none" : "opacity-100 scale-100"}`}>
+        
+        {/* ── Hero Section ── */}
+        <section id="hero" className="hero">
+          {/* Wireframe car SVG */}
+          <div style={{ position: "absolute", inset: 0, zIndex: 1, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
+            <div style={{ width: "70%", maxWidth: "900px", aspectRatio: "16/7", background: "radial-gradient(ellipse 60% 50% at 50% 55%, rgba(255,255,255,0.04) 0%, transparent 70%)", borderRadius: "4px", position: "relative", overflow: "hidden" }}>
+              <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.06 }} viewBox="0 0 800 300" fill="none">
+                <line x1="0" y1="200" x2="800" y2="200" stroke="white" strokeWidth="0.5"/>
+                <line x1="0" y1="220" x2="800" y2="220" stroke="white" strokeWidth="0.3"/>
+                <line x1="100" y1="0" x2="100" y2="300" stroke="white" strokeWidth="0.3"/>
+                <line x1="400" y1="0" x2="400" y2="300" stroke="white" strokeWidth="0.3"/>
+                <line x1="700" y1="0" x2="700" y2="300" stroke="white" strokeWidth="0.3"/>
+                <ellipse cx="200" cy="220" rx="60" ry="18" stroke="white" strokeWidth="0.5"/>
+                <ellipse cx="600" cy="220" rx="60" ry="18" stroke="white" strokeWidth="0.5"/>
+                <path d="M 120 200 Q 200 120 300 110 L 500 110 Q 600 115 680 200" stroke="white" strokeWidth="0.8" fill="none"/>
+                <text x="400" y="80" textAnchor="middle" fill="white" fontFamily="var(--font-mono), monospace" fontSize="8" letterSpacing="4" opacity="0.35">3D AUTOMOTIVE DESIGN</text>
+              </svg>
+            </div>
+          </div>
+
+          <div className="hero-vignette" />
+
+          {/* Side scroll track */}
+          <div className="hero-scroll-track">
+            <div className={`hero-scroll-dot ${activeSection === "hero" ? "active" : ""}`} onClick={() => scrollToSection("hero")} style={{ cursor: "pointer" }} />
+            <div className={`hero-scroll-dot ${activeSection === "process" ? "active" : ""}`} onClick={() => scrollToSection("process")} style={{ cursor: "pointer" }} />
+            <div className={`hero-scroll-dot ${activeSection === "archive" ? "active" : ""}`} onClick={() => scrollToSection("archive")} style={{ cursor: "pointer" }} />
+            <div className={`hero-scroll-dot ${activeSection === "signals" ? "active" : ""}`} onClick={() => scrollToSection("signals")} style={{ cursor: "pointer" }} />
+            <div className="hero-scroll-line" />
+          </div>
+
+          <div className="hero-content">
+            <div className="hero-eyebrow">Portfolio — Design & Engineering · 2026</div>
+
+            <div className="hero-wordmark">
+              <span className="hero-wordmark-line1">FLZ</span>
+              <span className="hero-wordmark-line2">Works</span>
+            </div>
+
+            <div className="hero-meta">
+              <p className="hero-tagline">Photorealistic automotive design, system architecture & high-performance web rendering.</p>
+              <div className="hero-stats">
+                <div className="hero-stat">
+                  <span className="hero-stat-num">12</span>
+                  <span className="hero-stat-label">Projects</span>
+                </div>
+                <div className="hero-stat">
+                  <span className="hero-stat-num">5+</span>
+                  <span className="hero-stat-label">Years</span>
+                </div>
+                <div className="hero-stat">
+                  <span className="hero-stat-num">∞</span>
+                  <span className="hero-stat-label">Precision</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="hero-cta">
+              <button onClick={() => scrollToSection("archive")} className="hero-btn hero-btn-primary">View Archive</button>
+              <button onClick={() => scrollToSection("process")} className="hero-btn hero-btn-ghost">Scroll to Explore</button>
+              <div className="hero-scroll-hint">
+                <div className="hero-scroll-hint-line" />
+                ↓ scroll to begin
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ── Running Ticker ── */}
-        <div className="w-full overflow-hidden border-t border-b border-white/15 py-4 bg-white/[0.01]">
-          <div className="flex whitespace-nowrap animate-marquee">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <span key={i} className="font-mono text-[9px] tracking-[0.35em] text-white/25 uppercase mx-4">
-                3D Automotive Design <span className="inline-block w-1 h-1 bg-white/20 rounded-full mx-3 align-middle" />
-                System Architecture <span className="inline-block w-1 h-1 bg-white/20 rounded-full mx-3 align-middle" />
-                High-Performance Rendering <span className="inline-block w-1 h-1 bg-white/20 rounded-full mx-3 align-middle" />
-                Prototype Development <span className="inline-block w-1 h-1 bg-white/20 rounded-full mx-3 align-middle" />
-                FLZ Works · 2026 <span className="inline-block w-1 h-1 bg-white/20 rounded-full mx-3 align-middle" />
-                Machine Experience <span className="inline-block w-1 h-1 bg-white/20 rounded-full mx-3 align-middle" />
+        <div className="ticker-wrap">
+          <div className="ticker-inner">
+            {Array.from({ length: 4 }).map((_, idx) => (
+              <span key={idx} className="flex items-center">
+                <span className="ticker-item">3D Automotive Design<span className="ticker-dot" /></span>
+                <span className="ticker-item">System Architecture<span className="ticker-dot" /></span>
+                <span className="ticker-item">High-Performance Rendering<span className="ticker-dot" /></span>
+                <span className="ticker-item">Prototype Development<span className="ticker-dot" /></span>
+                <span className="ticker-item">FLZ Works · 2026<span className="ticker-dot" /></span>
+                <span className="ticker-item">Machine Experience<span className="ticker-dot" /></span>
               </span>
             ))}
           </div>
         </div>
 
         {/* ── Narrative Section 1: Process ── */}
-        <section className="py-40 px-8 md:px-20 max-w-3xl mx-auto text-center">
-          <span className="font-mono text-[8px] tracking-[0.35em] text-white/30 uppercase mb-6 block">// 01 — Process</span>
-          <h2 className="font-serif text-4xl md:text-6xl font-light leading-tight text-white mb-6">
-            Where precision<br /><span className="text-white/40 italic">meets craft.</span>
-          </h2>
-          <p className="text-sm text-white/55 leading-relaxed max-w-lg mx-auto font-mono">
-            Every project begins with a deep technical study of form, material, and motion. From initial layout to high-fidelity rendering, the workflow is engineered for absolute photorealism.
-          </p>
+        <section id="process" className="narrative-section reveal">
+          <div className="narrative-visual">
+            <div className="narrative-img-placeholder fill-1 card-art" style={{ aspectRatio: "4/3" }}>
+              <svg width="100%" height="100%" viewBox="0 0 600 450" fill="none">
+                <rect width="600" height="450" fill="#0a0a0a"/>
+                <circle cx="300" cy="225" r="120" stroke="rgba(255,255,255,0.04)" strokeWidth="1"/>
+                <circle cx="300" cy="225" r="80" stroke="rgba(255,255,255,0.06)" strokeWidth="0.5"/>
+                <line x1="180" y1="225" x2="420" y2="225" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5"/>
+                <line x1="300" y1="105" x2="300" y2="345" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5"/>
+                <text x="300" y="235" textAnchor="middle" fill="rgba(255,255,255,0.12)" fontFamily="var(--font-mono), monospace" fontSize="10" letterSpacing="4">DESIGN SYSTEM</text>
+                <text x="300" y="260" textAnchor="middle" fill="rgba(255,255,255,0.06)" fontFamily="var(--font-mono), monospace" fontSize="7" letterSpacing="3">PRECISION ENGINEERING</text>
+              </svg>
+            </div>
+            <div className="narrative-visual-tag">3D Auto · 2026</div>
+          </div>
+          <div className="narrative-text">
+            <div className="narrative-label">// 01 — Process</div>
+            <h2 className="narrative-title">Where precision<br /><em>meets craft.</em></h2>
+            <p className="narrative-body">Every project begins with a deep technical study of form, material, and motion. From clay model to rendered render, the workflow is engineered for maximum photorealism.</p>
+            <span onClick={() => scrollToSection("archive")} className="narrative-link">Explore the process</span>
+          </div>
         </section>
 
         {/* ── Archive ── */}
@@ -218,110 +291,170 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-t border-white/5 pt-16">
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <Radio className="h-3 w-3 text-white/30 animate-pulse" />
+                <span className="w-1.5 h-1.5 bg-white/30 rounded-full animate-pulse" />
                 <p className="font-mono text-[9px] tracking-[0.4em] text-white/40 uppercase">
                   02 — Archive
                 </p>
               </div>
-              <h2 className="text-5xl md:text-7xl font-semibold uppercase tracking-tighter leading-none portfolio-section-title">
+              <h2 className="text-5xl md:text-7xl font-semibold uppercase tracking-tighter leading-none">
                 Selected <span className="italic font-light text-white/45">Works</span>
               </h2>
             </div>
+
+            {/* Simple monochrome filter pills */}
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: "All", category: "ALL" as const },
+                { label: "3D Auto", category: "AUTOMOTIVE" as const },
+                { label: "Brickworks", category: "BRICKWORKS" as const },
+                { label: "Games", category: "GAMES" as const },
+                { label: "Media", category: "MEDIA" as const },
+              ].map((item) => (
+                <button
+                  key={item.category}
+                  onClick={() => setSelectedCategory(item.category)}
+                  className={`font-mono text-[9px] tracking-wider uppercase px-3 py-1.5 rounded border transition-all cursor-pointer ${
+                    selectedCategory === item.category
+                      ? "bg-white/10 text-white border-white/20"
+                      : "text-white/45 border-transparent hover:text-white hover:border-white/10"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredArticles.length === 0 ? (
-              <div className="py-24 text-center border border-dashed border-white/[0.05] rounded-2xl col-span-full">
-                <p className="text-[10px] font-mono tracking-widest uppercase text-white/60">
-                  No projects in this category
-                </p>
-              </div>
-            ) : (
-              filteredArticles.map((article, i) => {
-                const isCar = article.category === "CAR_DESIGN";
+          {filteredArticles.length === 0 ? (
+            <div className="py-24 text-center border border-dashed border-white/[0.05] rounded-2xl">
+              <p className="text-[10px] font-mono tracking-widest uppercase text-white/60">
+                No projects in this category
+              </p>
+            </div>
+          ) : (
+            <div className="masonry-grid">
+              {filteredArticles.map((article, i) => {
+                const sizeClass = i % 3 === 0 ? "masonry-tall" : i % 3 === 1 ? "masonry-wide" : "masonry-square";
+                const fillClass = `fill-${(i % 5) + 1}`;
                 const firstImg = article.images.length > 0
                   ? `/api/portfolio/media/${article.folderName}/${article.images[0]}`
                   : null;
 
+                const wireframeSVGs = [
+                  <svg key="svg1" width="100%" height="100%" viewBox="0 0 400 530" fill="none" className="w-full h-full">
+                    <rect width="400" height="530" fill="#0d0d0d"/>
+                    <path d="M 60 380 Q 200 280 340 370" stroke="rgba(255,255,255,0.06)" strokeWidth="1.5" fill="none"/>
+                    <ellipse cx="110" cy="390" rx="45" ry="14" stroke="rgba(255,255,255,0.07)" strokeWidth="1"/>
+                    <ellipse cx="290" cy="390" rx="45" ry="14" stroke="rgba(255,255,255,0.07)" strokeWidth="1"/>
+                    <text x="200" y="200" textAnchor="middle" fill="rgba(255,255,255,0.08)" fontFamily="var(--font-mono), monospace" fontSize="9" letterSpacing="3">MIRSAIREN</text>
+                  </svg>,
+                  <svg key="svg2" width="100%" height="100%" viewBox="0 0 400 225" fill="none" className="w-full h-full">
+                    <rect width="400" height="225" fill="#0f0d0d"/>
+                    <path d="M 20 160 L 80 120 Q 200 90 320 120 L 380 160" stroke="rgba(255,255,255,0.07)" strokeWidth="1" fill="none"/>
+                    <text x="200" y="120" text-anchor="middle" fill="rgba(255,255,255,0.07)" fontFamily="var(--font-mono), monospace" fontSize="8" letterSpacing="4">HYDRA GTR</text>
+                  </svg>,
+                  <svg key="svg3" width="100%" height="100%" viewBox="0 0 300 300" fill="none" className="w-full h-full">
+                    <rect width="300" height="300" fill="#080c10"/>
+                    <rect x="60" y="60" width="180" height="180" stroke="rgba(255,255,255,0.05)" strokeWidth="1" fill="none"/>
+                    <rect x="90" y="90" width="120" height="120" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" fill="none"/>
+                    <text x="150" y="158" text-anchor="middle" fill="rgba(255,255,255,0.09)" fontFamily="var(--font-mono), monospace" fontSize="8" letterSpacing="2">SYSTEM UI</text>
+                  </svg>,
+                  <svg key="svg4" width="100%" height="100%" viewBox="0 0 400 225" fill="none" className="w-full h-full">
+                    <rect width="400" height="225" fill="#0c0c0c"/>
+                    <path d="M 60 165 Q 200 95 340 155" stroke="rgba(255,255,255,0.06)" strokeWidth="1.2" fill="none"/>
+                    <ellipse cx="130" cy="175" rx="40" ry="12" stroke="rgba(255,255,255,0.06)" strokeWidth="0.8"/>
+                    <ellipse cx="270" cy="175" rx="40" ry="12" stroke="rgba(255,255,255,0.06)" strokeWidth="0.8"/>
+                    <text x="200" y="110" text-anchor="middle" fill="rgba(255,255,255,0.07)" fontFamily="var(--font-mono), monospace" fontSize="7" letterSpacing="4">ATHAAN V2</text>
+                  </svg>,
+                  <svg key="svg5" width="100%" height="100%" viewBox="0 0 400 530" fill="none" className="w-full h-full">
+                    <rect width="400" height="530" fill="#0a0c0a"/>
+                    <circle cx="200" cy="265" r="100" stroke="rgba(255,255,255,0.04)" strokeWidth="1"/>
+                    <path d="M 100 265 L 300 265" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5"/>
+                    <path d="M 200 165 L 200 365" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5"/>
+                    <text x="200" y="273" text-anchor="middle" fill="rgba(255,255,255,0.09)" fontFamily="var(--font-mono), monospace" fontSize="9" letterSpacing="3">GODOT</text>
+                  </svg>,
+                  <svg key="svg6" width="100%" height="100%" viewBox="0 0 300 300" fill="none" className="w-full h-full">
+                    <rect width="300" height="300" fill="#0a0a0a"/>
+                    <line x1="0" y1="100" x2="300" y2="100" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5"/>
+                    <line x1="0" y1="200" x2="300" y2="200" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5"/>
+                    <line x1="100" y1="0" x2="100" y2="300" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5"/>
+                    <line x1="200" y1="0" x2="200" y2="300" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5"/>
+                    <text x="150" y="158" text-anchor="middle" fill="rgba(255,255,255,0.09)" fontFamily="var(--font-mono), monospace" fontSize="8" letterSpacing="2">WEB ARCH</text>
+                  </svg>
+                ];
+
                 return (
-                  <article
+                  <div
                     key={article.id}
-                    className="portfolio-archive-card group relative flex flex-col cursor-pointer rounded-2xl overflow-hidden border border-white/5 hover:border-white/10 transition-colors"
+                    className={`masonry-card ${sizeClass}`}
                     onMouseMove={handleMouseMove}
                     onClick={() => setSelectedArticle(article)}
                   >
-                    <div className="absolute top-4 left-4 z-10 font-mono text-[9px] tracking-widest text-white/30 group-hover:text-white/60 transition-colors">
-                      #{String(i + 1).padStart(3, "0")}
-                    </div>
-
-                    <div className="relative w-full overflow-hidden bg-neutral-950/40 border-b border-white/5">
+                    <div className="masonry-card-index">#{String(i + 1).padStart(3, "0")}</div>
+                    
+                    <div className="relative w-full overflow-hidden bg-neutral-950/45 masonry-card-img-wrap">
                       {firstImg ? (
-                        <div className="relative aspect-[4/3] w-full overflow-hidden">
-                          <Image
-                            src={firstImg}
-                            alt={article.title}
-                            fill
-                            sizes="(max-width: 768px) 100vw, 30vw"
-                            className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                            unoptimized
-                          />
-                        </div>
+                        <Image
+                          src={firstImg}
+                          alt={article.title}
+                          fill
+                          className="masonry-card-img object-cover"
+                          sizes="(max-width: 768px) 100vw, 33vw"
+                          unoptimized
+                        />
                       ) : (
-                        <div className="relative aspect-[4/3] w-full flex items-center justify-center bg-neutral-900 text-white/10 font-mono text-[10px] tracking-widest uppercase">
-                          No Media
+                        <div className={`masonry-img-placeholder ${fillClass} card-art w-full h-full`}>
+                          {wireframeSVGs[i % wireframeSVGs.length]}
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="masonry-card-overlay" />
                     </div>
 
-                    <div className="p-6 flex flex-col gap-4">
-                      <div className="flex items-center justify-between">
-                        <span className={`text-[8px] font-mono tracking-[0.2em] px-2 py-0.5 rounded border ${
-                          isCar
-                            ? "text-white/70 border-white/[0.1] bg-transparent"
-                            : "text-white/50 border-white/[0.05] bg-transparent"
-                        }`}>
-                          {isCar ? "3D Auto" : "Design"}
-                        </span>
+                    <div className="masonry-card-meta">
+                      <div className="masonry-card-title">{article.title}</div>
+                      <div className="masonry-card-sub">
+                        {article.category === "CAR_DESIGN" ? "3D Auto" : "Design & Dev"} · 2026
                       </div>
-
-                      <h3 className="font-serif text-xl font-medium text-white/90 group-hover:text-white transition-colors">
-                        {article.title}
-                      </h3>
                     </div>
-                  </article>
+                  </div>
                 );
-              })
-            )}
-          </div>
+              })}
+            </div>
+          )}
         </section>
 
         {/* ── Narrative Section 2: Interface ── */}
-        <section className="py-40 px-8 md:px-20 max-w-3xl mx-auto text-center">
-          <span className="font-mono text-[8px] tracking-[0.35em] text-white/30 uppercase mb-6 block">// 03 — Interface</span>
-          <h2 className="font-serif text-4xl md:text-6xl font-light leading-tight text-white mb-6">
-            Systems built<br /><span className="text-white/40 italic">to feel.</span>
-          </h2>
-          <p className="text-sm text-white/55 leading-relaxed max-w-lg mx-auto font-mono">
-            Every interface choice is rooted in physics and kinetics. The user interface is designed to carry weight, inertia, and memory — behaving like physical hardware rather than a flat digital screen.
-          </p>
+        <section id="interface" className="narrative-section reverse reveal">
+          <div className="narrative-visual">
+            <div className="narrative-img-placeholder fill-3 card-art" style={{ aspectRatio: "4/3" }}>
+              <svg width="100%" height="100%" viewBox="0 0 600 450" fill="none">
+                <rect width="600" height="450" fill="#080c10"/>
+                <rect x="50" y="50" width="500" height="350" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" fill="none"/>
+                <rect x="80" y="80" width="200" height="120" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5" fill="rgba(255,255,255,0.01)"/>
+                <rect x="320" y="80" width="200" height="80" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5" fill="rgba(255,255,255,0.01)"/>
+                <rect x="80" y="240" width="440" height="120" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5" fill="rgba(255,255,255,0.01)"/>
+                <text x="300" y="230" textAnchor="middle" fill="rgba(255,255,255,0.08)" fontFamily="var(--font-mono), monospace" fontSize="8" letterSpacing="3">INTERFACE ARCHITECTURE</text>
+              </svg>
+            </div>
+            <div className="narrative-visual-tag">UI/UX · Figma</div>
+          </div>
+          <div className="narrative-text">
+            <div className="narrative-label">// 03 — Interface</div>
+            <h2 className="narrative-title">Systems built<br /><em>to feel.</em></h2>
+            <p className="narrative-body">Every UI decision is rooted in physics and perception. The interface should feel like it has weight, momentum, and memory — not just look like it does.</p>
+            <span onClick={() => scrollToSection("archive")} className="narrative-link">See the design system</span>
+          </div>
         </section>
 
         {/* ── Identity Strip ── */}
-        <section className="py-24 max-w-7xl mx-auto px-8 md:px-20 border-t border-b border-white/5 my-20 flex flex-col md:flex-row items-start gap-12 md:gap-20">
-          <div className="font-serif text-8xl md:text-9xl font-light italic text-white/10 leading-none select-none">
-            F
-          </div>
-          <div className="space-y-6 max-w-2xl">
-            <h3 className="font-serif text-3xl md:text-4xl font-normal text-white">
-              FLZ · Studio
-            </h3>
-            <p className="text-sm text-white/55 font-mono leading-relaxed">
-              An independent creative coding and design studio. We specialize in photorealistic 3D automotive design, system architecture, high-performance web rendering, and prototype development. High fidelity in every layer.
-            </p>
-            <div className="flex flex-wrap gap-2 pt-2">
-              {["Blender", "Godot", "Three.js", "Next.js", "TypeScript", "Figma", "3D Automotive", "System Architecture", "Shaders"].map((tag) => (
-                <span key={tag} className="font-mono text-[9px] tracking-wider uppercase px-3 py-1 border border-white/10 rounded-md text-white/50 hover:text-white hover:border-white/25 transition-colors">
+        <section className="identity-strip reveal">
+          <div className="identity-mark">F</div>
+          <div className="identity-info">
+            <div className="identity-name">FLZ · Studio</div>
+            <p className="identity-bio">An independent design and engineering studio specializing in photorealistic 3D automotive design, system architecture, and high-performance rendering. Precision in every layer.</p>
+            <div className="identity-skills">
+              {["Blender", "Godot", "Three.js", "Next.js", "TypeScript", "Figma", "3D Automotive", "System Architecture"].map((tag) => (
+                <span key={tag} className="identity-skill">
                   {tag}
                 </span>
               ))}
@@ -341,7 +474,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                   </p>
                 </div>
                 <h2 className="text-4xl md:text-6xl font-semibold font-serif uppercase tracking-tighter leading-none text-white/85">
-                  Works & <span className="portfolio-text-glow">Log</span>
+                  Works & <span className="italic font-light text-white/45">Log</span>
                 </h2>
               </div>
               <p className="text-[9px] font-mono text-white/40 mt-3 md:mt-0 uppercase tracking-widest border border-white/[0.05] px-4 py-2 rounded-xl">
@@ -349,7 +482,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
               </p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-              {instagramMedia.map((item) => (
+              {instagramMedia.slice(0, 10).map((item) => (
                 <a
                   key={item.id}
                   href={item.permalink}
@@ -378,19 +511,19 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
         )}
 
         {/* ── Footer ── */}
-        <footer className="mt-28 pt-8 border-t border-white/[0.04] overflow-hidden max-w-7xl mx-auto px-8 md:px-20">
-          <div className="flex items-center overflow-hidden w-full py-2">
-            <div className="flex whitespace-nowrap animate-marquee">
-              {Array.from({ length: 12 }).map((_, i) => (
-                <span key={i} className="text-[9px] font-black uppercase tracking-[0.4em] text-white/25 mx-8">
-                  FLZ WORKS · DESIGN · ENGINEERING · MACHINE EXPERIENCE · 2026 ·
-                </span>
-              ))}
-            </div>
+        <footer className="footer">
+          <div>
+            <div className="footer-brand">FLZ</div>
+            <div className="footer-meta">Design & Engineering · 2026</div>
           </div>
-          <div className="flex items-center justify-between px-1 mt-4 text-[9px] font-mono text-white/25 uppercase tracking-widest">
-            <p>FLZ Works · {new Date().getFullYear()}</p>
-            <p>Design · Engineering · Architecture</p>
+          <div className="footer-links">
+            <button onClick={() => scrollToSection("hero")} className="footer-link text-left">Home</button>
+            <button onClick={() => scrollToSection("archive")} className="footer-link text-left">Archive</button>
+            <button onClick={() => scrollToSection("process")} className="footer-link text-left">Process</button>
+            <span className="footer-link">Instagram</span>
+          </div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: "8px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(255,255,255,0.15)", paddingTop: "8px", maxWidth: "200px", lineHeight: 1.8 }}>
+            Photorealistic 3D Automotive Design · System Architecture · High-Performance Web Rendering
           </div>
         </footer>
       </main>
@@ -547,6 +680,14 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
           </div>
         </div>
       )}
+
+      {/* ── Proposal Bar ── */}
+      <div className="proposal-bar">
+        <div className="proposal-dot" />
+        <span className="proposal-label">Design Preview</span>
+        <div style={{ width: "1px", height: "12px", background: "rgba(255,255,255,0.1)" }} />
+        <span className="proposal-label-main">FLZ Works — New Structure</span>
+      </div>
     </div>
   );
 }
