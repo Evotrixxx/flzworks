@@ -16,7 +16,11 @@ const locale = "en";
 
 export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepagerProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [activeImage, setActiveImage] = useState<string | null>(null);
+  const [activeGallery, setActiveGallery] = useState<{
+    folderName: string;
+    images: string[];
+    index: number;
+  } | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<"ALL" | "CAR_DESIGN" | "OTHER">("ALL");
   const [uiHidden, setUiHidden] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -29,6 +33,46 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Lock scroll when lightbox is active
+  useEffect(() => {
+    if (activeGallery) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [activeGallery]);
+
+  // Keyboard navigation for lightbox
+  useEffect(() => {
+    if (!activeGallery) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setActiveGallery(null);
+      } else if (e.key === "ArrowRight") {
+        setActiveGallery((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            index: (prev.index + 1) % prev.images.length,
+          };
+        });
+      } else if (e.key === "ArrowLeft") {
+        setActiveGallery((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            index: (prev.index - 1 + prev.images.length) % prev.images.length,
+          };
+        });
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activeGallery]);
 
   const publicArticles = articles.filter((a) => a.visible);
   const filteredArticles = publicArticles.filter((article) =>
@@ -303,12 +347,19 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                             Media Gallery · {article.images.length}
                           </h4>
                           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
-                            {article.images.map((img) => {
+                            {article.images.map((img, imgIndex) => {
                               const imgPath = `/api/portfolio/media/${article.folderName}/${img}`;
                               return (
                                 <div
                                   key={img}
-                                  onClick={(e) => { e.stopPropagation(); setActiveImage(imgPath); }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setActiveGallery({
+                                      folderName: article.folderName,
+                                      images: article.images,
+                                      index: imgIndex,
+                                    });
+                                  }}
                                   className="relative aspect-video cursor-zoom-in overflow-hidden rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.18] transition-all duration-300"
                                 >
                                   <Image
@@ -402,16 +453,76 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
 
 
       {/* ── Lightbox ── */}
-      {activeImage && (
+      {activeGallery && (
         <div
-          onClick={() => setActiveImage(null)}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/96 p-6 backdrop-blur-2xl cursor-zoom-out animate-fadeIn"
+          onClick={() => setActiveGallery(null)}
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/98 p-4 md:p-10 backdrop-blur-3xl cursor-zoom-out animate-fadeIn"
         >
-          <div className="relative max-h-[90vh] max-w-7xl aspect-video w-full rounded-2xl overflow-hidden border border-white/[0.08]">
-            <Image src={activeImage} alt="Expanded view" fill className="object-contain" unoptimized />
+          {/* Main Image Viewport */}
+          <div
+            className="relative w-full max-w-6xl aspect-video rounded-2xl overflow-hidden border border-white/[0.08] bg-black/50 shadow-2xl transition-all duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Image
+              src={`/api/portfolio/media/${activeGallery.folderName}/${activeGallery.images[activeGallery.index]}`}
+              alt="Expanded view"
+              fill
+              className="object-contain animate-scaleIn"
+              unoptimized
+            />
           </div>
-          <div className="absolute top-8 right-8 text-white/65 hover:text-white transition text-[9px] font-black uppercase tracking-widest bg-white/[0.05] hover:bg-white/[0.1] px-5 py-3 rounded-full border border-white/[0.08] cursor-pointer">
-            ✕ Close
+
+          {/* Navigation Overlay Elements */}
+          {activeGallery.images.length > 1 && (
+            <>
+              <button
+                className="absolute left-6 md:left-10 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/[0.18] text-white flex items-center justify-center cursor-pointer transition-all duration-250 z-55"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveGallery((prev) =>
+                    prev ? { ...prev, index: (prev.index - 1 + prev.images.length) % prev.images.length } : null
+                  );
+                }}
+                aria-label="Previous image"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
+
+              <button
+                className="absolute right-6 md:right-10 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/[0.18] text-white flex items-center justify-center cursor-pointer transition-all duration-250 z-55"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveGallery((prev) =>
+                    prev ? { ...prev, index: (prev.index + 1) % prev.images.length } : null
+                  );
+                }}
+                aria-label="Next image"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </button>
+            </>
+          )}
+
+          {/* Top HUD Bar */}
+          <div className="absolute top-6 left-6 right-6 flex items-center justify-between pointer-events-none z-55">
+            <span className="text-[10px] font-mono text-white/40 tracking-wider">
+              {activeGallery.images[activeGallery.index]}
+            </span>
+            <button
+              onClick={() => setActiveGallery(null)}
+              className="pointer-events-auto flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] hover:border-white/[0.18] text-[9px] font-black uppercase tracking-widest text-white/70 hover:text-white transition-all cursor-pointer"
+            >
+              ✕ Close
+            </button>
+          </div>
+
+          {/* Bottom Index indicator */}
+          <div className="absolute bottom-6 text-[10px] font-mono text-white/50 tracking-widest bg-black/40 px-3 py-1.5 rounded-full border border-white/[0.04]">
+            {activeGallery.index + 1} / {activeGallery.images.length}
           </div>
         </div>
       )}

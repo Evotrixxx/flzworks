@@ -1398,3 +1398,22 @@ select[aria-invalid="true"] {
 .clip-squircle {
   clip-path: url(#squircle);
 }
+
+/* Premium Lightbox Animations */
+.animate-fadeIn {
+  animation: lightboxFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.animate-scaleIn {
+  animation: lightboxScaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes lightboxFadeIn {
+  from { opacity: 0; backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px); }
+  to { opacity: 1; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
+}
+
+@keyframes lightboxScaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
