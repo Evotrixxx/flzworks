@@ -163,26 +163,14 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
         </div>
 
         {/* ── Narrative Section 1: Process ── */}
-        <section className="py-40 px-8 md:px-20 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
-          <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden bg-neutral-900 border border-white/5">
-            <svg width="100%" height="100%" viewBox="0 0 600 450" fill="none" className="opacity-40">
-              <circle cx="300" cy="225" r="120" stroke="white" strokeWidth="0.5" strokeOpacity="0.1" />
-              <circle cx="300" cy="225" r="80" stroke="white" strokeWidth="0.5" strokeOpacity="0.15" />
-              <line x1="180" y1="225" x2="420" y2="225" stroke="white" strokeWidth="0.5" strokeOpacity="0.1" />
-              <line x1="300" y1="105" x2="300" y2="345" stroke="white" strokeWidth="0.5" strokeOpacity="0.1" />
-              <text x="300" y="230" textAnchor="middle" fill="white" fillOpacity="0.3" fontFamily="var(--font-geist-mono)" fontSize="10" letterSpacing="4">DESIGN SYSTEM</text>
-              <text x="300" y="250" textAnchor="middle" fill="white" fillOpacity="0.15" fontFamily="var(--font-geist-mono)" fontSize="7" letterSpacing="3">PRECISION ENGINEERING</text>
-            </svg>
-          </div>
-          <div>
-            <span className="font-mono text-[8px] tracking-[0.35em] text-white/30 uppercase mb-6 block">// 01 — Process</span>
-            <h2 className="font-serif text-4xl md:text-6xl font-light leading-tight text-white mb-6">
-              Where precision<br /><span className="text-white/40 italic">meets craft.</span>
-            </h2>
-            <p className="text-sm text-white/50 leading-relaxed max-w-md font-mono">
-              Every project begins with a deep technical study of form, material, and motion. From initial layout to high-fidelity rendering, the workflow is engineered for absolute photorealism.
-            </p>
-          </div>
+        <section className="py-40 px-8 md:px-20 max-w-3xl mx-auto text-center">
+          <span className="font-mono text-[8px] tracking-[0.35em] text-white/30 uppercase mb-6 block">// 01 — Process</span>
+          <h2 className="font-serif text-4xl md:text-6xl font-light leading-tight text-white mb-6">
+            Where precision<br /><span className="text-white/40 italic">meets craft.</span>
+          </h2>
+          <p className="text-sm text-white/55 leading-relaxed max-w-lg mx-auto font-mono">
+            Every project begins with a deep technical study of form, material, and motion. From initial layout to high-fidelity rendering, the workflow is engineered for absolute photorealism.
+          </p>
         </section>
 
         {/* ── Archive ── */}
@@ -289,25 +277,14 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
         </section>
 
         {/* ── Narrative Section 2: Interface ── */}
-        <section className="py-40 px-8 md:px-20 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
-          <div className="md:order-2 relative aspect-[4/3] w-full rounded-lg overflow-hidden bg-neutral-900 border border-white/5">
-            <svg width="100%" height="100%" viewBox="0 0 600 450" fill="none" className="opacity-40">
-              <rect x="50" y="50" width="500" height="350" stroke="white" strokeWidth="0.5" strokeOpacity="0.1" />
-              <rect x="80" y="80" width="200" height="120" stroke="white" strokeWidth="0.5" strokeOpacity="0.1" fill="white" fillOpacity="0.01" />
-              <rect x="320" y="80" width="200" height="80" stroke="white" strokeWidth="0.5" strokeOpacity="0.1" fill="white" fillOpacity="0.01" />
-              <rect x="80" y="240" width="440" height="120" stroke="white" strokeWidth="0.5" strokeOpacity="0.1" fill="white" fillOpacity="0.01" />
-              <text x="300" y="230" textAnchor="middle" fill="white" fillOpacity="0.2" fontFamily="var(--font-geist-mono)" fontSize="8" letterSpacing="3">INTERFACE ARCHITECTURE</text>
-            </svg>
-          </div>
-          <div className="md:order-1">
-            <span className="font-mono text-[8px] tracking-[0.35em] text-white/30 uppercase mb-6 block">// 03 — Interface</span>
-            <h2 className="font-serif text-4xl md:text-6xl font-light leading-tight text-white mb-6">
-              Systems built<br /><span className="text-white/40 italic">to feel.</span>
-            </h2>
-            <p className="text-sm text-white/50 leading-relaxed max-w-md font-mono">
-              Every interface choice is rooted in physics and kinetics. The user interface is designed to carry weight, inertia, and memory — behaving like physical hardware rather than a flat digital screen.
-            </p>
-          </div>
+        <section className="py-40 px-8 md:px-20 max-w-3xl mx-auto text-center">
+          <span className="font-mono text-[8px] tracking-[0.35em] text-white/30 uppercase mb-6 block">// 03 — Interface</span>
+          <h2 className="font-serif text-4xl md:text-6xl font-light leading-tight text-white mb-6">
+            Systems built<br /><span className="text-white/40 italic">to feel.</span>
+          </h2>
+          <p className="text-sm text-white/55 leading-relaxed max-w-lg mx-auto font-mono">
+            Every interface choice is rooted in physics and kinetics. The user interface is designed to carry weight, inertia, and memory — behaving like physical hardware rather than a flat digital screen.
+          </p>
         </section>
 
         {/* ── Identity Strip ── */}
