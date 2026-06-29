@@ -104,18 +104,18 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
 
       {/* ── Navigation ── */}
       <header
-        className={`hud-nav fixed top-5 left-4 right-4 max-w-7xl lg:mx-auto z-40 rounded-full px-5 py-3 flex items-center justify-between transition-all duration-700 overflow-hidden ${
-          uiHidden ? "opacity-0 -translate-y-4 pointer-events-none" : "opacity-100 translate-y-0"
+        className={`fixed top-6 z-40 flex items-center gap-0.5 p-1.5 bg-black/70 border border-white/10 rounded-full backdrop-blur-2xl transition-all duration-700 ${
+          uiHidden ? "opacity-0 -translate-y-4 pointer-events-none" : "opacity-100"
         }`}
+        style={{ left: "50%", transform: "translateX(-50%)" }}
       >
         <button
           onClick={() => scrollToSection("hero")}
-          className="text-xs font-black uppercase tracking-[0.22em] text-white cursor-pointer"
+          className="font-serif text-[15px] font-semibold tracking-wider px-4 py-1 border-r border-white/10 text-white mr-1 cursor-pointer select-none"
         >
-          FLZ<span className="text-cyan-400/80">·</span>WORKS
+          FLZ
         </button>
-
-        <nav className="flex items-center gap-0.5">
+        <nav className="flex items-center">
           {[
             { label: "Home", id: "hero" },
             { label: "Archive", id: "archive" },
@@ -124,17 +124,14 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             <button
               key={item.id}
               onClick={() => scrollToSection(item.id)}
-              className="px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-wider text-white/40 hover:text-white hover:bg-white/[0.06] transition-all duration-200 cursor-pointer"
+              className="font-mono text-[10px] font-medium tracking-wider uppercase text-white/50 hover:text-white hover:bg-white/5 px-3 py-1.5 rounded-full transition-all duration-300 cursor-pointer"
             >
               {item.label}
             </button>
           ))}
         </nav>
-
-
-
         <div
-          className="absolute bottom-0 left-0 h-px bg-gradient-to-r from-cyan-500 to-purple-500 transition-all duration-75"
+          className="absolute bottom-0 left-6 right-6 h-px bg-white/20 transition-all duration-75"
           style={{ width: `${scrollProgress}%` }}
         />
       </header>
@@ -147,66 +144,64 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
         }`}
       >
         {/* Content pinned to bottom */}
-        <div className="mt-auto relative z-10 px-6 lg:px-10 pb-14">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
+        <div className="mt-auto relative z-10 px-8 md:px-20 pb-16 w-full max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 w-full">
 
-              {/* Wordmark */}
-              <div className="font-semibold uppercase leading-[0.82] select-none font-serif tracking-[-0.04em]">
-                <span
-                  className="block text-[23vw] lg:text-[13vw]"
-                  style={{ WebkitTextStroke: "1.5px rgba(255,255,255,0.12)", color: "transparent" }}
-                >
-                  FLZ
-                </span>
-                <span className="block text-[23vw] lg:text-[13vw] portfolio-text-glow">
-                  WORKS
-                </span>
+            {/* Wordmark */}
+            <div className="font-semibold uppercase leading-[0.82] select-none font-serif tracking-[-0.04em]">
+              <span
+                className="block text-[23vw] lg:text-[13vw]"
+                style={{ WebkitTextStroke: "1.5px rgba(255,255,255,0.12)", color: "transparent" }}
+              >
+                FLZ
+              </span>
+              <span className="block text-[23vw] lg:text-[13vw] portfolio-text-glow">
+                WORKS
+              </span>
+            </div>
+
+            {/* Right info */}
+            <div className="flex flex-col items-start lg:items-end gap-5 lg:mb-1.5">
+              <div className="lg:text-right">
+                <p className="text-[8px] font-mono tracking-[0.4em] text-white/30 uppercase mb-2.5">
+                  Portfolio & Overview
+                </p>
+                <p className="text-[13px] text-white/55 font-mono leading-[1.8]">
+                  Automotive Design · 3D Engineering<br />
+                  Machine Experience
+                </p>
               </div>
 
-              {/* Right info */}
-              <div className="flex flex-col items-start lg:items-end gap-5 lg:mb-1.5">
-                <div className="lg:text-right">
-                  <p className="text-[8px] font-black uppercase tracking-[0.45em] text-white/40 mb-2.5">
-                    Portfolio & Overview
-                  </p>
-                  <p className="text-[13px] text-white/55 font-mono leading-[1.8]">
-                    Automotive Design · 3D Engineering<br />
-                    Machine Experience
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-5">
-                  <div>
-                    <div className="text-3xl font-semibold font-serif text-white tabular-nums">
-                      {publicArticles.length.toString().padStart(2, "0")}
-                    </div>
-                    <div className="text-[8px] uppercase tracking-widest text-white/30 mt-0.5">
-                      Completed Projects
-                    </div>
+              <div className="flex items-center gap-5">
+                <div>
+                  <div className="text-3xl font-semibold font-serif text-white tabular-nums">
+                    {publicArticles.length.toString().padStart(2, "0")}
                   </div>
-                  <div className="w-px h-9 bg-white/[0.07]" />
-                  <div>
-                    <div className="text-3xl font-semibold font-serif text-white/90">2026</div>
-                    <div className="text-[8px] uppercase tracking-widest text-white/30 mt-0.5">Active</div>
+                  <div className="text-[8px] font-mono tracking-widest text-white/30 uppercase mt-0.5">
+                    Completed Projects
                   </div>
                 </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => scrollToSection("archive")}
-                    className="px-5 py-2 rounded-full bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] text-[9px] font-black uppercase tracking-widest text-white/80 hover:text-white transition-all cursor-pointer"
-                  >
-                    Archive
-                  </button>
-                  <button
-                    onClick={() => setUiHidden(true)}
-                    className="flex items-center gap-1.5 px-5 py-2 rounded-full border border-cyan-500/25 bg-cyan-500/8 text-[9px] font-black uppercase tracking-widest text-cyan-400/70 hover:text-cyan-300 hover:bg-cyan-500/15 transition-all cursor-pointer"
-                  >
-                    <Eye className="h-3 w-3" />
-                    Showroom
-                  </button>
+                <div className="w-px h-9 bg-white/[0.07]" />
+                <div>
+                  <div className="text-3xl font-semibold font-serif text-white/90">2026</div>
+                  <div className="text-[8px] font-mono tracking-widest text-white/30 uppercase mt-0.5">Active</div>
                 </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => scrollToSection("archive")}
+                  className="px-5 py-2 rounded-full bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] text-[9px] font-mono tracking-widest uppercase text-white/80 hover:text-white transition-all cursor-pointer"
+                >
+                  Archive
+                </button>
+                <button
+                  onClick={() => setUiHidden(true)}
+                  className="flex items-center gap-1.5 px-5 py-2 rounded-full border border-white/10 bg-white/5 text-[9px] font-mono tracking-widest uppercase text-white/70 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+                >
+                  <Eye className="h-3 w-3" />
+                  Showroom
+                </button>
               </div>
             </div>
           </div>
@@ -224,12 +219,12 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
 
       {/* ── Main Content ── */}
       <main
-        className={`relative z-10 max-w-7xl mx-auto px-4 pb-24 transition-all duration-700 ${
+        className={`relative z-10 pb-24 transition-all duration-700 ${
           uiHidden ? "opacity-0 scale-[0.98] pointer-events-none" : "opacity-100 scale-100"
         }`}
       >
         {/* ── Archive ── */}
-        <section id="archive" className="pt-6">
+        <section id="archive" className="pt-6 max-w-7xl mx-auto px-8 md:px-20">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 border-t border-white/[0.05] pt-16">
             <div>
               <div className="flex items-center gap-2 mb-3">
@@ -264,10 +259,10 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div className="columns-1 md:columns-2 xl:columns-3 gap-6 space-y-6">
             {filteredArticles.length === 0 ? (
-              <div className="col-span-full py-24 text-center border border-dashed border-white/[0.05] rounded-2xl">
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/60">
+              <div className="py-24 text-center border border-dashed border-white/[0.05] rounded-2xl" style={{ columnSpan: "all" }}>
+                <p className="text-[10px] font-mono tracking-widest uppercase text-white/60">
                   No projects in this category
                 </p>
               </div>
@@ -279,10 +274,10 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                 return (
                   <article
                     key={article.id}
-                    className={`portfolio-archive-card group relative flex flex-col cursor-pointer rounded-2xl overflow-hidden ${
+                    className={`break-inside-avoid portfolio-archive-card group relative flex flex-col cursor-pointer rounded-2xl overflow-hidden ${
                       isExpanded
                         ? "col-span-full ring-1 ring-white/[0.1]"
-                        : `min-h-[260px] ${i === 0 ? "md:col-span-2" : ""}`
+                        : `min-h-[260px]`
                     }`}
                     onMouseMove={handleMouseMove}
                     onClick={() => { if (!isExpanded) setExpandedId(article.id); }}
@@ -402,16 +397,16 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
 
         {/* ── Instagram Signals ── */}
         {instagramMedia.length > 0 && (
-          <section id="signals" className="mt-28 pt-16 border-t border-white/[0.05]">
+          <section id="signals" className="mt-28 pt-16 border-t border-white/[0.05] max-w-7xl mx-auto px-8 md:px-20">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <Zap className="h-3 w-3 text-cyan-400/70 animate-pulse" />
-                  <p className="text-[9px] font-black uppercase tracking-[0.4em] text-white/45">
-                    Projektek
+                  <Zap className="h-3 w-3 text-white/40 animate-pulse" />
+                  <p className="text-[9px] font-mono tracking-[0.4em] text-white/30 uppercase">
+                    Signals
                   </p>
                 </div>
-                <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-none text-white/85">
+                <h2 className="text-4xl md:text-6xl font-semibold font-serif uppercase tracking-tighter leading-none text-white/85">
                   Works & <span className="portfolio-text-glow">Log</span>
                 </h2>
               </div>
@@ -449,7 +444,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
         )}
 
         {/* ── Footer ── */}
-        <div className="mt-28 pt-8 border-t border-white/[0.04] overflow-hidden">
+        <footer className="mt-28 pt-8 border-t border-white/[0.04] overflow-hidden max-w-7xl mx-auto px-8 md:px-20">
           <div className="flex items-center overflow-hidden w-full py-2">
             <div className="flex whitespace-nowrap animate-marquee">
               {Array.from({ length: 12 }).map((_, i) => (
@@ -463,7 +458,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             <p>FLZ Works · {new Date().getFullYear()}</p>
             <p>Design · Engineering · Architecture</p>
           </div>
-        </div>
+        </footer>
       </main>
 
 
