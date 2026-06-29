@@ -137,10 +137,10 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
 
               {/* Wordmark */}
-              <div className="font-black uppercase leading-[0.82] select-none">
+              <div className="font-semibold uppercase leading-[0.82] select-none font-serif tracking-[-0.04em]">
                 <span
                   className="block text-[23vw] lg:text-[13vw]"
-                  style={{ WebkitTextStroke: "1.5px rgba(255,255,255,0.14)", color: "transparent" }}
+                  style={{ WebkitTextStroke: "1.5px rgba(255,255,255,0.12)", color: "transparent" }}
                 >
                   FLZ
                 </span>
@@ -163,7 +163,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
 
                 <div className="flex items-center gap-5">
                   <div>
-                    <div className="text-2xl font-black text-white tabular-nums">
+                    <div className="text-3xl font-semibold font-serif text-white tabular-nums">
                       {publicArticles.length.toString().padStart(2, "0")}
                     </div>
                     <div className="text-[8px] uppercase tracking-widest text-white/30 mt-0.5">
@@ -172,7 +172,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                   </div>
                   <div className="w-px h-9 bg-white/[0.07]" />
                   <div>
-                    <div className="text-2xl font-black text-cyan-400/80">2026</div>
+                    <div className="text-3xl font-semibold font-serif text-white/90">2026</div>
                     <div className="text-[8px] uppercase tracking-widest text-white/30 mt-0.5">Active</div>
                   </div>
                 </div>
@@ -180,7 +180,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => scrollToSection("archive")}
-                    className="px-5 py-2 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.09] text-[9px] font-black uppercase tracking-widest text-white/80 hover:text-white transition-all cursor-pointer"
+                    className="px-5 py-2 rounded-full bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] text-[9px] font-black uppercase tracking-widest text-white/80 hover:text-white transition-all cursor-pointer"
                   >
                     Archive
                   </button>
@@ -223,7 +223,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                   Design Archive · Repository
                 </p>
               </div>
-              <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-none portfolio-section-title">
+              <h2 className="text-5xl md:text-7xl font-semibold uppercase tracking-tighter leading-none portfolio-section-title">
                 Archive
               </h2>
             </div>
@@ -264,7 +264,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                 return (
                   <article
                     key={article.id}
-                    className={`hud-card group relative flex flex-col cursor-pointer rounded-2xl overflow-hidden ${
+                    className={`portfolio-archive-card group relative flex flex-col cursor-pointer rounded-2xl overflow-hidden ${
                       isExpanded
                         ? "col-span-full ring-1 ring-white/[0.1]"
                         : `min-h-[260px] ${i === 0 ? "md:col-span-2" : ""}`
@@ -281,16 +281,16 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
 
                     <div className={`absolute left-0 top-0 bottom-0 w-[2px] ${
                       isCar
-                        ? "bg-gradient-to-b from-cyan-500/70 via-cyan-600/15 to-transparent"
-                        : "bg-gradient-to-b from-purple-500/70 via-purple-600/15 to-transparent"
+                        ? "bg-gradient-to-b from-white/70 via-white/10 to-transparent"
+                        : "bg-gradient-to-b from-white/40 via-white/5 to-transparent"
                     }`} />
 
                     <div className="relative p-7 flex flex-col h-full gap-4">
                       <div className="flex items-center justify-between">
-                        <span className={`text-[8px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border ${
+                        <span className={`text-[8px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded border ${
                           isCar
-                            ? "text-cyan-400/80 border-cyan-500/20 bg-cyan-500/8"
-                            : "text-purple-400/80 border-purple-500/20 bg-purple-500/8"
+                            ? "text-white/70 border-white/[0.1] bg-transparent"
+                            : "text-white/50 border-white/[0.05] bg-transparent"
                         }`}>
                           {isCar ? "3D Auto" : "Design"}
                         </span>
@@ -311,7 +311,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                       </div>
 
                       <div className="flex items-start justify-between gap-4">
-                        <h3 className={`font-black uppercase tracking-tight leading-tight text-white/95 group-hover:text-white transition-colors ${
+                        <h3 className={`font-semibold font-serif tracking-tight text-white/95 group-hover:text-white transition-colors ${
                           isExpanded ? "text-3xl md:text-5xl" : "text-xl"
                         }`}>
                           {article.title}

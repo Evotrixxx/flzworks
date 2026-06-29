@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FLZ · Design Proposal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink:   #05060b;
+  --w4:    rgba(255,255,255,.04);
+  --w6:    rgba(255,255,255,.06);
+  --w8:    rgba(255,255,255,.08);
+  --w12:   rgba(255,255,255,.12);
+  --w20:   rgba(255,255,255,.20);
+  --w30:   rgba(255,255,255,.30);
+  --w45:   rgba(255,255,255,.45);
+  --w60:   rgba(255,255,255,.60);
+  --w80:   rgba(255,255,255,.80);
+  --w95:   rgba(255,255,255,.95);
+  --cyan:  #22d3ee;
+  --cyan2: rgba(34,211,238,.15);
+  --cyan3: rgba(34,211,238,.08);
+}
+html { font-family: 'Inter', system-ui, sans-serif; background: var(--ink); color: white; -webkit-font-smoothing: antialiased; }
+body { min-height: 100vh; }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; border: none; cursor: pointer; }
+
+/* ── Proposal chrome ─────────────────────────── */
+.proposal-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+  background: #0a0c14; border-bottom: 1px solid rgba(255,255,255,.07);
+  height: 46px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px;
+}
+.proposal-bar__brand { font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--w45); }
+.proposal-bar__tabs  { display: flex; gap: 4px; }
+.ptab {
+  padding: 5px 14px; border-radius: 6px; font-size: 11px; font-weight: 700;
+  letter-spacing: .04em; color: var(--w45); background: transparent;
+  transition: all .15s;
+}
+.ptab:hover  { background: var(--w6); color: var(--w80); }
+.ptab.active { background: var(--cyan2); color: var(--cyan); }
+.page { display: none; }
+.page.active { display: block; }
+.scroll-prog { position: fixed; top: 46px; left: 0; height: 1px; background: var(--cyan); z-index: 9998; width: 0%; transition: width .1s; }
+
+
+/* ══════════════════════════════════════════════
+   PAGE A — CURRENT (reference)
+══════════════════════════════════════════════ */
+.ref-wrap { padding-top: 46px; }
+.ref-label {
+  text-align: center; padding: 16px;
+  font-size: 10px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--w30); background: rgba(255,255,255,.015); border-bottom: 1px solid var(--w8);
+}
+
+
+/* ══════════════════════════════════════════════
+   PAGE B — PROPOSAL: EDITORIAL DARK
+   Key changes:
+   · Nav: transparent top bar, sharp underline on active
+   · Hero: text centered & vertically spread, NOT bottom-pinned
+   · Archive: image-forward masonry with numbered index
+   · Signals: horizontal strip instead of dense grid
+   · Footer: single ruled line + left/right split
+══════════════════════════════════════════════ */
+
+/* ── Simulated parallax bg ─── */
+.p-bg {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 55% at 62% 44%, rgba(15,20,40,.0) 0%, rgba(5,6,11,.85) 100%),
+    radial-gradient(ellipse 90% 80% at 50% 50%, transparent 30%, #05060b 100%),
+    linear-gradient(160deg, #0d1117 0%, #080c18 40%, #05060b 100%);
+  pointer-events: none;
+}
+/* Fake layer glows to hint at the parallax scene */
+.p-bg::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 40% 30% at 65% 50%, rgba(20,40,80,.35) 0%, transparent 70%),
+    radial-gradient(ellipse 25% 20% at 30% 60%, rgba(10,25,50,.25) 0%, transparent 70%);
+}
+
+/* ── Shell ─── */
+.p-shell {
+  position: relative; min-height: 100vh; overflow-x: hidden;
+  padding-top: 46px; /* proposal bar */
+  color: white;
+}
+.p-shell > * { position: relative; z-index: 1; }
+
+/* ── Navigation ─── */
+/* NEW: flat top bar, no blur, no background, no border-radius pill
+   Thin 1px bottom border that fades in on scroll */
+.p-nav {
+  position: fixed; top: 46px; left: 0; right: 0; z-index: 40;
+  height: 52px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px;
+  /* no background by default — transparent over parallax */
+  transition: background .4s, border-color .4s;
+}
+.p-nav.scrolled {
+  background: rgba(5,6,11,.75);
+  border-bottom: 1px solid var(--w8);
+  backdrop-filter: blur(12px);
+}
+.p-nav__brand {
+  font-size: 12px; font-weight: 900; letter-spacing: .2em; text-transform: uppercase;
+  color: white; display: flex; align-items: center; gap: 4px;
+}
+.p-nav__brand span { color: var(--cyan); }
+.p-nav__links { display: flex; align-items: center; gap: 0; }
+.p-nav__link {
+  position: relative; padding: 6px 16px;
+  font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--w45); background: transparent;
+  transition: color .2s;
+}
+.p-nav__link:hover { color: var(--w95); }
+/* Active: underline only, no background */
+.p-nav__link.active {
+  color: white;
+}
+.p-nav__link.active::after {
+  content: ''; position: absolute; bottom: -1px; left: 16px; right: 16px;
+  height: 1px; background: var(--cyan);
+}
+
+/* ── Hero ─── */
+/* NEW: full-viewport, content spread across whole height
+   FLZ huge centered, WORKS below, metadata flanking */
+.p-hero {
+  height: 100vh; display: grid;
+  grid-template-rows: 1fr auto auto auto 1fr;
+  align-items: center;
+  padding: 0 48px;
+  max-width: 1440px; margin: 0 auto;
+}
+/* Row 1: spacer */
+.p-hero__top-meta {
+  /* top left / top right info row */
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding-top: 100px; /* clear the nav */
+}
+.p-hero__status {
+  display: flex; align-items: center; gap: 8px;
+}
+.p-hero__dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan); animation: pulse 2.5s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+.p-hero__status-text {
+  font-size: 9px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: var(--w45);
+}
+.p-hero__year {
+  font-size: 9px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: var(--w30);
+}
+
+/* Main title block — centered */
+.p-hero__center {
+  text-align: center; user-select: none;
+  padding: 32px 0 24px;
+}
+.p-hero__flz {
+  display: block; font-size: clamp(80px, 13vw, 190px);
+  font-weight: 900; line-height: .92; letter-spacing: -.03em;
+  /* Outline only */
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(255,255,255,.18);
+}
+.p-hero__works {
+  display: block; font-size: clamp(80px, 13vw, 190px);
+  font-weight: 900; line-height: .92; letter-spacing: -.03em;
+  /* Solid, with subtle glow */
+  color: white;
+  text-shadow: 0 0 120px rgba(255,255,255,.06);
+}
+
+/* Descriptor row below title */
+.p-hero__descriptor {
+  display: flex; align-items: center; justify-content: center; gap: 32px;
+  padding-bottom: 8px;
+}
+.p-hero__desc-item {
+  font-size: 9px; font-weight: 600; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--w30);
+}
+.p-hero__desc-sep {
+  width: 24px; height: 1px; background: var(--w12);
+}
+
+/* Count row */
+.p-hero__counts {
+  display: flex; justify-content: center; gap: 48px; padding-top: 32px;
+}
+.p-hero__count-block { text-align: center; }
+.p-hero__count-num { font-size: 28px; font-weight: 900; letter-spacing: -.04em; line-height: 1; }
+.p-hero__count-num.cyan { color: var(--cyan); }
+.p-hero__count-label { font-size: 8px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--w30); margin-top: 4px; }
+
+/* Bottom row: CTA left, scroll right */
+.p-hero__bottom {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  padding-bottom: 32px;
+}
+.p-hero__cta-row { display: flex; gap: 10px; }
+.p-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 9px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase;
+  border-radius: 4px; transition: all .2s;
+}
+.p-btn--ghost {
+  padding: 10px 22px;
+  border: 1px solid var(--w12); color: var(--w60);
+  background: transparent;
+}
+.p-btn--ghost:hover { border-color: var(--w30); color: var(--w95); }
+.p-btn--outline-cyan {
+  padding: 10px 22px;
+  border: 1px solid rgba(34,211,238,.3); color: var(--cyan);
+  background: var(--cyan3);
+}
+.p-btn--outline-cyan:hover { background: var(--cyan2); border-color: var(--cyan); }
+
+.p-hero__scroll {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  opacity: .4; cursor: pointer; transition: opacity .2s;
+}
+.p-hero__scroll:hover { opacity: .8; }
+.p-hero__scroll-line {
+  width: 1px; height: 40px;
+  background: linear-gradient(to bottom, transparent, rgba(255,255,255,.4), transparent);
+  animation: scroll-pulse 2s ease-in-out infinite;
+}
+@keyframes scroll-pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+.p-hero__scroll-text { font-size: 7px; font-weight: 700; letter-spacing: .3em; text-transform: uppercase; color: var(--w60); }
+
+/* ── Section transition ─── */
+/* NEW: instead of the content just continuing on dark,
+   a ruled line + section header that feels like an editorial spread */
+.p-section-rule {
+  max-width: 1440px; margin: 0 auto; padding: 0 48px;
+}
+.p-section-rule hr {
+  border: none; border-top: 1px solid var(--w8); margin-bottom: 0;
+}
+
+/* ── Archive ─── */
+.p-archive {
+  max-width: 1440px; margin: 0 auto; padding: 80px 48px 120px;
+}
+.p-archive__header {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-bottom: 48px;
+}
+.p-archive__heading {
+  font-size: clamp(48px, 7vw, 100px); font-weight: 900;
+  letter-spacing: -.04em; line-height: .95; color: white;
+  /* NEW: no text glow, pure weight */
+}
+.p-archive__heading-label {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+}
+.p-archive__heading-dot {
+  width: 5px; height: 5px; border-radius: 50%; background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+}
+.p-archive__heading-eyebrow {
+  font-size: 9px; font-weight: 700; letter-spacing: .25em; text-transform: uppercase; color: var(--w45);
+}
+
+/* Filter pills — NEW: sharp rect not pill, thinner */
+.p-filter-bar {
+  display: flex; gap: 2px; padding: 2px;
+  border: 1px solid var(--w8); border-radius: 6px; background: var(--w4);
+}
+.p-filter-btn {
+  padding: 6px 18px; border-radius: 4px;
+  font-size: 9px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--w45); background: transparent; transition: all .2s;
+}
+.p-filter-btn:hover { color: var(--w80); }
+.p-filter-btn.active { background: var(--w8); color: white; }
+
+/* Archive grid — NEW: masonry-feel with numbered index overlay */
+.p-archive__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1px; /* tight gap, border-like */
+  background: var(--w6); /* the gaps show as lines */
+  border: 1px solid var(--w6);
+}
+.p-archive__card {
+  position: relative; overflow: hidden;
+  background: var(--ink); min-height: 280px;
+  display: flex; flex-direction: column;
+  transition: background .3s;
+  cursor: pointer;
+}
+.p-archive__card:first-child { grid-column: span 2; }
+.p-archive__card:hover { background: rgba(12,15,28,1); }
+.p-archive__card:hover .p-card__reveal { opacity: 1; }
+.p-archive__card:hover .p-card__img { transform: scale(1.04); opacity: .55; }
+
+/* Card thumbnail — fills background */
+.p-card__img-wrap {
+  position: absolute; inset: 0;
+  overflow: hidden;
+}
+.p-card__img {
+  width: 100%; height: 100%; object-fit: cover;
+  opacity: .3; transition: transform .5s cubic-bezier(.16,1,.3,1), opacity .4s;
+  background: linear-gradient(135deg, rgba(20,30,60,.8), rgba(5,6,11,.95));
+}
+/* Gradient overlay on image */
+.p-card__img-wrap::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(5,6,11,.95) 0%, rgba(5,6,11,.5) 50%, transparent 100%);
+}
+
+/* Card content — over image */
+.p-card__body {
+  position: relative; z-index: 2; padding: 28px;
+  display: flex; flex-direction: column; height: 100%;
+}
+.p-card__top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: auto; }
+.p-card__index {
+  font-size: 11px; font-weight: 700; letter-spacing: .12em; font-variant-numeric: tabular-nums;
+  color: var(--w20);
+}
+.p-card__tag {
+  font-size: 8px; font-weight: 900; letter-spacing: .16em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 3px;
+}
+.p-card__tag--cyan { color: var(--cyan); border: 1px solid rgba(34,211,238,.22); background: var(--cyan3); }
+.p-card__tag--purple { color: #c084fc; border: 1px solid rgba(192,132,252,.22); background: rgba(192,132,252,.06); }
+
+.p-card__bottom { margin-top: 0; }
+.p-card__title {
+  font-size: clamp(15px, 1.6vw, 20px); font-weight: 900;
+  letter-spacing: -.025em; line-height: 1.2; color: var(--w95);
+  margin-bottom: 6px; text-transform: uppercase;
+}
+.p-card__meta {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 9px; font-weight: 600; letter-spacing: .1em; color: var(--w30);
+}
+.p-card__meta-sep { width: 16px; height: 1px; background: var(--w12); }
+
+/* Reveal arrow on hover */
+.p-card__reveal {
+  position: absolute; bottom: 28px; right: 28px; z-index: 3;
+  opacity: 0; transition: opacity .25s;
+  display: flex; align-items: center; gap: 6px;
+  font-size: 9px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--w60);
+}
+
+/* Left color accent line */
+.p-card__accent {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 2px; z-index: 3;
+}
+.p-card__accent--cyan { background: linear-gradient(to bottom, var(--cyan), transparent 60%); }
+.p-card__accent--purple { background: linear-gradient(to bottom, #c084fc, transparent 60%); }
+
+/* ── Signals section ─── */
+/* NEW: horizontal scrollable filmstrip instead of dense grid */
+.p-signals {
+  max-width: 1440px; margin: 0 auto; padding: 0 48px 120px;
+}
+.p-signals__header {
+  display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 32px;
+}
+.p-signals__h2 {
+  font-size: clamp(36px, 5vw, 72px); font-weight: 900; letter-spacing: -.04em;
+  line-height: .95; color: var(--w80);
+}
+.p-signals__h2 em { font-style: normal; color: white; }
+.p-signals__handle {
+  font-size: 9px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--w30); border: 1px solid var(--w8); padding: 8px 16px; border-radius: 4px;
+}
+
+/* Filmstrip */
+.p-signals__strip {
+  display: flex; gap: 10px; overflow-x: auto;
+  scrollbar-width: none; padding-bottom: 8px;
+}
+.p-signals__strip::-webkit-scrollbar { display: none; }
+.p-signal-item {
+  flex-shrink: 0; width: 180px; aspect-ratio: 1/1;
+  background: var(--w4); border: 1px solid var(--w8);
+  overflow: hidden; position: relative;
+  transition: border-color .25s, transform .25s;
+  cursor: pointer;
+}
+.p-signal-item:hover { border-color: var(--w20); transform: translateY(-3px); }
+.p-signal-item::after {
+  content: ''; position: absolute; inset: 0;
+  background: rgba(5,6,11,.5);
+  transition: background .25s;
+}
+.p-signal-item:hover::after { background: rgba(5,6,11,.2); }
+.p-signal-item img { width: 100%; height: 100%; object-fit: cover; opacity: .7; transition: opacity .3s; }
+.p-signal-item:hover img { opacity: .95; }
+.p-signal-placeholder {
+  width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+  font-size: 28px; opacity: .15;
+}
+
+/* ── Footer ─── */
+/* NEW: single ruled line, two-column, minimal */
+.p-footer {
+  max-width: 1440px; margin: 0 auto; padding: 0 48px 48px;
+  border-top: 1px solid var(--w8);
+}
+.p-footer__marquee-wrap {
+  overflow: hidden; padding: 16px 0;
+  border-bottom: 1px solid var(--w6);
+  margin-bottom: 24px;
+}
+.p-footer__marquee {
+  display: flex; gap: 0; white-space: nowrap;
+  animation: marquee 22s linear infinite;
+}
+@keyframes marquee { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+.p-footer__marquee-item {
+  font-size: 8px; font-weight: 900; letter-spacing: .3em; text-transform: uppercase;
+  color: var(--w20); padding: 0 32px;
+}
+.p-footer__bottom {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.p-footer__copy { font-size: 9px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--w25, var(--w30)); }
+.p-footer__tagline { font-size: 9px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--w20); }
+
+
+/* ══════════════════════════════════════════════
+   PAGE C — COMPARISON TABLE
+══════════════════════════════════════════════ */
+.comp-wrap { padding-top: 46px; }
+.comp-section { max-width: 960px; margin: 0 auto; padding: 48px 32px; }
+.comp-section + .comp-section { border-top: 1px solid var(--w8); }
+.comp-h2 { font-size: 22px; font-weight: 900; letter-spacing: -.03em; margin-bottom: 6px; }
+.comp-sub { font-size: 13px; color: var(--w45); margin-bottom: 32px; line-height: 1.6; }
+.comp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.comp-table th {
+  text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--w8);
+  font-size: 9px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--w45);
+}
+.comp-table td { padding: 12px 14px; border-bottom: 1px solid var(--w6); color: var(--w80); vertical-align: top; }
+.comp-table tr:last-child td { border-bottom: none; }
+.col-old { color: var(--w45); }
+.col-new { color: #6ee7b7; }
+.col-reason { color: var(--w45); font-size: 12px; }
+.badge-keep   { padding: 2px 8px; border-radius: 3px; background: rgba(34,211,238,.12); color: var(--cyan); font-size: 10px; font-weight: 700; }
+.badge-change { padding: 2px 8px; border-radius: 3px; background: rgba(251,191,36,.1); color: #fbbf24; font-size: 10px; font-weight: 700; }
+.badge-remove { padding: 2px 8px; border-radius: 3px; background: rgba(248,113,113,.1); color: #f87171; font-size: 10px; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<div class="scroll-prog" id="sp"></div>
+
+<!-- Proposal bar -->
+<div class="proposal-bar">
+  <span class="proposal-bar__brand">FLZ · Design Proposal — Portfolio Landing</span>
+  <div class="proposal-bar__tabs">
+    <button class="ptab active" onclick="show('proposal')">Proposal</button>
+    <button class="ptab" onclick="show('compare')">What Changes</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     PROPOSAL PAGE
+════════════════════════════════════════════ -->
+<div class="page active" id="page-proposal">
+
+<!-- Simulated parallax bg -->
+<div class="p-bg" id="pbg"></div>
+
+<div class="p-shell">
+
+  <!-- ── Nav ── -->
+  <nav class="p-nav" id="pnav">
+    <div class="p-nav__brand">FLZ<span>·</span>WORKS</div>
+    <div class="p-nav__links">
+      <button class="p-nav__link active">Home</button>
+      <button class="p-nav__link">Archive</button>
+      <button class="p-nav__link">Signals</button>
+    </div>
+  </nav>
+
+  <!-- ── Hero ── -->
+  <section class="p-hero">
+
+    <!-- Top meta row -->
+    <div class="p-hero__top-meta">
+      <div class="p-hero__status">
+        <div class="p-hero__dot"></div>
+        <span class="p-hero__status-text">Open for projects · 2026</span>
+      </div>
+      <span class="p-hero__year">Portfolio &amp; Overview</span>
+    </div>
+
+    <!-- Giant wordmark — centered -->
+    <div class="p-hero__center">
+      <span class="p-hero__flz">FLZ</span>
+      <span class="p-hero__works">WORKS</span>
+    </div>
+
+    <!-- Descriptor -->
+    <div class="p-hero__descriptor">
+      <span class="p-hero__desc-item">Automotive Design</span>
+      <div class="p-hero__desc-sep"></div>
+      <span class="p-hero__desc-item">3D Engineering</span>
+      <div class="p-hero__desc-sep"></div>
+      <span class="p-hero__desc-item">Machine Experience</span>
+    </div>
+
+    <!-- Counts -->
+    <div class="p-hero__counts">
+      <div class="p-hero__count-block">
+        <div class="p-hero__count-num">07</div>
+        <div class="p-hero__count-label">Projects</div>
+      </div>
+      <div class="p-hero__count-block">
+        <div class="p-hero__count-num cyan">2026</div>
+        <div class="p-hero__count-label">Active</div>
+      </div>
+      <div class="p-hero__count-block">
+        <div class="p-hero__count-num">3</div>
+        <div class="p-hero__count-label">Disciplines</div>
+      </div>
+    </div>
+
+    <!-- Bottom row -->
+    <div class="p-hero__bottom">
+      <div class="p-hero__cta-row">
+        <button class="p-btn p-btn--ghost">Archive ↓</button>
+        <button class="p-btn p-btn--outline-cyan">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <path d="M5 1v8M1 5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          Showroom
+        </button>
+      </div>
+      <div class="p-hero__scroll">
+        <div class="p-hero__scroll-line"></div>
+        <span class="p-hero__scroll-text">scroll</span>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ── Section rule ── -->
+  <div class="p-section-rule"><hr/></div>
+
+  <!-- ── Archive ── -->
+  <section class="p-archive">
+
+    <div class="p-archive__header">
+      <div>
+        <div class="p-archive__heading-label">
+          <div class="p-archive__heading-dot"></div>
+          <span class="p-archive__heading-eyebrow">Design Archive · Repository</span>
+        </div>
+        <h2 class="p-archive__heading">Archive</h2>
+      </div>
+      <div class="p-filter-bar">
+        <button class="p-filter-btn active">All</button>
+        <button class="p-filter-btn">3D Auto</button>
+        <button class="p-filter-btn">Other</button>
+      </div>
+    </div>
+
+    <!-- Grid — tight 1px gap lines feel like a contact sheet -->
+    <div class="p-archive__grid">
+
+      <!-- Card 1 — featured, spans 2 cols -->
+      <article class="p-archive__card" style="min-height:340px">
+        <div class="p-card__accent p-card__accent--cyan"></div>
+        <div class="p-card__img-wrap">
+          <div class="p-card__img" style="background:linear-gradient(135deg,#0d1b2a 0%,#152a3a 100%)"></div>
+        </div>
+        <div class="p-card__body">
+          <div class="p-card__top">
+            <span class="p-card__index">#001</span>
+            <span class="p-card__tag p-card__tag--cyan">3D Auto</span>
+          </div>
+          <div class="p-card__bottom">
+            <h3 class="p-card__title">Mirsairen Concept<br/>2026</h3>
+            <div class="p-card__meta">
+              <span>Nov 2026</span>
+              <div class="p-card__meta-sep"></div>
+              <span>9 renders</span>
+              <div class="p-card__meta-sep"></div>
+              <span>Exterior Design</span>
+            </div>
+          </div>
+        </div>
+        <div class="p-card__reveal">Open <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 8L8 2M8 2H4M8 2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      </article>
+
+      <!-- Card 2 -->
+      <article class="p-archive__card">
+        <div class="p-card__accent p-card__accent--purple"></div>
+        <div class="p-card__img-wrap">
+          <div class="p-card__img" style="background:linear-gradient(135deg,#0f0c1a 0%,#1a1030 100%)"></div>
+        </div>
+        <div class="p-card__body">
+          <div class="p-card__top">
+            <span class="p-card__index">#002</span>
+            <span class="p-card__tag p-card__tag--purple">Design</span>
+          </div>
+          <div class="p-card__bottom">
+            <h3 class="p-card__title">HYDRA<br/>Environment</h3>
+            <div class="p-card__meta">
+              <span>Feb 2026</span>
+              <div class="p-card__meta-sep"></div>
+              <span>13 renders</span>
+            </div>
+          </div>
+        </div>
+        <div class="p-card__reveal">Open <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 8L8 2M8 2H4M8 2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      </article>
+
+      <!-- Card 3 -->
+      <article class="p-archive__card">
+        <div class="p-card__accent p-card__accent--cyan"></div>
+        <div class="p-card__img-wrap">
+          <div class="p-card__img" style="background:linear-gradient(135deg,#0a1520 0%,#0d2030 100%)"></div>
+        </div>
+        <div class="p-card__body">
+          <div class="p-card__top">
+            <span class="p-card__index">#003</span>
+            <span class="p-card__tag p-card__tag--cyan">3D Auto</span>
+          </div>
+          <div class="p-card__bottom">
+            <h3 class="p-card__title">Mirsairen<br/>Final 2025</h3>
+            <div class="p-card__meta">
+              <span>Aug 2025</span>
+              <div class="p-card__meta-sep"></div>
+              <span>11 renders</span>
+            </div>
+          </div>
+        </div>
+        <div class="p-card__reveal">Open <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 8L8 2M8 2H4M8 2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      </article>
+
+      <!-- Card 4 -->
+      <article class="p-archive__card">
+        <div class="p-card__accent p-card__accent--cyan"></div>
+        <div class="p-card__img-wrap">
+          <div class="p-card__img" style="background:linear-gradient(135deg,#10181a 0%,#0d2022 100%)"></div>
+        </div>
+        <div class="p-card__body">
+          <div class="p-card__top">
+            <span class="p-card__index">#004</span>
+            <span class="p-card__tag p-card__tag--cyan">3D Auto</span>
+          </div>
+          <div class="p-card__bottom">
+            <h3 class="p-card__title">Cubic Study<br/>Series</h3>
+            <div class="p-card__meta">
+              <span>Nov 2026</span>
+              <div class="p-card__meta-sep"></div>
+              <span>9 frames</span>
+            </div>
+          </div>
+        </div>
+        <div class="p-card__reveal">Open <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 8L8 2M8 2H4M8 2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      </article>
+
+      <!-- Card 5 -->
+      <article class="p-archive__card">
+        <div class="p-card__accent p-card__accent--purple"></div>
+        <div class="p-card__img-wrap">
+          <div class="p-card__img" style="background:linear-gradient(135deg,#120c20 0%,#1a0e2a 100%)"></div>
+        </div>
+        <div class="p-card__body">
+          <div class="p-card__top">
+            <span class="p-card__index">#005</span>
+            <span class="p-card__tag p-card__tag--purple">Design</span>
+          </div>
+          <div class="p-card__bottom">
+            <h3 class="p-card__title">Autopiac<br/>Platform</h3>
+            <div class="p-card__meta">
+              <span>Jun 2025</span>
+              <div class="p-card__meta-sep"></div>
+              <span>Web</span>
+            </div>
+          </div>
+        </div>
+        <div class="p-card__reveal">Open <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 8L8 2M8 2H4M8 2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ── Section rule ── -->
+  <div class="p-section-rule"><hr/></div>
+
+  <!-- ── Signals ── -->
+  <section class="p-signals">
+    <div class="p-signals__header">
+      <div>
+        <div class="p-archive__heading-label" style="margin-bottom:10px">
+          <div class="p-archive__heading-dot"></div>
+          <span class="p-archive__heading-eyebrow">Works &amp; Log · @flzworks</span>
+        </div>
+        <h2 class="p-signals__h2">Works &amp; <em>Log</em></h2>
+      </div>
+      <span class="p-signals__handle">@flzworks</span>
+    </div>
+
+    <!-- Horizontal filmstrip -->
+    <div class="p-signals__strip">
+      <div class="p-signal-item"><div class="p-signal-placeholder">🚗</div></div>
+      <div class="p-signal-item"><div class="p-signal-placeholder">⬡</div></div>
+      <div class="p-signal-item"><div class="p-signal-placeholder">🎮</div></div>
+      <div class="p-signal-item"><div class="p-signal-placeholder">🚙</div></div>
+      <div class="p-signal-item"><div class="p-signal-placeholder">⬡</div></div>
+      <div class="p-signal-item"><div class="p-signal-placeholder">🚗</div></div>
+      <div class="p-signal-item"><div class="p-signal-placeholder">🌐</div></div>
+      <div class="p-signal-item"><div class="p-signal-placeholder">⬡</div></div>
+      <div class="p-signal-item"><div class="p-signal-placeholder">🚙</div></div>
+    </div>
+  </section>
+
+  <!-- ── Footer ── -->
+  <footer class="p-footer">
+    <div class="p-footer__marquee-wrap">
+      <div class="p-footer__marquee">
+        <!-- doubled for seamless loop -->
+        <span class="p-footer__marquee-item">FLZ WORKS ·</span>
+        <span class="p-footer__marquee-item">DESIGN ·</span>
+        <span class="p-footer__marquee-item">ENGINEERING ·</span>
+        <span class="p-footer__marquee-item">MACHINE EXPERIENCE ·</span>
+        <span class="p-footer__marquee-item">2026 ·</span>
+        <span class="p-footer__marquee-item">FLZ WORKS ·</span>
+        <span class="p-footer__marquee-item">DESIGN ·</span>
+        <span class="p-footer__marquee-item">ENGINEERING ·</span>
+        <span class="p-footer__marquee-item">MACHINE EXPERIENCE ·</span>
+        <span class="p-footer__marquee-item">2026 ·</span>
+      </div>
+    </div>
+    <div class="p-footer__bottom">
+      <span class="p-footer__copy">FLZ Works · 2026</span>
+      <span class="p-footer__tagline">Design · Engineering · Architecture</span>
+    </div>
+  </footer>
+
+</div><!-- /p-shell -->
+</div><!-- /page-proposal -->
+
+
+<!-- ══════════════════════════════════════════
+     COMPARE PAGE
+════════════════════════════════════════════ -->
+<div class="page" id="page-compare">
+<div class="comp-wrap">
+<div class="comp-section">
+  <div class="comp-h2">What changes — and why</div>
+  <div class="comp-sub">The parallax stays. Every other structural decision is reconsidered.</div>
+
+  <table class="comp-table">
+    <thead>
+      <tr>
+        <th style="width:18%">Element</th>
+        <th style="width:5%">Status</th>
+        <th style="width:28%">Current</th>
+        <th style="width:28%">Proposed</th>
+        <th>Reason</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Parallax background</td>
+        <td><span class="badge-keep">Keep</span></td>
+        <td class="col-old">4-layer mouse-tracked depth scene, #05060b base</td>
+        <td class="col-new">Identical — not touched</td>
+        <td class="col-reason">The scene is the hero. Everything else frames it.</td>
+      </tr>
+      <tr>
+        <td>Navigation</td>
+        <td><span class="badge-change">Refine</span></td>
+        <td class="col-old">Floating pill, backdrop-blur, border-radius 999px, centered</td>
+        <td class="col-new">Full-width top bar, transparent over parallax, scrolls to semi-opaque. Active link = 1px underline only, no bg highlight.</td>
+        <td class="col-reason">Pill nav competes with the parallax scene. A flat bar disappears into the composition.</td>
+      </tr>
+      <tr>
+        <td>Hero text layout</td>
+        <td><span class="badge-change">Restructure</span></td>
+        <td class="col-old">Text bottom-pinned, FLZ left / info block right, asymmetric</td>
+        <td class="col-new">FLZ WORKS vertically centered across full height. Status row top, descriptor + counts middle, CTAs bottom. Spreads content across the full viewport.</td>
+        <td class="col-reason">Bottom-pinning collapses all tension. Vertical spread makes the parallax work harder — eye travels through the whole scene.</td>
+      </tr>
+      <tr>
+        <td>FLZ / WORKS treatment</td>
+        <td><span class="badge-keep">Keep</span></td>
+        <td class="col-old">FLZ outline stroke, WORKS solid white — same size</td>
+        <td class="col-new">Same — preserved exactly. Centering makes it more monumental.</td>
+        <td class="col-reason">The outline/solid split is the strongest visual element. No change needed.</td>
+      </tr>
+      <tr>
+        <td>Scroll progress bar</td>
+        <td><span class="badge-change">Move</span></td>
+        <td class="col-old">Bottom edge of the floating nav pill</td>
+        <td class="col-new">Top of viewport, 1px full-width line</td>
+        <td class="col-reason">More readable position, doesn't compete with nav shape.</td>
+      </tr>
+      <tr>
+        <td>Archive card grid</td>
+        <td><span class="badge-change">Redesign</span></td>
+        <td class="col-old">hud-card: backdrop-filter blur, gradient bg, individual gap spacing</td>
+        <td class="col-new">Contact-sheet grid: 1px gap lines (no spacing), image fills the card as background at 30% opacity, lifts on hover. Numbered index overlay.</td>
+        <td class="col-reason">The blur on hud-card fights the parallax blur. Contact-sheet grid reads as a deliberate design choice — archival, not technical UI.</td>
+      </tr>
+      <tr>
+        <td>backdrop-filter on cards</td>
+        <td><span class="badge-remove">Remove</span></td>
+        <td class="col-old">blur(24px) saturate(160%) on every archive card</td>
+        <td class="col-new">None — flat dark surface</td>
+        <td class="col-reason">Multiple blur layers compound GPU cost and reduce parallax clarity.</td>
+      </tr>
+      <tr>
+        <td>Signals / Instagram</td>
+        <td><span class="badge-change">Restructure</span></td>
+        <td class="col-old">Dense clip-squircle grid, 5 columns</td>
+        <td class="col-new">Horizontal filmstrip, scroll-overflow, square items without clip-path</td>
+        <td class="col-reason">Filmstrip reads as a feed, implies chronology. Easier to add to.</td>
+      </tr>
+      <tr>
+        <td>Cyan accent color</td>
+        <td><span class="badge-keep">Keep</span></td>
+        <td class="col-old">#22d3ee throughout</td>
+        <td class="col-new">Same — used for dot indicators, active states, card tags</td>
+        <td class="col-reason">Cyan is part of the brand identity.</td>
+      </tr>
+      <tr>
+        <td>Marquee footer</td>
+        <td><span class="badge-keep">Keep</span></td>
+        <td class="col-old">Scrolling text strip, font-mono, white/25</td>
+        <td class="col-new">Same — above a single ruled line with copy/tagline split</td>
+        <td class="col-reason">The marquee is a good signature element.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="comp-section">
+  <div class="comp-h2">Implementation scope</div>
+  <div class="comp-sub">Changes are scoped to <code style="font-size:12px;background:var(--w6);padding:2px 6px;border-radius:4px;color:#6ee7b7">portfolio-onepager.tsx</code> and the portfolio-specific CSS block in <code style="font-size:12px;background:var(--w6);padding:2px 6px;border-radius:4px;color:#6ee7b7">globals.css</code>. The parallax component, lightbox, and Autopiac are untouched.</div>
+
+  <table class="comp-table">
+    <thead><tr><th>File</th><th>Change</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code style="color:#6ee7b7;font-size:12px">landing-parallax.tsx</code></td>
+        <td class="col-new">No changes</td>
+      </tr>
+      <tr>
+        <td><code style="color:#6ee7b7;font-size:12px">portfolio-onepager.tsx</code></td>
+        <td class="col-old">Nav layout, hero layout restructure, archive grid class changes, signals to filmstrip</td>
+      </tr>
+      <tr>
+        <td><code style="color:#6ee7b7;font-size:12px">globals.css (portfolio block)</code></td>
+        <td class="col-old">Replace hud-card blur with flat dark surface; new .p-archive-grid, .p-nav, hero layout classes</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</div>
+</div><!-- /page-compare -->
+
+
+<script>
+function show(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.target.classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+window.addEventListener('scroll', () => {
+  const total = document.documentElement.scrollHeight - window.innerHeight;
+  document.getElementById('sp').style.width = (window.scrollY / total * 100) + '%';
+  const nav = document.getElementById('pnav');
+  if (nav) nav.classList.toggle('scrolled', window.scrollY > 60);
+});
+
+// subtle parallax hint on bg radial
+document.addEventListener('mousemove', e => {
+  const bg = document.getElementById('pbg');
+  if (!bg) return;
+  const x = (e.clientX / window.innerWidth - .5) * 12;
+  const y = (e.clientY / window.innerHeight - .5) * 8;
+  bg.style.backgroundPosition = `${50 + x * .5}% ${50 + y * .5}%`;
+});
+</script>
+</body>
+</html>
