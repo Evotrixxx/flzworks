@@ -87,6 +87,13 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
     <div className="portfolio-shell min-h-screen text-white font-sans overflow-x-hidden selection:bg-cyan-500/20 selection:text-cyan-300">
       <LandingParallax />
 
+      {/* ── Liquid Blobs (Aura Precision) ── */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[8%] left-[2%] w-[45vw] h-[45vw] rounded-full bg-cyan-500/12 blur-[130px] animate-blob-1" />
+        <div className="absolute top-[35%] right-[5%] w-[50vw] h-[50vw] rounded-full bg-purple-500/10 blur-[140px] animate-blob-2" />
+        <div className="absolute bottom-[12%] left-[15%] w-[40vw] h-[40vw] rounded-full bg-blue-500/8 blur-[120px] animate-blob-3" />
+      </div>
+
       {/* ── Navigation ── */}
       <header
         className={`hud-nav fixed top-5 left-4 right-4 max-w-7xl lg:mx-auto z-40 rounded-full px-5 py-3 flex items-center justify-between transition-all duration-700 overflow-hidden ${
