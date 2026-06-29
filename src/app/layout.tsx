@@ -42,10 +42,10 @@ export default async function RootLayout({
             <div className="max-w-md">
               <h1 className="text-3xl font-black mb-4">FLZ WORKS</h1>
               <p className="text-sm font-mono text-white/70 mb-6">
-                Fotorealisztikus 3D gépjárműtervezés, rendszerarchitektúra, nagyteljesítményű webrenderelés és prototípus-fejlesztés.
+                Photorealistic 3D automotive design, system architecture, high-performance web rendering, and prototype development.
               </p>
               <p className="text-xs text-white/50">
-                A webhely teljes élményéhez kérjük, engedélyezze a JavaScriptet a böngészőjében.
+                For the full experience of this site, please enable JavaScript in your browser.
               </p>
             </div>
           </div>

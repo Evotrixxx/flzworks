@@ -12,7 +12,7 @@ interface PortfolioOnepagerProps {
   articles: PortfolioArticleWithImages[];
 }
 
-const locale = "hu";
+const locale = "en";
 
 export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepagerProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -59,7 +59,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
         <nav className="flex items-center gap-0.5">
           {[
             { label: "Home", id: "hero" },
-            { label: locale === "hu" ? "Archívum" : "Archive", id: "archive" },
+            { label: "Archive", id: "archive" },
             ...(instagramMedia.length > 0 ? [{ label: "Signals", id: "signals" }] : []),
           ].map((item) => (
             <button
@@ -109,7 +109,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
               <div className="flex flex-col items-start lg:items-end gap-5 lg:mb-1.5">
                 <div className="lg:text-right">
                   <p className="text-[8px] font-black uppercase tracking-[0.45em] text-white/40 mb-2.5">
-                    Portfólió & Bemutatkozás
+                    Portfolio & Overview
                   </p>
                   <p className="text-[13px] text-white/55 font-mono leading-[1.8]">
                     Automotive Design · 3D Engineering<br />
@@ -138,7 +138,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                     onClick={() => scrollToSection("archive")}
                     className="px-5 py-2 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.09] text-[9px] font-black uppercase tracking-widest text-white/80 hover:text-white transition-all cursor-pointer"
                   >
-                    {locale === "hu" ? "Archívum" : "Archive"}
+                    Archive
                   </button>
                   <button
                     onClick={() => setUiHidden(true)}
@@ -180,15 +180,15 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                 </p>
               </div>
               <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-none portfolio-section-title">
-                {locale === "hu" ? "Archívum" : "Archive"}
+                Archive
               </h2>
             </div>
 
             <div className="flex items-center gap-1 bg-white/[0.02] border border-white/[0.05] p-1 rounded-xl shrink-0">
               {[
-                { id: "ALL" as const, label: locale === "hu" ? "Összes" : "All" },
-                { id: "CAR_DESIGN" as const, label: "3D Autó" },
-                { id: "OTHER" as const, label: locale === "hu" ? "Egyéb" : "Other" },
+                { id: "ALL" as const, label: "All" },
+                { id: "CAR_DESIGN" as const, label: "3D Auto" },
+                { id: "OTHER" as const, label: "Other" },
               ].map((cat) => (
                 <button
                   key={cat.id}
@@ -209,7 +209,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             {filteredArticles.length === 0 ? (
               <div className="col-span-full py-24 text-center border border-dashed border-white/[0.05] rounded-2xl">
                 <p className="text-[10px] font-black uppercase tracking-widest text-white/60">
-                  {locale === "hu" ? "Nincsenek cikkek ebben a kategóriában" : "No projects in this category"}
+                  No projects in this category
                 </p>
               </div>
             ) : (
@@ -291,7 +291,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                       {!isExpanded && (
                         <div className="absolute bottom-5 right-5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                           <div className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-white/60">
-                            {locale === "hu" ? "Megnyit" : "Open"} <ArrowUpRight className="h-3 w-3" />
+                            Open <ArrowUpRight className="h-3 w-3" />
                           </div>
                         </div>
                       )}
@@ -300,7 +300,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                         <div className="mt-2 pt-6 border-t border-white/[0.05]">
                           <h4 className="text-[8px] font-black uppercase tracking-[0.35em] text-white/45 mb-4 flex items-center gap-1.5">
                             <ImageIcon className="h-3 w-3" />
-                            {locale === "hu" ? "Média Galéria" : "Media Gallery"} · {article.images.length}
+                            Media Gallery · {article.images.length}
                           </h4>
                           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
                             {article.images.map((img) => {
@@ -345,7 +345,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                   </p>
                 </div>
                 <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-none text-white/85">
-                  Munkák & <span className="portfolio-text-glow">Log</span>
+                  Works & <span className="portfolio-text-glow">Log</span>
                 </h2>
               </div>
               <p className="text-[9px] font-mono text-white/40 mt-3 md:mt-0 uppercase tracking-widest border border-white/[0.05] px-4 py-2 rounded-xl">
@@ -411,7 +411,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             <Image src={activeImage} alt="Expanded view" fill className="object-contain" unoptimized />
           </div>
           <div className="absolute top-8 right-8 text-white/65 hover:text-white transition text-[9px] font-black uppercase tracking-widest bg-white/[0.05] hover:bg-white/[0.1] px-5 py-3 rounded-full border border-white/[0.08] cursor-pointer">
-            ✕ {locale === "hu" ? "Bezárás" : "Close"}
+            ✕ Close
           </div>
         </div>
       )}
