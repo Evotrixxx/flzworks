@@ -1,11 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type CSSProperties } from "react";
 import type { InstagramMediaItem } from "@/lib/instagram";
 import Image from "next/image";
 import type { PortfolioArticleWithImages } from "@/lib/portfolio-sync";
 import { Image as ImageIcon, ArrowUpRight, X, Zap } from "lucide-react";
 import { LandingParallax } from "./landing-parallax";
+
+const CATEGORY_LABELS: Record<string, string> = {
+  CAR_DESIGN: "Automotive",
+  BRICKWORKS: "Brickworks",
+  GAMES: "Games",
+  MEDIA: "Media",
+  OTHER: "Other",
+};
 
 interface PortfolioOnepagerProps {
   instagramMedia: InstagramMediaItem[];
@@ -45,17 +53,36 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
     };
   }, [activeGallery, selectedArticle]);
 
-  // Click or keypress to exit showroom mode
+  // Keypress to enter showroom mode (pressing 'h' or 'H')
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA") {
+        return;
+      }
+      if (e.key.toLowerCase() === "h" && !selectedArticle && !activeGallery) {
+        setUiHidden(true);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedArticle, activeGallery]);
+
+  // Click or keypress to exit showroom mode (using capturing phase to prevent propagation)
   useEffect(() => {
     if (!uiHidden) return;
-    const handleExitShowroom = () => {
+    const handleExitShowroomClick = (e: MouseEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
       setUiHidden(false);
     };
-    window.addEventListener("click", handleExitShowroom);
-    window.addEventListener("keydown", handleExitShowroom);
+    const handleExitShowroomKey = () => {
+      setUiHidden(false);
+    };
+    window.addEventListener("click", handleExitShowroomClick, true); // capturing phase
+    window.addEventListener("keydown", handleExitShowroomKey);
     return () => {
-      window.removeEventListener("click", handleExitShowroom);
-      window.removeEventListener("keydown", handleExitShowroom);
+      window.removeEventListener("click", handleExitShowroomClick, true);
+      window.removeEventListener("keydown", handleExitShowroomKey);
     };
   }, [uiHidden]);
 
@@ -104,7 +131,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
 
   // IntersectionObserver to set active section for side scroll dots
   useEffect(() => {
-    const sections = ["hero", "process", "archive", "signals"];
+    const sections = ["hero", "process", "archive", "interface", "signals"];
     const observers = sections.map(id => {
       const el = document.getElementById(id);
       if (!el) return null;
@@ -127,29 +154,9 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
 
   const publicArticles = articles.filter((a) => a.visible);
   const filteredArticles = publicArticles.filter((article) => {
-    const cat = article.category.toUpperCase();
-    const title = article.title.toLowerCase();
-    const folder = article.folderName.toLowerCase();
-    
     if (selectedCategory === "ALL") return true;
-    
-    if (selectedCategory === "AUTOMOTIVE") {
-      return cat === "CAR_DESIGN" || cat === "AUTOMOTIVE" || title.includes("mirsairen") || title.includes("hydra");
-    }
-    
-    if (selectedCategory === "BRICKWORKS") {
-      return cat === "BRICKWORKS" || title.includes("brick") || folder.includes("lego");
-    }
-    
-    if (selectedCategory === "GAMES") {
-      return cat === "GAMES" || title.includes("game") || folder.includes("godot");
-    }
-    
-    if (selectedCategory === "MEDIA") {
-      return cat === "MEDIA" || cat === "OTHER" || title.includes("poster") || title.includes("brosure") || title.includes("present");
-    }
-    
-    return cat === selectedCategory;
+    if (selectedCategory === "AUTOMOTIVE") return article.category === "CAR_DESIGN";
+    return article.category === selectedCategory;
   });
 
   const scrollToSection = (id: string) => {
@@ -164,17 +171,31 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
     e.currentTarget.style.setProperty("--mouse-y", `${y}px`);
   };
 
+  const scrollProgressStyle = {
+    "--scroll-progress": `${scrollProgress}%`,
+  } as CSSProperties;
+
   return (
-    <div className="portfolio-shell min-h-screen text-white font-sans overflow-x-hidden selection:bg-white/20 selection:text-white">
+    <div
+      className="portfolio-shell min-h-screen text-white font-sans overflow-x-hidden selection:bg-white/20 selection:text-white"
+      style={scrollProgressStyle}
+    >
       <LandingParallax />
 
       {/* ── Floating Pill Nav ── */}
       <nav className={`nav ${uiHidden ? "opacity-0 -translate-y-full pointer-events-none" : "opacity-100 translate-y-0"}`}>
-        <span className="nav-logo" onClick={() => scrollToSection("hero")} style={{ cursor: "pointer" }}>FLZ</span>
-        <button onClick={() => scrollToSection("hero")} className={`nav-link ${activeSection === "hero" ? "active" : ""}`}>Home</button>
-        <button onClick={() => scrollToSection("archive")} className={`nav-link ${activeSection === "archive" ? "active" : ""}`}>Archive</button>
-        <button onClick={() => scrollToSection("process")} className={`nav-link ${activeSection === "process" ? "active" : ""}`}>Process</button>
-        <button onClick={() => scrollToSection("signals")} className={`nav-link ${activeSection === "signals" ? "active" : ""}`}>Contact</button>
+        <button
+          type="button"
+          aria-label="Scroll to home"
+          className="nav-logo py-2 cursor-pointer"
+          onClick={() => scrollToSection("hero")}
+        >
+          FLZ
+        </button>
+        <button onClick={() => scrollToSection("hero")} className={`nav-link min-h-[44px] flex items-center justify-center px-4 ${activeSection === "hero" ? "active" : ""}`}>Home</button>
+        <button onClick={() => scrollToSection("archive")} className={`nav-link min-h-[44px] flex items-center justify-center px-4 ${activeSection === "archive" ? "active" : ""}`}>Archive</button>
+        <button onClick={() => scrollToSection("process")} className={`nav-link min-h-[44px] flex items-center justify-center px-4 ${activeSection === "process" ? "active" : ""}`}>Process</button>
+        <button onClick={() => scrollToSection("signals")} className={`nav-link min-h-[44px] flex items-center justify-center px-4 ${activeSection === "signals" ? "active" : ""}`}>Signals</button>
       </nav>
 
       <main className={`relative z-10 pb-24 transition-all duration-700 ${uiHidden ? "opacity-0 scale-[0.98] pointer-events-none" : "opacity-100 scale-100"}`}>
@@ -202,10 +223,41 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
 
           {/* Side scroll track */}
           <div className="hero-scroll-track">
-            <div className={`hero-scroll-dot ${activeSection === "hero" ? "active" : ""}`} onClick={() => scrollToSection("hero")} style={{ cursor: "pointer" }} />
-            <div className={`hero-scroll-dot ${activeSection === "process" ? "active" : ""}`} onClick={() => scrollToSection("process")} style={{ cursor: "pointer" }} />
-            <div className={`hero-scroll-dot ${activeSection === "archive" ? "active" : ""}`} onClick={() => scrollToSection("archive")} style={{ cursor: "pointer" }} />
-            <div className={`hero-scroll-dot ${activeSection === "signals" ? "active" : ""}`} onClick={() => scrollToSection("signals")} style={{ cursor: "pointer" }} />
+            <button
+              aria-label="Scroll to home"
+              onClick={() => scrollToSection("hero")}
+              className="w-11 h-11 flex items-center justify-center bg-transparent border-0 focus:outline-none cursor-pointer -my-4"
+            >
+              <div className={`hero-scroll-dot ${activeSection === "hero" ? "active" : ""}`} />
+            </button>
+            <button
+              aria-label="Scroll to process"
+              onClick={() => scrollToSection("process")}
+              className="w-11 h-11 flex items-center justify-center bg-transparent border-0 focus:outline-none cursor-pointer -my-4"
+            >
+              <div className={`hero-scroll-dot ${activeSection === "process" ? "active" : ""}`} />
+            </button>
+            <button
+              aria-label="Scroll to archive"
+              onClick={() => scrollToSection("archive")}
+              className="w-11 h-11 flex items-center justify-center bg-transparent border-0 focus:outline-none cursor-pointer -my-4"
+            >
+              <div className={`hero-scroll-dot ${activeSection === "archive" ? "active" : ""}`} />
+            </button>
+            <button
+              aria-label="Scroll to interface"
+              onClick={() => scrollToSection("interface")}
+              className="w-11 h-11 flex items-center justify-center bg-transparent border-0 focus:outline-none cursor-pointer -my-4"
+            >
+              <div className={`hero-scroll-dot ${activeSection === "interface" ? "active" : ""}`} />
+            </button>
+            <button
+              aria-label="Scroll to signals"
+              onClick={() => scrollToSection("signals")}
+              className="w-11 h-11 flex items-center justify-center bg-transparent border-0 focus:outline-none cursor-pointer -my-4"
+            >
+              <div className={`hero-scroll-dot ${activeSection === "signals" ? "active" : ""}`} />
+            </button>
             <div className="hero-scroll-line" />
           </div>
 
@@ -221,7 +273,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
               <p className="hero-tagline">Photorealistic automotive design, system architecture & high-performance web rendering.</p>
               <div className="hero-stats">
                 <div className="hero-stat">
-                  <span className="hero-stat-num">12</span>
+                  <span className="hero-stat-num">{publicArticles.length}</span>
                   <span className="hero-stat-label">Projects</span>
                 </div>
                 <div className="hero-stat">
@@ -237,7 +289,6 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
 
             <div className="hero-cta">
               <button onClick={() => scrollToSection("archive")} className="hero-btn hero-btn-primary">View Archive</button>
-              <button onClick={() => scrollToSection("process")} className="hero-btn hero-btn-ghost">Scroll to Explore</button>
               <div className="hero-scroll-hint">
                 <div className="hero-scroll-hint-line" />
                 ↓ scroll to begin
@@ -282,7 +333,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             <div className="narrative-label">{"// 01 — Process"}</div>
             <h2 className="narrative-title">Where precision<br /><em>meets craft.</em></h2>
             <p className="narrative-body">Every project begins with a deep technical study of form, material, and motion. From clay model to rendered render, the workflow is engineered for maximum photorealism.</p>
-            <span onClick={() => scrollToSection("archive")} className="narrative-link">Explore the process</span>
+            <button type="button" onClick={() => scrollToSection("archive")} className="narrative-link">Explore the process</button>
           </div>
         </section>
 
@@ -292,12 +343,12 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <span className="w-1.5 h-1.5 bg-white/30 rounded-full animate-pulse" />
-                <p className="font-mono text-[9px] tracking-[0.4em] text-white/40 uppercase">
+                <p className="font-mono text-[9px] tracking-[0.4em] text-white/70 uppercase">
                   02 — Archive
                 </p>
               </div>
-              <h2 className="text-5xl md:text-7xl font-semibold uppercase tracking-tighter leading-none">
-                Selected <span className="italic font-light text-white/45">Works</span>
+              <h2 className="text-5xl md:text-7xl font-serif font-semibold uppercase tracking-tighter leading-none">
+                Selected <span className="italic font-light text-white/70">Works</span>
               </h2>
             </div>
 
@@ -316,7 +367,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                   className={`font-mono text-[9px] tracking-wider uppercase px-3 py-1.5 rounded border transition-all cursor-pointer ${
                     selectedCategory === item.category
                       ? "bg-white/10 text-white border-white/20"
-                      : "text-white/45 border-transparent hover:text-white hover:border-white/10"
+                      : "text-white/70 border-transparent hover:text-white hover:border-white/10"
                   }`}
                 >
                   {item.label}
@@ -351,27 +402,27 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                   <svg key="svg2" width="100%" height="100%" viewBox="0 0 400 225" fill="none" className="w-full h-full">
                     <rect width="400" height="225" fill="#0f0d0d"/>
                     <path d="M 20 160 L 80 120 Q 200 90 320 120 L 380 160" stroke="rgba(255,255,255,0.07)" strokeWidth="1" fill="none"/>
-                    <text x="200" y="120" text-anchor="middle" fill="rgba(255,255,255,0.07)" fontFamily="var(--font-mono), monospace" fontSize="8" letterSpacing="4">HYDRA GTR</text>
+                    <text x="200" y="120" textAnchor="middle" fill="rgba(255,255,255,0.07)" fontFamily="var(--font-mono), monospace" fontSize="8" letterSpacing="4">HYDRA GTR</text>
                   </svg>,
                   <svg key="svg3" width="100%" height="100%" viewBox="0 0 300 300" fill="none" className="w-full h-full">
                     <rect width="300" height="300" fill="#080c10"/>
                     <rect x="60" y="60" width="180" height="180" stroke="rgba(255,255,255,0.05)" strokeWidth="1" fill="none"/>
                     <rect x="90" y="90" width="120" height="120" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" fill="none"/>
-                    <text x="150" y="158" text-anchor="middle" fill="rgba(255,255,255,0.09)" fontFamily="var(--font-mono), monospace" fontSize="8" letterSpacing="2">SYSTEM UI</text>
+                    <text x="150" y="158" textAnchor="middle" fill="rgba(255,255,255,0.09)" fontFamily="var(--font-mono), monospace" fontSize="8" letterSpacing="2">SYSTEM UI</text>
                   </svg>,
                   <svg key="svg4" width="100%" height="100%" viewBox="0 0 400 225" fill="none" className="w-full h-full">
                     <rect width="400" height="225" fill="#0c0c0c"/>
                     <path d="M 60 165 Q 200 95 340 155" stroke="rgba(255,255,255,0.06)" strokeWidth="1.2" fill="none"/>
                     <ellipse cx="130" cy="175" rx="40" ry="12" stroke="rgba(255,255,255,0.06)" strokeWidth="0.8"/>
                     <ellipse cx="270" cy="175" rx="40" ry="12" stroke="rgba(255,255,255,0.06)" strokeWidth="0.8"/>
-                    <text x="200" y="110" text-anchor="middle" fill="rgba(255,255,255,0.07)" fontFamily="var(--font-mono), monospace" fontSize="7" letterSpacing="4">ATHAAN V2</text>
+                    <text x="200" y="110" textAnchor="middle" fill="rgba(255,255,255,0.07)" fontFamily="var(--font-mono), monospace" fontSize="7" letterSpacing="4">ATHAAN V2</text>
                   </svg>,
                   <svg key="svg5" width="100%" height="100%" viewBox="0 0 400 530" fill="none" className="w-full h-full">
                     <rect width="400" height="530" fill="#0a0c0a"/>
                     <circle cx="200" cy="265" r="100" stroke="rgba(255,255,255,0.04)" strokeWidth="1"/>
                     <path d="M 100 265 L 300 265" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5"/>
                     <path d="M 200 165 L 200 365" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5"/>
-                    <text x="200" y="273" text-anchor="middle" fill="rgba(255,255,255,0.09)" fontFamily="var(--font-mono), monospace" fontSize="9" letterSpacing="3">GODOT</text>
+                    <text x="200" y="273" textAnchor="middle" fill="rgba(255,255,255,0.09)" fontFamily="var(--font-mono), monospace" fontSize="9" letterSpacing="3">GODOT</text>
                   </svg>,
                   <svg key="svg6" width="100%" height="100%" viewBox="0 0 300 300" fill="none" className="w-full h-full">
                     <rect width="300" height="300" fill="#0a0a0a"/>
@@ -379,7 +430,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                     <line x1="0" y1="200" x2="300" y2="200" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5"/>
                     <line x1="100" y1="0" x2="100" y2="300" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5"/>
                     <line x1="200" y1="0" x2="200" y2="300" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5"/>
-                    <text x="150" y="158" text-anchor="middle" fill="rgba(255,255,255,0.09)" fontFamily="var(--font-mono), monospace" fontSize="8" letterSpacing="2">WEB ARCH</text>
+                    <text x="150" y="158" textAnchor="middle" fill="rgba(255,255,255,0.09)" fontFamily="var(--font-mono), monospace" fontSize="8" letterSpacing="2">WEB ARCH</text>
                   </svg>
                 ];
 
@@ -413,7 +464,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                     <div className="masonry-card-meta">
                       <div className="masonry-card-title">{article.title}</div>
                       <div className="masonry-card-sub">
-                        {article.category === "CAR_DESIGN" ? "3D Auto" : "Design & Dev"} · 2026
+                        {CATEGORY_LABELS[article.category] || "Other"} · 2026
                       </div>
                     </div>
                   </div>
@@ -442,7 +493,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             <div className="narrative-label">{"// 03 — Interface"}</div>
             <h2 className="narrative-title">Systems built<br /><em>to feel.</em></h2>
             <p className="narrative-body">Every UI decision is rooted in physics and perception. The interface should feel like it has weight, momentum, and memory — not just look like it does.</p>
-            <span onClick={() => scrollToSection("archive")} className="narrative-link">See the design system</span>
+            <button type="button" onClick={() => scrollToSection("archive")} className="narrative-link">See the design system</button>
           </div>
         </section>
 
@@ -468,16 +519,16 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <Zap className="h-3 w-3 text-white/40 animate-pulse" />
-                  <p className="text-[9px] font-mono tracking-[0.4em] text-white/30 uppercase">
+                  <Zap className="h-3 w-3 text-white/70 animate-pulse" />
+                  <p className="text-[9px] font-mono tracking-[0.4em] text-white/60 uppercase">
                     Signals
                   </p>
                 </div>
                 <h2 className="text-4xl md:text-6xl font-semibold font-serif uppercase tracking-tighter leading-none text-white/85">
-                  Works & <span className="italic font-light text-white/45">Log</span>
+                  Works & <span className="italic font-light text-white/70">Log</span>
                 </h2>
               </div>
-              <p className="text-[9px] font-mono text-white/40 mt-3 md:mt-0 uppercase tracking-widest border border-white/[0.05] px-4 py-2 rounded-xl">
+              <p className="text-[9px] font-mono text-white/70 mt-3 md:mt-0 uppercase tracking-widest border border-white/[0.05] px-4 py-2 rounded-xl">
                 @flzworks
               </p>
             </div>
@@ -520,9 +571,16 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             <button onClick={() => scrollToSection("hero")} className="footer-link text-left">Home</button>
             <button onClick={() => scrollToSection("archive")} className="footer-link text-left">Archive</button>
             <button onClick={() => scrollToSection("process")} className="footer-link text-left">Process</button>
-            <span className="footer-link">Instagram</span>
+            <a
+              href="https://instagram.com/flzworks"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="footer-link"
+            >
+              Instagram
+            </a>
           </div>
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: "8px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(255,255,255,0.15)", paddingTop: "8px", maxWidth: "200px", lineHeight: 1.8 }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: "8px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(255,255,255,0.7)", paddingTop: "8px", maxWidth: "200px", lineHeight: 1.8 }}>
             Photorealistic 3D Automotive Design · System Architecture · High-Performance Web Rendering
           </div>
         </footer>
@@ -541,16 +599,17 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             {/* Header */}
             <div className="flex items-center justify-between px-8 py-6 border-b border-white/5">
               <div>
-                <span className="text-[9px] font-mono tracking-widest uppercase text-white/40">
-                  {selectedArticle.category === "CAR_DESIGN" ? "3D Automotive" : "Design & Dev"}
+                <span className="text-[9px] font-mono tracking-widest uppercase text-white/70">
+                  {CATEGORY_LABELS[selectedArticle.category] || "Other"}
                 </span>
                 <h3 className="font-serif text-2xl md:text-3xl font-semibold text-white mt-1">
                   {selectedArticle.title}
                 </h3>
               </div>
               <button
+                aria-label="Close details"
                 onClick={() => setSelectedArticle(null)}
-                className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-all cursor-pointer"
+                className="w-11 h-11 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-all cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -568,7 +627,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
               {/* Media Grid */}
               {selectedArticle.images.length > 0 && (
                 <div className="space-y-4">
-                  <h4 className="text-[9px] font-mono tracking-widest uppercase text-white/30 flex items-center gap-2">
+                  <h4 className="text-[9px] font-mono tracking-widest uppercase text-white/60 flex items-center gap-2">
                     <ImageIcon className="h-3 w-3" />
                     Project Media ({selectedArticle.images.length})
                   </h4>
@@ -614,28 +673,31 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
           onClick={() => setActiveGallery(null)}
         >
           <button
-            className="absolute top-6 right-6 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer z-10"
+            aria-label="Close gallery"
+            className="absolute top-6 right-6 w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer z-10"
             onClick={() => setActiveGallery(null)}
           >
             <X className="h-5 w-5" />
           </button>
           <button
-            className="absolute left-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer z-10"
+            aria-label="Previous image"
+            className="absolute left-6 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer z-10"
             onClick={(e) => {
               e.stopPropagation();
               setActiveGallery((prev) => prev ? { ...prev, index: (prev.index - 1 + prev.images.length) % prev.images.length } : null);
             }}
           >
-            ←
+            <span aria-hidden="true">←</span>
           </button>
           <button
-            className="absolute right-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer z-10"
+            aria-label="Next image"
+            className="absolute right-6 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer z-10"
             onClick={(e) => {
               e.stopPropagation();
               setActiveGallery((prev) => prev ? { ...prev, index: (prev.index + 1) % prev.images.length } : null);
             }}
           >
-            →
+            <span aria-hidden="true">→</span>
           </button>
           <div
             className="relative max-w-5xl w-full max-h-[85vh] mx-6"
@@ -650,7 +712,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
               unoptimized
             />
           </div>
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 font-mono text-[10px] text-white/50 tracking-widest">
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 font-mono text-[10px] text-white/70 tracking-widest">
             {activeGallery.index + 1} / {activeGallery.images.length}
           </div>
         </div>
