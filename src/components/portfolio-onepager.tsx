@@ -83,6 +83,14 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    e.currentTarget.style.setProperty("--mouse-x", `${x}px`);
+    e.currentTarget.style.setProperty("--mouse-y", `${y}px`);
+  };
+
   return (
     <div className="portfolio-shell min-h-screen text-white font-sans overflow-x-hidden selection:bg-cyan-500/20 selection:text-cyan-300">
       <LandingParallax />
@@ -276,6 +284,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                         ? "col-span-full ring-1 ring-white/[0.1]"
                         : `min-h-[260px] ${i === 0 ? "md:col-span-2" : ""}`
                     }`}
+                    onMouseMove={handleMouseMove}
                     onClick={() => { if (!isExpanded) setExpandedId(article.id); }}
                   >
                     {!isExpanded && (
