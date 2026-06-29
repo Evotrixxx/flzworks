@@ -49,12 +49,14 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
+  --font-serif: var(--font-serif);
 }
 
 body {
   min-height: 100vh;
-  background: var(--ink);
-  color: var(--text-primary);
+  background: #ffffff;
+  color: #101827;
+  font-family: var(--font-sans), sans-serif;
 }
 
 body::after {
@@ -287,7 +289,8 @@ select[aria-invalid="true"] {
    ═══════════════════════════════════════════════════════════════════ */
 
 .portfolio-shell {
-  background: var(--ink);
+  background: #000000;
+  color: #ffffff;
   position: relative;
   isolation: isolate;
   overflow-x: clip;

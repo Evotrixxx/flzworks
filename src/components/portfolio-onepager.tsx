@@ -279,7 +279,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             <div className="narrative-visual-tag">3D Auto · 2026</div>
           </div>
           <div className="narrative-text">
-            <div className="narrative-label">// 01 — Process</div>
+            <div className="narrative-label">{"// 01 — Process"}</div>
             <h2 className="narrative-title">Where precision<br /><em>meets craft.</em></h2>
             <p className="narrative-body">Every project begins with a deep technical study of form, material, and motion. From clay model to rendered render, the workflow is engineered for maximum photorealism.</p>
             <span onClick={() => scrollToSection("archive")} className="narrative-link">Explore the process</span>
@@ -439,7 +439,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             <div className="narrative-visual-tag">UI/UX · Figma</div>
           </div>
           <div className="narrative-text">
-            <div className="narrative-label">// 03 — Interface</div>
+            <div className="narrative-label">{"// 03 — Interface"}</div>
             <h2 className="narrative-title">Systems built<br /><em>to feel.</em></h2>
             <p className="narrative-body">Every UI decision is rooted in physics and perception. The interface should feel like it has weight, momentum, and memory — not just look like it does.</p>
             <span onClick={() => scrollToSection("archive")} className="narrative-link">See the design system</span>
@@ -452,6 +452,213 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
           <div className="identity-info">
             <div className="identity-name">FLZ · Studio</div>
             <p className="identity-bio">An independent design and engineering studio specializing in photorealistic 3D automotive design, system architecture, and high-performance rendering. Precision in every layer.</p>
+            <div className="identity-skills">
+              {["Blender", "Godot", "Three.js", "Next.js", "TypeScript", "Figma", "3D Automotive", "System Architecture"].map((tag) => (
+                <span key={tag} className="identity-skill">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Instagram Signals ── */}
+        {instagramMedia.length > 0 && (
+          <section id="signals" className="mt-28 pt-16 border-t border-white/[0.05] max-w-7xl mx-auto px-8 md:px-20">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Zap className="h-3 w-3 text-white/40 animate-pulse" />
+                  <p className="text-[9px] font-mono tracking-[0.4em] text-white/30 uppercase">
+                    Signals
+                  </p>
+                </div>
+                <h2 className="text-4xl md:text-6xl font-semibold font-serif uppercase tracking-tighter leading-none text-white/85">
+                  Works & <span className="italic font-light text-white/45">Log</span>
+                </h2>
+              </div>
+              <p className="text-[9px] font-mono text-white/40 mt-3 md:mt-0 uppercase tracking-widest border border-white/[0.05] px-4 py-2 rounded-xl">
+                @flzworks
+              </p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              {instagramMedia.slice(0, 10).map((item) => (
+                <a
+                  key={item.id}
+                  href={item.permalink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="relative aspect-square overflow-hidden clip-squircle group bg-white/[0.02] border border-white/[0.05] hover:border-white/[0.14] transition-all duration-300"
+                >
+                  {(item.thumbnail_url || item.media_url) && (
+                    <Image
+                      src={item.thumbnail_url || item.media_url || ""}
+                      alt={item.caption || "Instagram post"}
+                      fill
+                      sizes="(max-width: 768px) 50vw, 20vw"
+                      className="object-cover opacity-70 group-hover:opacity-100 transition-all duration-400 grayscale-[20%] group-hover:grayscale-0"
+                      unoptimized
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-300" />
+                  <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition duration-200">
+                    <ArrowUpRight className="h-4 w-4 text-white/85" />
+                  </div>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ── Footer ── */}
+        <footer className="footer">
+          <div>
+            <div className="footer-brand">FLZ</div>
+            <div className="footer-meta">Design & Engineering · 2026</div>
+          </div>
+          <div className="footer-links">
+            <button onClick={() => scrollToSection("hero")} className="footer-link text-left">Home</button>
+            <button onClick={() => scrollToSection("archive")} className="footer-link text-left">Archive</button>
+            <button onClick={() => scrollToSection("process")} className="footer-link text-left">Process</button>
+            <span className="footer-link">Instagram</span>
+          </div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: "8px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(255,255,255,0.15)", paddingTop: "8px", maxWidth: "200px", lineHeight: 1.8 }}>
+            Photorealistic 3D Automotive Design · System Architecture · High-Performance Web Rendering
+          </div>
+        </footer>
+      </main>
+
+      {/* ── Immersive Project Detail Modal ── */}
+      {selectedArticle && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-3xl p-4 md:p-10 overflow-y-auto animate-fadeIn"
+          onClick={() => setSelectedArticle(null)}
+        >
+          <div
+            className="relative w-full max-w-5xl bg-neutral-950/80 border border-white/10 rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 scale-100 max-h-[90vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-8 py-6 border-b border-white/5">
+              <div>
+                <span className="text-[9px] font-mono tracking-widest uppercase text-white/40">
+                  {selectedArticle.category === "CAR_DESIGN" ? "3D Automotive" : "Design & Dev"}
+                </span>
+                <h3 className="font-serif text-2xl md:text-3xl font-semibold text-white mt-1">
+                  {selectedArticle.title}
+                </h3>
+              </div>
+              <button
+                onClick={() => setSelectedArticle(null)}
+                className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-all cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-8 space-y-8">
+              {/* Description */}
+              <div className="max-w-3xl">
+                <p className="text-sm md:text-base text-white/70 leading-relaxed font-mono">
+                  {selectedArticle.description || "Project description and technical specifications."}
+                </p>
+              </div>
+
+              {/* Media Grid */}
+              {selectedArticle.images.length > 0 && (
+                <div className="space-y-4">
+                  <h4 className="text-[9px] font-mono tracking-widest uppercase text-white/30 flex items-center gap-2">
+                    <ImageIcon className="h-3 w-3" />
+                    Project Media ({selectedArticle.images.length})
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {selectedArticle.images.map((img, idx) => {
+                      const imgPath = `/api/portfolio/media/${selectedArticle.folderName}/${img}`;
+                      return (
+                        <div
+                          key={img}
+                          onClick={() => {
+                            setActiveGallery({
+                              folderName: selectedArticle.folderName,
+                              images: selectedArticle.images,
+                              index: idx,
+                            });
+                          }}
+                          className="relative aspect-video rounded-xl overflow-hidden bg-white/5 border border-white/10 hover:border-white/30 cursor-zoom-in transition-all duration-300 group"
+                        >
+                          <Image
+                            src={imgPath}
+                            alt={img}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                            sizes="(max-width: 768px) 100vw, 33vw"
+                            unoptimized
+                          />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition duration-300" />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Lightbox ── */}
+      {activeGallery && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 backdrop-blur-2xl animate-fadeIn"
+          onClick={() => setActiveGallery(null)}
+        >
+          <button
+            className="absolute top-6 right-6 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer z-10"
+            onClick={() => setActiveGallery(null)}
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <button
+            className="absolute left-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer z-10"
+            onClick={(e) => {
+              e.stopPropagation();
+              setActiveGallery((prev) => prev ? { ...prev, index: (prev.index - 1 + prev.images.length) % prev.images.length } : null);
+            }}
+          >
+            ←
+          </button>
+          <button
+            className="absolute right-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer z-10"
+            onClick={(e) => {
+              e.stopPropagation();
+              setActiveGallery((prev) => prev ? { ...prev, index: (prev.index + 1) % prev.images.length } : null);
+            }}
+          >
+            →
+          </button>
+          <div
+            className="relative max-w-5xl w-full max-h-[85vh] mx-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Image
+              src={`/api/portfolio/media/${activeGallery.folderName}/${activeGallery.images[activeGallery.index]}`}
+              alt={activeGallery.images[activeGallery.index]}
+              fill
+              className="object-contain"
+              sizes="100vw"
+              unoptimized
+            />
+          </div>
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 font-mono text-[10px] text-white/50 tracking-widest">
+            {activeGallery.index + 1} / {activeGallery.images.length}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+y-bio">An independent design and engineering studio specializing in photorealistic 3D automotive design, system architecture, and high-performance rendering. Precision in every layer.</p>
             <div className="identity-skills">
               {["Blender", "Godot", "Three.js", "Next.js", "TypeScript", "Figma", "3D Automotive", "System Architecture"].map((tag) => (
                 <span key={tag} className="identity-skill">

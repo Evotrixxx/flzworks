@@ -1,4 +1,4 @@
-# BRIEFING — 2026-06-29T13:30:06+02:00
+# BRIEFING — 2026-06-29T13:38:00+02:00
 
 ## Mission
 Empirically verify the correctness of the portfolio website redesign.
@@ -28,16 +28,25 @@ Empirically verify the correctness of the portfolio website redesign.
 - **Review criteria**: Compilation, styling correctness, masonry grid mapping, parallax layers visibility.
 
 ## Key Decisions Made
-- Initializing verification plan.
+- Investigated concurrent build lock issues and identified dangling node processes on Windows.
+- Verified styling, masonry grid, and 3D parallax layers.
+- Formulated adversarial findings regarding the unbounded `requestAnimationFrame` loop in `LandingParallax`.
 
 ## Artifact Index
 - c:\Users\7bflo\OneDrive\Dokumentumok\used car marketplace\.agents\challenger_1\challenge.md — Detailed verification and challenge report
 - c:\Users\7bflo\OneDrive\Dokumentumok\used car marketplace\.agents\challenger_1\handoff.md — Handoff report for Project Orchestrator
 
 ## Attack Surface
-- **Hypotheses tested**: None yet.
-- **Vulnerabilities found**: None yet.
-- **Untested angles**: All aspects of styling, masonry grid, parallax, and compilation.
+- **Hypotheses tested**:
+  - Hypothesis: Next.js build compiles cleanly. Result: PASS (after resolving concurrent process locks).
+  - Hypothesis: Film grain noise is active and correct. Result: PASS.
+  - Hypothesis: Masonry grid aspect ratios map correctly. Result: PASS.
+  - Hypothesis: 3D parallax layers are visible behind transparent hero. Result: PASS.
+- **Vulnerabilities found**:
+  - Dangling build processes on Windows can lock `.next` directory.
+  - Unbounded `requestAnimationFrame` loop in `LandingParallax` runs continuously, consuming idle CPU/GPU.
+- **Untested angles**:
+  - None. All verification scopes have been tested.
 
 ## Loaded Skills
 - None

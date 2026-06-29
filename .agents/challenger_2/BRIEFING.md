@@ -1,4 +1,4 @@
-# BRIEFING — 2026-06-29T13:05:00+02:00
+# BRIEFING — 2026-06-29T13:32:00+02:00
 
 ## Mission
 Empirically verify the correctness of the portfolio website redesign and write an adversarial challenge report.
@@ -18,7 +18,7 @@ Empirically verify the correctness of the portfolio website redesign and write a
 
 ## Current Parent
 - Conversation ID: dd65920e-0351-46f3-b3eb-1e6f6c9922fb
-- Updated: not yet
+- Updated: 2026-06-29T13:32:00+02:00
 
 ## Review Scope
 - **Files to review**:
@@ -32,17 +32,23 @@ Empirically verify the correctness of the portfolio website redesign and write a
   - 3D parallax layers visibility behind transparent hero.
 
 ## Attack Surface
-- **Hypotheses tested**: None yet
-- **Vulnerabilities found**: None yet
-- **Untested angles**: All
+- **Hypotheses tested**:
+  - Tested compilation via `npm.cmd run build` and `npm.cmd run typecheck`. Result: PASSED.
+  - Tested presence/activity of film grain noise layer on `body::after` with keyframes animation. Result: PASSED.
+  - Tested index aspect ratio mapping (3/4, 16/9, 1/1) in masonry and cursor-following shimmer refraction. Result: PASSED.
+  - Tested 3D parallax layer stacking (`z-0` vs `z-10`) and transparent hero overlay. Result: PASSED.
+- **Vulnerabilities found**: None.
+- **Untested angles**: None.
 
 ## Loaded Skills
-- None loaded yet
+- None loaded
 
 ## Key Decisions Made
-- Initiating verification plan.
+- Confirmed the redesign meets all requested criteria and compiles cleanly.
 
 ## Artifact Index
 - `.agents/challenger_2/ORIGINAL_REQUEST.md` — Original request text
 - `.agents/challenger_2/BRIEFING.md` — Current briefing
 - `.agents/challenger_2/progress.md` — Progress tracker
+- `.agents/challenger_2/challenge.md` — Challenge report
+- `.agents/challenger_2/handoff.md` — Handoff report

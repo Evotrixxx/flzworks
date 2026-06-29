@@ -50,3 +50,12 @@ next-env.d.ts
 /3D/
 /*.psd
 
+# nested node_modules (UX samples, prototypes, etc.)
+**/node_modules/
+
+# old build artifacts
+.next.old/
+*.log
+build*.log
+build_out.log
+
