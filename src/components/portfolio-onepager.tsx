@@ -72,13 +72,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
           ))}
         </nav>
 
-        <button
-          onClick={() => setUiHidden(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[9px] font-black uppercase tracking-wider text-white/50 hover:text-white transition-all duration-200 cursor-pointer"
-        >
-          <Eye className="h-3 w-3 text-cyan-400/70" />
-          <span className="hidden sm:inline">Showroom</span>
-        </button>
+
 
         <div
           className="absolute bottom-0 left-0 h-px bg-gradient-to-r from-cyan-500 to-purple-500 transition-all duration-75"
@@ -106,7 +100,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                 >
                   FLZ
                 </span>
-                <span className="block text-[23vw] lg:text-[13vw] portfolio-text-glow" style={{ color: "white" }}>
+                <span className="block text-[23vw] lg:text-[13vw] portfolio-text-glow">
                   WORKS
                 </span>
               </div>
@@ -405,21 +399,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
         </div>
       </main>
 
-      {/* ── Showroom FAB ── */}
-      <button
-        onClick={() => setUiHidden(!uiHidden)}
-        className={`fixed bottom-8 right-8 z-50 flex items-center gap-2.5 px-5 py-3.5 rounded-full border shadow-2xl backdrop-blur-2xl transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer ${
-          uiHidden
-            ? "bg-cyan-500/15 border-cyan-400/40 text-cyan-300 shadow-cyan-500/10"
-            : "bg-white/[0.04] hover:bg-white/[0.08] border-white/[0.08] text-white/75 hover:text-white"
-        }`}
-        aria-label="Toggle Showroom Mode"
-      >
-        <Eye className={`h-4 w-4 ${uiHidden ? "text-cyan-300 animate-pulse" : "text-cyan-400/60"}`} />
-        <span className="text-[9px] font-black uppercase tracking-widest">
-          {uiHidden ? "Exit Showroom" : "Showroom"}
-        </span>
-      </button>
+
 
       {/* ── Lightbox ── */}
       {activeImage && (
