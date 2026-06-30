@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 // Back-to-front: each entry paints on top of the previous one (DOM order).
 // We have inserted virtual floating depth layers between the physical WebP layers.
@@ -14,18 +14,22 @@ const LAYERS = [
 const LAYER_SCALE = 1.12;
 
 export function LandingParallax() {
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const overlayRef = useRef<HTMLDivElement | null>(null);
   const layerRefs = useRef<(HTMLDivElement | null)[]>([]);
   const depthRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const target = useRef({ x: 0, y: 0 });
-  const current = useRef({ x: 0, y: 0 });
+  
+  const target = useRef({ x: 0, y: 0, scrollY: 0 });
+  const current = useRef({ x: 0, y: 0, scrollY: 0 });
   const rafRef = useRef(0);
-  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 120);
+      target.current.scrollY = window.scrollY;
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
+    // Initialize
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -37,16 +41,47 @@ export function LandingParallax() {
     window.addEventListener("pointermove", onMove);
 
     const tick = () => {
+      // Lerp mouse
       current.current.x += (target.current.x - current.current.x) * 0.08;
       current.current.y += (target.current.y - current.current.y) * 0.08;
       
-      // Animate main image layers
+      // Lerp scroll
+      current.current.scrollY += (target.current.scrollY - current.current.scrollY) * 0.08;
+      
+      // Calculate progressive scroll effects (blur, scale, opacity)
+      const maxScroll = Math.min(window.innerHeight, 700);
+      const progress = Math.min(Math.max(current.current.scrollY, 0) / maxScroll, 1);
+      
+      const blurVal = (progress * 24).toFixed(1); // Smoothly scale up to 24px blur
+      const scaleVal = (1.0 + progress * 0.08).toFixed(3); // Smoothly scale up to 1.08
+      const opacityVal = (progress * 0.55).toFixed(3); // Smoothly darken up to 55% overlay
+      
+      // Update wrapper style
+      if (wrapperRef.current) {
+        wrapperRef.current.style.filter = `blur(${blurVal}px)`;
+        wrapperRef.current.style.transform = `scale(${scaleVal})`;
+      }
+      
+      // Update overlay style
+      if (overlayRef.current) {
+        overlayRef.current.style.opacity = opacityVal;
+      }
+      
+      // Animate main image layers (both mouse parallax and scroll parallax)
       for (let i = 0; i < 4; i++) {
         const el = layerRefs.current[i];
         if (!el) continue;
         const d = LAYERS[i].depth;
+        
+        const mouseX = -current.current.x * d;
+        const mouseY = -current.current.y * d * 0.6;
+        
+        // Deeper layers move slower, closer layers move faster to create vertical scroll depth
+        const scrollFactor = d * 0.008; // depth 6 -> 0.048x, depth 46 -> 0.368x
+        const scrollYOffset = -current.current.scrollY * scrollFactor;
+        
         el.style.transform =
-          `translate3d(${(-current.current.x * d).toFixed(2)}px, ${(-current.current.y * d * 0.6).toFixed(2)}px, 0) scale(${LAYER_SCALE})`;
+          `translate3d(${mouseX.toFixed(2)}px, ${(mouseY + scrollYOffset).toFixed(2)}px, 0) scale(${LAYER_SCALE})`;
       }
 
       // Animate floating depth elements (between layers)
@@ -60,8 +95,15 @@ export function LandingParallax() {
         const el = depthRefs.current[i];
         if (!el) continue;
         const d = depthElements[i].depth;
+        
+        const mouseX = -current.current.x * d;
+        const mouseY = -current.current.y * d * 0.6;
+        
+        const scrollFactor = d * 0.008;
+        const scrollYOffset = -current.current.scrollY * scrollFactor;
+        
         el.style.transform =
-          `translate3d(${(-current.current.x * d).toFixed(2)}px, ${(-current.current.y * d * 0.6).toFixed(2)}px, 0)`;
+          `translate3d(${mouseX.toFixed(2)}px, ${(mouseY + scrollYOffset).toFixed(2)}px, 0)`;
       }
 
       rafRef.current = requestAnimationFrame(tick);
@@ -79,8 +121,15 @@ export function LandingParallax() {
       className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-[#000000] animate-fadeIn"
       aria-hidden="true"
     >
-      {/* Wrapper for blur and scaling */}
-      <div className={`absolute inset-0 transition-all duration-1000 ease-out ${scrolled ? "blur-md scale-[1.04]" : "blur-0"}`}>
+      {/* Wrapper for progressive blur and scaling */}
+      <div
+        ref={wrapperRef}
+        className="absolute inset-0 will-change-[filter,transform]"
+        style={{
+          filter: "blur(0px)",
+          transform: "scale(1)",
+        }}
+      >
         {/* Layer 0: Back (depth: 6) */}
         <div
           ref={(el) => { layerRefs.current[0] = el; }}
@@ -158,10 +207,11 @@ export function LandingParallax() {
         />
       </div>
 
-      {/* Darkening Overlay (20% to 30% black overlay) */}
+      {/* Darkening Overlay (progresses from 0% to 55% opacity) */}
       <div
-        className="absolute inset-0 bg-black transition-opacity duration-1000 ease-out pointer-events-none z-10"
-        style={{ opacity: scrolled ? 0.35 : 0 }}
+        ref={overlayRef}
+        className="absolute inset-0 bg-black pointer-events-none z-10 will-change-opacity"
+        style={{ opacity: 0 }}
       />
 
       {/* Soft vignette to frame the scene and blend the edges into the page */}
