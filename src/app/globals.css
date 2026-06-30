@@ -661,12 +661,50 @@ select[aria-invalid="true"] {
 /* ── RUNNING TICKER ── */
 .ticker-wrap {
   overflow: hidden;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 16px 0;
-  background: rgba(255,255,255,0.01);
+  padding: 20px 0;
+  background: transparent;
   position: relative;
   z-index: 10;
+  /* Premium fade-out mask for the ticker content at screen edges */
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 15%,
+    black 85%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 15%,
+    black 85%,
+    transparent
+  );
+}
+
+/* Floating horizontal gradient borders that fade out at the edges */
+.ticker-wrap::before,
+.ticker-wrap::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.08) 20%,
+    rgba(255, 255, 255, 0.08) 80%,
+    transparent
+  );
+}
+
+.ticker-wrap::before {
+  top: 0;
+}
+
+.ticker-wrap::after {
+  bottom: 0;
 }
 
 .ticker-inner {
