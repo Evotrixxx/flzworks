@@ -747,6 +747,7 @@ function Field({
   defaultValue,
   error,
   required,
+  ...props
 }: {
   label: string;
   name: string;
@@ -754,6 +755,7 @@ function Field({
   defaultValue?: string | number | null;
   error?: string;
   required?: boolean;
+  [key: string]: any;
 }) {
   return (
     <label className="grid gap-1 text-sm font-semibold text-slate-700">
@@ -767,6 +769,7 @@ function Field({
         className={`h-11 px-3 font-normal outline-none transition ${
           error ? "border-rose-300 bg-rose-50" : "border-slate-200"
         }`}
+        {...props}
       />
       {error && <span className="text-xs font-semibold text-rose-700">{error}</span>}
     </label>

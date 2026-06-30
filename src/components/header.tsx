@@ -24,7 +24,7 @@ export async function Header({ locale }: { locale: Locale }) {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-1 text-sm font-semibold text-zinc-300 flex-1 justify-center">
           <Link href={autopiacPath("/sell")} className="autopiac-nav-link text-[0.82rem]">
-            Hírdetés
+            Hirdetés
           </Link>
           <Link href={autopiacPath()} className="autopiac-nav-link text-[0.82rem]">
             Keresők

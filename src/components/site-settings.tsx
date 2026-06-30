@@ -56,8 +56,19 @@ export function SiteSettings({
   labels: Record<Locale, string> & { language: string };
 }) {
   const [open, setOpen] = useState(false);
-  const [palette, setPalette] = useState<PaletteId>(getStoredPalette);
-  const [glass, setGlass] = useState<GlassMode>(getStoredGlass);
+  const [palette, setPalette] = useState<PaletteId>("aqua");
+  const [glass, setGlass] = useState<GlassMode>("clear");
+
+  useEffect(() => {
+    const storedPalette = window.localStorage.getItem("autopiac.palette");
+    if (isPaletteId(storedPalette)) {
+      setPalette(storedPalette);
+    }
+    const storedGlass = window.localStorage.getItem("autopiac.glass");
+    if (isGlassMode(storedGlass)) {
+      setGlass(storedGlass);
+    }
+  }, []);
 
   const copy =
     locale === "hu"

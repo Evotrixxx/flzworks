@@ -65,7 +65,7 @@ export default async function AutoPiacAccessRequestPage() {
                 <OctagonX className="mt-0.5 h-5 w-5 shrink-0 text-rose-400" aria-hidden="true" />
                 <p className="text-sm font-semibold leading-relaxed text-rose-200">
                   Access from this IP is blocked until{" "}
-                  <span className="font-black">{gate.expiresAt.toLocaleString("en-US")}</span>.
+                  <span className="font-black">{gate.expiresAt.toUTCString()}</span>.
                 </p>
               </div>
             ) : (

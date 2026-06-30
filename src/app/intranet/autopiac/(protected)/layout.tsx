@@ -1,8 +1,13 @@
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 import { getIntranetGateState } from "@/lib/intranet";
 import { AUTOPIAC_BASE_PATH } from "@/lib/routes";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "AutoPiac Intranet",
+};
 
 export default async function AutoPiacProtectedLayout({
   children,
