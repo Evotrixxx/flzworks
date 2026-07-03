@@ -71,7 +71,6 @@ body::after {
   pointer-events: none;
   opacity: 0.035;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  animation: grain 0.9s steps(4) infinite;
 }
 
 button,
@@ -536,14 +535,17 @@ select[aria-invalid="true"] {
   font-size: clamp(80px, 16vw, 200px);
   color: rgba(255,255,255,0.92);
   text-shadow:
-    0 0 80px rgba(255,255,255,0.04),
-    0 0 160px rgba(255,255,255,0.02);
+    0 0 100px rgba(255,255,255,0.1),
+    0 0 40px rgba(255,255,255,0.06);
   animation: glow-breathe 8s ease-in-out infinite alternate;
+  will-change: opacity;
 }
 
+/* Opacity-only breathing — GPU-composited, unlike animating filter/drop-shadow
+   which forces a repaint of the whole glyph region every frame. */
 @keyframes glow-breathe {
-  0% { filter: drop-shadow(0 0 20px rgba(255,255,255,0.06)); }
-  100% { filter: drop-shadow(0 0 60px rgba(255,255,255,0.22)); }
+  0% { opacity: 0.82; }
+  100% { opacity: 1; }
 }
 
 .hero-meta {

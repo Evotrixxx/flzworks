@@ -52,7 +52,7 @@ export function LandingParallax() {
       const maxScroll = Math.min(window.innerHeight, 700);
       const progress = Math.min(Math.max(current.current.scrollY, 0) / maxScroll, 1);
       
-      const blurVal = (progress * 24).toFixed(1); // Smoothly scale up to 24px blur
+      const blurVal = (progress * 8).toFixed(1); // Smoothly scale up to 8px blur — cheaper to composite than 24px
       const scaleVal = (1.0 + progress * 0.08).toFixed(3); // Smoothly scale up to 1.08
       const opacityVal = (progress * 0.55).toFixed(3); // Smoothly darken up to 55% overlay
       

@@ -1,6 +1,7 @@
 import { readFile } from "fs/promises";
 import path from "path";
 import { NextResponse } from "next/server";
+import sharp from "sharp";
 
 type RouteContext = {
   params: Promise<{ folder: string; file: string }>;
@@ -14,7 +15,10 @@ const contentTypes: Record<string, string> = {
   ".gif": "image/gif",
 };
 
-export async function GET(_: Request, context: RouteContext) {
+const RESIZABLE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".tif", ".tiff"]);
+const MAX_WIDTH = 2400;
+
+export async function GET(request: Request, context: RouteContext) {
   const { folder, file } = await context.params;
 
   // Prevent path traversal attacks
@@ -26,10 +30,30 @@ export async function GET(_: Request, context: RouteContext) {
   }
 
   const filePath = path.join(process.cwd(), "Media", "Portfolio", cleanFolder, cleanFile);
+  const extension = path.extname(cleanFile).toLowerCase();
+
+  const { searchParams } = new URL(request.url);
+  const requestedWidth = Number(searchParams.get("w"));
+  const width = Number.isFinite(requestedWidth) && requestedWidth > 0
+    ? Math.min(Math.round(requestedWidth), MAX_WIDTH)
+    : null;
 
   try {
     const data = await readFile(filePath);
-    const extension = path.extname(cleanFile).toLowerCase();
+
+    if (width && RESIZABLE_EXTENSIONS.has(extension)) {
+      const resized = await sharp(data)
+        .resize({ width, withoutEnlargement: true })
+        .webp({ quality: 78 })
+        .toBuffer();
+
+      return new Response(new Uint8Array(resized), {
+        headers: {
+          "Content-Type": "image/webp",
+          "Cache-Control": "public, max-age=31536000, immutable",
+        },
+      });
+    }
 
     return new Response(new Uint8Array(data), {
       headers: {

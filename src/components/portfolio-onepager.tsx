@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, type CSSProperties } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { InstagramMediaItem } from "@/lib/instagram";
 import Image from "next/image";
 import type { PortfolioArticleWithImages } from "@/lib/portfolio-sync";
@@ -29,15 +29,18 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
   } | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<"ALL" | "AUTOMOTIVE" | "BRICKWORKS" | "GAMES" | "MEDIA">("ALL");
   const [uiHidden, setUiHidden] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
   const [activeSection, setActiveSection] = useState("hero");
+  const shellRef = useRef<HTMLDivElement>(null);
 
+  // Write scroll progress directly to the DOM — avoids re-rendering the
+  // whole tree (masonry grid, modals) on every scroll frame.
   useEffect(() => {
     const handleScroll = () => {
       const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-      if (totalHeight > 0) setScrollProgress((window.scrollY / totalHeight) * 100);
+      const percent = totalHeight > 0 ? (window.scrollY / totalHeight) * 100 : 0;
+      shellRef.current?.style.setProperty("--scroll-progress", `${percent}%`);
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -171,14 +174,10 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
     e.currentTarget.style.setProperty("--mouse-y", `${y}px`);
   };
 
-  const scrollProgressStyle = {
-    "--scroll-progress": `${scrollProgress}%`,
-  } as CSSProperties;
-
   return (
     <div
+      ref={shellRef}
       className="portfolio-shell min-h-screen text-white font-sans overflow-x-hidden selection:bg-white/20 selection:text-white"
-      style={scrollProgressStyle}
     >
       <LandingParallax />
 
@@ -388,7 +387,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                 const sizeClass = i % 3 === 0 ? "masonry-tall" : i % 3 === 1 ? "masonry-wide" : "masonry-square";
                 const fillClass = `fill-${(i % 5) + 1}`;
                 const firstImg = article.images.length > 0
-                  ? `/api/portfolio/media/${article.folderName}/${article.images[0]}`
+                  ? `/api/portfolio/media/${article.folderName}/${article.images[0]}?w=640`
                   : null;
 
                 const wireframeSVGs = [
@@ -633,7 +632,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {selectedArticle.images.map((img, idx) => {
-                      const imgPath = `/api/portfolio/media/${selectedArticle.folderName}/${img}`;
+                      const imgPath = `/api/portfolio/media/${selectedArticle.folderName}/${img}?w=800`;
                       return (
                         <div
                           key={img}
@@ -704,7 +703,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             onClick={(e) => e.stopPropagation()}
           >
             <Image
-              src={`/api/portfolio/media/${activeGallery.folderName}/${activeGallery.images[activeGallery.index]}`}
+              src={`/api/portfolio/media/${activeGallery.folderName}/${activeGallery.images[activeGallery.index]}?w=1920`}
               alt={activeGallery.images[activeGallery.index]}
               fill
               className="object-contain"
