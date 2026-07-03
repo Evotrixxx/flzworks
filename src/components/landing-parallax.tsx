@@ -24,93 +24,124 @@ export function LandingParallax() {
   const rafRef = useRef(0);
 
   useEffect(() => {
-    const handleScroll = () => {
-      target.current.scrollY = window.scrollY;
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    // Initialize
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Touch devices have no hover pointer, and their GPUs struggle with the
+    // scroll blur — keep the scroll parallax but skip mouse tracking + blur.
+    const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
 
-  useEffect(() => {
-    const onMove = (e: PointerEvent) => {
-      target.current.x = (e.clientX / window.innerWidth) * 2 - 1;
-      target.current.y = (e.clientY / window.innerHeight) * 2 - 1;
-    };
-    window.addEventListener("pointermove", onMove);
+    const DEPTH_ELEMENTS = [10, 22, 30, 38];
+    let running = false;
+    let lastBlur = "";
+    let lastScale = "";
+    let lastOpacity = "";
 
-    const tick = () => {
-      // Lerp mouse
-      current.current.x += (target.current.x - current.current.x) * 0.08;
-      current.current.y += (target.current.y - current.current.y) * 0.08;
-      
-      // Lerp scroll
-      current.current.scrollY += (target.current.scrollY - current.current.scrollY) * 0.08;
-      
-      // Calculate progressive scroll effects (blur, scale, opacity)
+    const applyFrame = () => {
       const maxScroll = Math.min(window.innerHeight, 700);
       const progress = Math.min(Math.max(current.current.scrollY, 0) / maxScroll, 1);
-      
-      const blurVal = (progress * 8).toFixed(1); // Smoothly scale up to 8px blur — cheaper to composite than 24px
-      const scaleVal = (1.0 + progress * 0.08).toFixed(3); // Smoothly scale up to 1.08
-      const opacityVal = (progress * 0.55).toFixed(3); // Smoothly darken up to 55% overlay
-      
-      // Update wrapper style
+
+      // Quantize so tiny lerp deltas don't invalidate style every frame
+      const blurAmount = coarsePointer ? 0 : Math.round(progress * 8 * 2) / 2;
+      const blurVal = blurAmount === 0 ? "none" : `blur(${blurAmount.toFixed(1)}px)`;
+      const scaleVal = (1.0 + Math.round(progress * 0.08 * 200) / 200).toFixed(3);
+      const opacityVal = (Math.round(progress * 0.55 * 100) / 100).toFixed(2);
+
       if (wrapperRef.current) {
-        wrapperRef.current.style.filter = `blur(${blurVal}px)`;
-        wrapperRef.current.style.transform = `scale(${scaleVal})`;
+        if (blurVal !== lastBlur) {
+          wrapperRef.current.style.filter = blurVal;
+          lastBlur = blurVal;
+        }
+        if (scaleVal !== lastScale) {
+          wrapperRef.current.style.transform = `scale(${scaleVal})`;
+          lastScale = scaleVal;
+        }
       }
-      
-      // Update overlay style
-      if (overlayRef.current) {
+
+      if (overlayRef.current && opacityVal !== lastOpacity) {
         overlayRef.current.style.opacity = opacityVal;
+        lastOpacity = opacityVal;
       }
-      
-      // Animate main image layers (both mouse parallax and scroll parallax)
+
       for (let i = 0; i < 4; i++) {
         const el = layerRefs.current[i];
         if (!el) continue;
         const d = LAYERS[i].depth;
-        
         const mouseX = -current.current.x * d;
         const mouseY = -current.current.y * d * 0.6;
-        
         // Deeper layers move slower, closer layers move faster to create vertical scroll depth
-        const scrollFactor = d * 0.008; // depth 6 -> 0.048x, depth 46 -> 0.368x
-        const scrollYOffset = -current.current.scrollY * scrollFactor;
-        
+        const scrollYOffset = -current.current.scrollY * d * 0.008;
         el.style.transform =
           `translate3d(${mouseX.toFixed(2)}px, ${(mouseY + scrollYOffset).toFixed(2)}px, 0) scale(${LAYER_SCALE})`;
       }
 
-      // Animate floating depth elements (between layers)
-      const depthElements = [
-        { depth: 10 }, // depth-el-1
-        { depth: 22 }, // depth-el-2
-        { depth: 30 }, // depth-el-3
-        { depth: 38 }, // depth-el-4
-      ];
-      for (let i = 0; i < depthElements.length; i++) {
+      for (let i = 0; i < DEPTH_ELEMENTS.length; i++) {
         const el = depthRefs.current[i];
         if (!el) continue;
-        const d = depthElements[i].depth;
-        
+        const d = DEPTH_ELEMENTS[i];
         const mouseX = -current.current.x * d;
         const mouseY = -current.current.y * d * 0.6;
-        
-        const scrollFactor = d * 0.008;
-        const scrollYOffset = -current.current.scrollY * scrollFactor;
-        
+        const scrollYOffset = -current.current.scrollY * d * 0.008;
         el.style.transform =
           `translate3d(${mouseX.toFixed(2)}px, ${(mouseY + scrollYOffset).toFixed(2)}px, 0)`;
       }
+    };
 
+    const tick = () => {
+      current.current.x += (target.current.x - current.current.x) * 0.08;
+      current.current.y += (target.current.y - current.current.y) * 0.08;
+      current.current.scrollY += (target.current.scrollY - current.current.scrollY) * 0.08;
+
+      const settled =
+        Math.abs(target.current.x - current.current.x) < 0.001 &&
+        Math.abs(target.current.y - current.current.y) < 0.001 &&
+        Math.abs(target.current.scrollY - current.current.scrollY) < 0.5;
+
+      if (settled) {
+        // Snap to target, paint one final frame, then stop the loop entirely
+        // so the page is fully idle until the next scroll/pointer input.
+        current.current.x = target.current.x;
+        current.current.y = target.current.y;
+        current.current.scrollY = target.current.scrollY;
+        applyFrame();
+        running = false;
+        return;
+      }
+
+      applyFrame();
       rafRef.current = requestAnimationFrame(tick);
     };
-    rafRef.current = requestAnimationFrame(tick);
+
+    const wake = () => {
+      if (running) return;
+      running = true;
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    const handleScroll = () => {
+      target.current.scrollY = window.scrollY;
+      wake();
+    };
+    const onMove = (e: PointerEvent) => {
+      target.current.x = (e.clientX / window.innerWidth) * 2 - 1;
+      target.current.y = (e.clientY / window.innerHeight) * 2 - 1;
+      wake();
+    };
+
+    if (reducedMotion) {
+      // Static background: paint once at the current scroll position, no loop.
+      target.current.scrollY = window.scrollY;
+      current.current.scrollY = window.scrollY;
+      applyFrame();
+      return;
+    }
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    if (!coarsePointer) {
+      window.addEventListener("pointermove", onMove, { passive: true });
+    }
+    handleScroll();
 
     return () => {
+      window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("pointermove", onMove);
       cancelAnimationFrame(rafRef.current);
     };
@@ -118,7 +149,7 @@ export function LandingParallax() {
 
   return (
     <div
-      className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-[#000000] animate-fadeIn"
+      className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-[#000000] animate-bg-fade"
       aria-hidden="true"
     >
       {/* Wrapper for progressive blur and scaling */}
@@ -126,7 +157,7 @@ export function LandingParallax() {
         ref={wrapperRef}
         className="absolute inset-0 will-change-[filter,transform]"
         style={{
-          filter: "blur(0px)",
+          filter: "none",
           transform: "scale(1)",
         }}
       >
