@@ -301,63 +301,89 @@ select[aria-invalid="true"] {
   overflow-x: clip;
 }
 
-/* ── FLOATING PILL NAV ── */
-.nav {
+/* ── EDITORIAL TOP BAR NAV ── */
+.nav-bar {
   position: fixed;
-  top: 24px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: 1000;
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 6px 6px;
-  background: rgba(8, 8, 8, 0.7);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  /* 12px reads the same as 24px on a 70%-opaque dark pill but costs far
-     less to recomposite while the parallax behind it animates */
-  backdrop-filter: blur(12px) saturate(150%);
-  -webkit-backdrop-filter: blur(12px) saturate(150%);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+  justify-content: space-between;
+  gap: 24px;
+  padding: 0 clamp(24px, 5vw, 56px);
+  height: 72px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.82), transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  mask-image: linear-gradient(to bottom, black 60%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent);
   transition: all 0.4s var(--ease-smooth);
 }
 
-.nav-logo {
+.nav-bar-logo {
   font-family: var(--font-serif), serif;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  padding: 4px 14px;
+  font-style: italic;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
   color: var(--text-primary);
   background: transparent;
   border: 0;
-  border-right: 1px solid var(--border);
-  margin-right: 4px;
+  padding: 0;
+  min-height: 44px;
+  display: flex;
+  align-items: baseline;
+  cursor: pointer;
 }
 
-.nav-link {
+.nav-bar-links {
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 2.5vw, 28px);
+}
+
+.nav-bar-link {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
   font-family: var(--font-mono), monospace;
   font-size: 10px;
-  font-weight: 400;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--text-secondary);
-  padding: 6px 12px;
-  border-radius: 999px;
+  background: transparent;
+  border: 0;
+  padding: 8px 2px;
+  justify-content: center;
   cursor: pointer;
-  transition: all 0.25s var(--ease-smooth);
   white-space: nowrap;
+  transition: color 0.25s ease;
 }
 
-.nav-link:hover {
+.nav-bar-link:hover,
+.nav-bar-link.active {
   color: var(--text-primary);
-  background: rgba(255,255,255,0.06);
 }
 
-.nav-link.active {
-  color: var(--text-primary);
-  background: rgba(255,255,255,0.08);
+.nav-bar-link-num {
+  color: var(--text-tertiary);
+  margin-right: 6px;
+}
+
+.nav-bar-link-rule {
+  display: block;
+  width: 100%;
+  height: 1px;
+  background: transparent;
+  transform-origin: left;
+  transition: background 0.3s ease;
+}
+
+.nav-bar-link.active .nav-bar-link-rule {
+  background: var(--text-primary);
 }
 
 /* ── HERO ── */
@@ -494,27 +520,6 @@ select[aria-invalid="true"] {
   }
 }
 
-.hero-eyebrow {
-  font-family: var(--font-mono), monospace;
-  font-size: 9px;
-  font-weight: 400;
-  letter-spacing: 0.4em;
-  text-transform: uppercase;
-  color: var(--text-tertiary);
-  margin-bottom: 24px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.hero-eyebrow::before {
-  content: "";
-  display: block;
-  width: 32px;
-  height: 1px;
-  background: rgba(255,255,255,0.2);
-}
-
 .hero-wordmark {
   font-family: var(--font-serif), serif;
   font-weight: 300;
@@ -607,42 +612,6 @@ select[aria-invalid="true"] {
   align-items: center;
   gap: 20px;
   flex-wrap: wrap;
-}
-
-.hero-btn {
-  font-family: var(--font-mono), monospace;
-  font-size: 9px;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  padding: 12px 24px;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: all 0.35s var(--ease-spring);
-  border: 1px solid;
-}
-
-.hero-btn-primary {
-  background: rgba(255,255,255,0.92);
-  color: #000;
-  border-color: transparent;
-}
-
-.hero-btn-primary:hover {
-  background: #fff;
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 12px 40px rgba(255,255,255,0.18);
-}
-
-.hero-btn-ghost {
-  background: transparent;
-  color: var(--text-secondary);
-  border-color: var(--border);
-}
-
-.hero-btn-ghost:hover {
-  color: var(--text-primary);
-  border-color: var(--border-hover);
-  transform: translateY(-2px);
 }
 
 .hero-scroll-hint {
@@ -877,64 +846,43 @@ select[aria-invalid="true"] {
   transform: scale(1.04);
 }
 
-.masonry-card-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 50%);
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-
-.masonry-card:hover .masonry-card-overlay { opacity: 1; }
-
-.masonry-card-meta {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 4;
-  padding: 20px;
-  transform: translateY(8px);
-  opacity: 0;
-  transition: all 0.4s var(--ease-smooth);
-}
-
-.masonry-card:hover .masonry-card-meta {
-  transform: translateY(0);
-  opacity: 1;
+.masonry-card-info {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px 15px;
+  border-top: 1px solid var(--border);
 }
 
 .masonry-card-title {
   font-family: var(--font-serif), serif;
-  font-size: 20px;
+  font-size: 19px;
   font-weight: 500;
-  color: #fff;
-  line-height: 1.2;
-  margin-bottom: 6px;
+  color: var(--text-primary);
+  line-height: 1.15;
 }
 
 .masonry-card-sub {
   font-family: var(--font-mono), monospace;
   font-size: 9px;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.5);
+  color: var(--text-tertiary);
+  white-space: nowrap;
 }
 
 .masonry-card-index {
   position: absolute;
-  top: 16px;
-  left: 16px;
+  top: 14px;
+  left: 14px;
   z-index: 6;
   font-family: var(--font-mono), monospace;
   font-size: 9px;
   letter-spacing: 0.2em;
-  color: rgba(255,255,255,0.3);
-  transition: color 0.3s ease;
+  color: rgba(255,255,255,0.75);
+  text-shadow: 0 1px 8px rgba(0,0,0,0.8);
 }
-
-.masonry-card:hover .masonry-card-index { color: rgba(255,255,255,0.6); }
 
 /* Aspect ratios for masonry */
 .masonry-tall .masonry-img-placeholder,
