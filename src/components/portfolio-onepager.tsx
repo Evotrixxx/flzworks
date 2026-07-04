@@ -15,6 +15,16 @@ const CATEGORY_LABELS: Record<string, string> = {
   OTHER: "Other",
 };
 
+type ArchiveCategory = "ALL" | "AUTOMOTIVE" | "BRICKWORKS" | "GAMES" | "MEDIA";
+
+const NAV_LINKS: { num: string; label: string; target: string; filter?: ArchiveCategory }[] = [
+  { num: "01", label: "Automotive", target: "archive", filter: "AUTOMOTIVE" },
+  { num: "02", label: "Asset store", target: "archive", filter: "MEDIA" },
+  { num: "03", label: "Gamedev", target: "archive", filter: "GAMES" },
+  { num: "04", label: "Social", target: "signals" },
+  { num: "05", label: "Contact", target: "contact" },
+];
+
 interface PortfolioOnepagerProps {
   instagramMedia: InstagramMediaItem[];
   articles: PortfolioArticleWithImages[];
@@ -27,7 +37,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
     images: string[];
     index: number;
   } | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<"ALL" | "AUTOMOTIVE" | "BRICKWORKS" | "GAMES" | "MEDIA">("ALL");
+  const [selectedCategory, setSelectedCategory] = useState<ArchiveCategory>("ALL");
   const [uiHidden, setUiHidden] = useState(false);
   const [activeSection, setActiveSection] = useState("hero");
   const shellRef = useRef<HTMLDivElement>(null);
@@ -134,7 +144,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
 
   // IntersectionObserver to set active section for side scroll dots
   useEffect(() => {
-    const sections = ["hero", "process", "archive", "interface", "signals"];
+    const sections = ["hero", "archive", "process", "studio", "signals"];
     const observers = sections.map(id => {
       const el = document.getElementById(id);
       if (!el) return null;
@@ -181,20 +191,40 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
     >
       <LandingParallax />
 
-      {/* ── Floating Pill Nav ── */}
-      <nav className={`nav ${uiHidden ? "opacity-0 -translate-y-full pointer-events-none" : "opacity-100 translate-y-0"}`}>
+      {/* ── Editorial Top Bar Nav ── */}
+      <nav className={`nav-bar ${uiHidden ? "opacity-0 -translate-y-full pointer-events-none" : "opacity-100 translate-y-0"}`}>
         <button
           type="button"
           aria-label="Scroll to home"
-          className="nav-logo py-2 cursor-pointer"
+          className="nav-bar-logo"
           onClick={() => scrollToSection("hero")}
         >
           FLZ
         </button>
-        <button onClick={() => scrollToSection("hero")} className={`nav-link min-h-[44px] flex items-center justify-center px-4 ${activeSection === "hero" ? "active" : ""}`}>Home</button>
-        <button onClick={() => scrollToSection("archive")} className={`nav-link min-h-[44px] flex items-center justify-center px-4 ${activeSection === "archive" ? "active" : ""}`}>Archive</button>
-        <button onClick={() => scrollToSection("process")} className={`nav-link min-h-[44px] flex items-center justify-center px-4 ${activeSection === "process" ? "active" : ""}`}>Process</button>
-        <button onClick={() => scrollToSection("signals")} className={`nav-link min-h-[44px] flex items-center justify-center px-4 ${activeSection === "signals" ? "active" : ""}`}>Signals</button>
+        <div className="nav-bar-links">
+          {NAV_LINKS.map((lk) => {
+            const active = lk.filter
+              ? activeSection === lk.target && selectedCategory === lk.filter
+              : activeSection === lk.target;
+            return (
+              <button
+                key={lk.label}
+                type="button"
+                onClick={() => {
+                  if (lk.filter) setSelectedCategory(lk.filter);
+                  scrollToSection(lk.target);
+                }}
+                className={`nav-bar-link min-h-[44px] ${active ? "active" : ""}`}
+              >
+                <span>
+                  <span className="nav-bar-link-num">{lk.num}</span>
+                  {lk.label}
+                </span>
+                <span className="nav-bar-link-rule" />
+              </button>
+            );
+          })}
+        </div>
       </nav>
 
       <main className={`relative z-10 pb-24 transition-all duration-700 ${uiHidden ? "opacity-0 scale-[0.98] pointer-events-none" : "opacity-100 scale-100"}`}>
@@ -230,13 +260,6 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
               <div className={`hero-scroll-dot ${activeSection === "hero" ? "active" : ""}`} />
             </button>
             <button
-              aria-label="Scroll to process"
-              onClick={() => scrollToSection("process")}
-              className="w-11 h-11 flex items-center justify-center bg-transparent border-0 focus:outline-none cursor-pointer -my-4"
-            >
-              <div className={`hero-scroll-dot ${activeSection === "process" ? "active" : ""}`} />
-            </button>
-            <button
               aria-label="Scroll to archive"
               onClick={() => scrollToSection("archive")}
               className="w-11 h-11 flex items-center justify-center bg-transparent border-0 focus:outline-none cursor-pointer -my-4"
@@ -244,11 +267,18 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
               <div className={`hero-scroll-dot ${activeSection === "archive" ? "active" : ""}`} />
             </button>
             <button
-              aria-label="Scroll to interface"
-              onClick={() => scrollToSection("interface")}
+              aria-label="Scroll to process"
+              onClick={() => scrollToSection("process")}
               className="w-11 h-11 flex items-center justify-center bg-transparent border-0 focus:outline-none cursor-pointer -my-4"
             >
-              <div className={`hero-scroll-dot ${activeSection === "interface" ? "active" : ""}`} />
+              <div className={`hero-scroll-dot ${activeSection === "process" ? "active" : ""}`} />
+            </button>
+            <button
+              aria-label="Scroll to studio"
+              onClick={() => scrollToSection("studio")}
+              className="w-11 h-11 flex items-center justify-center bg-transparent border-0 focus:outline-none cursor-pointer -my-4"
+            >
+              <div className={`hero-scroll-dot ${activeSection === "studio" ? "active" : ""}`} />
             </button>
             <button
               aria-label="Scroll to signals"
@@ -261,8 +291,6 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
           </div>
 
           <div className="hero-content">
-            <div className="hero-eyebrow">Portfolio — Design & Engineering · 2026</div>
-
             <div className="hero-wordmark">
               <span className="hero-wordmark-line1">FLZ</span>
               <span className="hero-wordmark-line2">Works</span>
@@ -287,7 +315,6 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             </div>
 
             <div className="hero-cta">
-              <button onClick={() => scrollToSection("archive")} className="hero-btn hero-btn-primary">View Archive</button>
               <div className="hero-scroll-hint">
                 <div className="hero-scroll-hint-line" />
                 ↓ scroll to begin
@@ -304,46 +331,20 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                 <span className="ticker-item">3D Automotive Design<span className="ticker-dot" /></span>
                 <span className="ticker-item">System Architecture<span className="ticker-dot" /></span>
                 <span className="ticker-item">High-Performance Rendering<span className="ticker-dot" /></span>
-                <span className="ticker-item">Prototype Development<span className="ticker-dot" /></span>
                 <span className="ticker-item">FLZ Works · 2026<span className="ticker-dot" /></span>
-                <span className="ticker-item">Machine Experience<span className="ticker-dot" /></span>
               </span>
             ))}
           </div>
         </div>
 
         {/* ── Narrative Section 1: Process ── */}
-        <section id="process" className="narrative-section reveal">
-          <div className="narrative-visual">
-            <div className="narrative-img-placeholder fill-1 card-art" style={{ aspectRatio: "4/3" }}>
-              <svg width="100%" height="100%" viewBox="0 0 600 450" fill="none">
-                <rect width="600" height="450" fill="#0a0a0a"/>
-                <circle cx="300" cy="225" r="120" stroke="rgba(255,255,255,0.04)" strokeWidth="1"/>
-                <circle cx="300" cy="225" r="80" stroke="rgba(255,255,255,0.06)" strokeWidth="0.5"/>
-                <line x1="180" y1="225" x2="420" y2="225" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5"/>
-                <line x1="300" y1="105" x2="300" y2="345" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5"/>
-                <text x="300" y="235" textAnchor="middle" fill="rgba(255,255,255,0.12)" fontFamily="var(--font-mono), monospace" fontSize="10" letterSpacing="4">DESIGN SYSTEM</text>
-                <text x="300" y="260" textAnchor="middle" fill="rgba(255,255,255,0.06)" fontFamily="var(--font-mono), monospace" fontSize="7" letterSpacing="3">PRECISION ENGINEERING</text>
-              </svg>
-            </div>
-            <div className="narrative-visual-tag">3D Auto · 2026</div>
-          </div>
-          <div className="narrative-text">
-            <div className="narrative-label">{"// 01 — Process"}</div>
-            <h2 className="narrative-title">Where precision<br /><em>meets craft.</em></h2>
-            <p className="narrative-body">Every project begins with a deep technical study of form, material, and motion. From clay model to rendered render, the workflow is engineered for maximum photorealism.</p>
-            <button type="button" onClick={() => scrollToSection("archive")} className="narrative-link">Explore the process</button>
-          </div>
-        </section>
-
-        {/* ── Archive ── */}
         <section id="archive" className="pt-24 max-w-7xl mx-auto px-8 md:px-20">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-t border-white/5 pt-16">
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <span className="w-1.5 h-1.5 bg-white/30 rounded-full animate-pulse" />
                 <p className="font-mono text-[9px] tracking-[0.4em] text-white/70 uppercase">
-                  02 — Archive
+                  01 — Archive
                 </p>
               </div>
               <h2 className="text-5xl md:text-7xl font-serif font-semibold uppercase tracking-tighter leading-none">
@@ -355,7 +356,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             <div className="flex flex-wrap gap-2">
               {[
                 { label: "All", category: "ALL" as const },
-                { label: "3D Auto", category: "AUTOMOTIVE" as const },
+                { label: "Automotive", category: "AUTOMOTIVE" as const },
                 { label: "Brickworks", category: "BRICKWORKS" as const },
                 { label: "Games", category: "GAMES" as const },
                 { label: "Media", category: "MEDIA" as const },
@@ -363,7 +364,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                 <button
                   key={item.category}
                   onClick={() => setSelectedCategory(item.category)}
-                  className={`font-mono text-[9px] tracking-wider uppercase px-3 py-1.5 rounded border transition-all cursor-pointer ${
+                  className={`font-mono text-[9px] tracking-wider uppercase px-4 min-h-10 rounded-full border transition-all cursor-pointer ${
                     selectedCategory === item.category
                       ? "bg-white/10 text-white border-white/20"
                       : "text-white/70 border-transparent hover:text-white hover:border-white/10"
@@ -440,8 +441,6 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                     onMouseMove={handleMouseMove}
                     onClick={() => setSelectedArticle(article)}
                   >
-                    <div className="masonry-card-index">#{String(i + 1).padStart(3, "0")}</div>
-                    
                     <div className="relative w-full overflow-hidden bg-neutral-950/45 masonry-card-img-wrap">
                       {firstImg ? (
                         <Image
@@ -457,14 +456,14 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                           {wireframeSVGs[i % wireframeSVGs.length]}
                         </div>
                       )}
-                      <div className="masonry-card-overlay" />
+                      <div className="masonry-card-index">#{String(i + 1).padStart(3, "0")}</div>
                     </div>
 
-                    <div className="masonry-card-meta">
-                      <div className="masonry-card-title">{article.title}</div>
-                      <div className="masonry-card-sub">
+                    <div className="masonry-card-info">
+                      <span className="masonry-card-title">{article.title}</span>
+                      <span className="masonry-card-sub">
                         {CATEGORY_LABELS[article.category] || "Other"} · 2026
-                      </div>
+                      </span>
                     </div>
                   </div>
                 );
@@ -473,31 +472,32 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
           )}
         </section>
 
-        {/* ── Narrative Section 2: Interface ── */}
-        <section id="interface" className="narrative-section reverse reveal">
+        {/* ── Narrative: Process ── */}
+        <section id="process" className="narrative-section reveal">
           <div className="narrative-visual">
-            <div className="narrative-img-placeholder fill-3 card-art" style={{ aspectRatio: "4/3" }}>
+            <div className="narrative-img-placeholder fill-1 card-art" style={{ aspectRatio: "4/3" }}>
               <svg width="100%" height="100%" viewBox="0 0 600 450" fill="none">
-                <rect width="600" height="450" fill="#080c10"/>
-                <rect x="50" y="50" width="500" height="350" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" fill="none"/>
-                <rect x="80" y="80" width="200" height="120" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5" fill="rgba(255,255,255,0.01)"/>
-                <rect x="320" y="80" width="200" height="80" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5" fill="rgba(255,255,255,0.01)"/>
-                <rect x="80" y="240" width="440" height="120" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5" fill="rgba(255,255,255,0.01)"/>
-                <text x="300" y="230" textAnchor="middle" fill="rgba(255,255,255,0.08)" fontFamily="var(--font-mono), monospace" fontSize="8" letterSpacing="3">INTERFACE ARCHITECTURE</text>
+                <rect width="600" height="450" fill="#0a0a0a"/>
+                <circle cx="300" cy="225" r="120" stroke="rgba(255,255,255,0.04)" strokeWidth="1"/>
+                <circle cx="300" cy="225" r="80" stroke="rgba(255,255,255,0.06)" strokeWidth="0.5"/>
+                <line x1="180" y1="225" x2="420" y2="225" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5"/>
+                <line x1="300" y1="105" x2="300" y2="345" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5"/>
+                <text x="300" y="235" textAnchor="middle" fill="rgba(255,255,255,0.12)" fontFamily="var(--font-mono), monospace" fontSize="10" letterSpacing="4">DESIGN SYSTEM</text>
+                <text x="300" y="260" textAnchor="middle" fill="rgba(255,255,255,0.06)" fontFamily="var(--font-mono), monospace" fontSize="7" letterSpacing="3">PRECISION ENGINEERING</text>
               </svg>
             </div>
-            <div className="narrative-visual-tag">UI/UX · Figma</div>
+            <div className="narrative-visual-tag">3D Auto · 2026</div>
           </div>
           <div className="narrative-text">
-            <div className="narrative-label">{"// 03 — Interface"}</div>
-            <h2 className="narrative-title">Systems built<br /><em>to feel.</em></h2>
-            <p className="narrative-body">Every UI decision is rooted in physics and perception. The interface should feel like it has weight, momentum, and memory — not just look like it does.</p>
-            <button type="button" onClick={() => scrollToSection("archive")} className="narrative-link">See the design system</button>
+            <div className="narrative-label">{"// 02 — Process"}</div>
+            <h2 className="narrative-title">Where precision<br /><em>meets craft.</em></h2>
+            <p className="narrative-body">Every project begins with a deep technical study of form, material, and motion. From clay model to rendered render, the workflow is engineered for maximum photorealism.</p>
+            <button type="button" onClick={() => scrollToSection("archive")} className="narrative-link">Explore the archive</button>
           </div>
         </section>
 
         {/* ── Identity Strip ── */}
-        <section className="identity-strip reveal">
+        <section id="studio" className="identity-strip reveal">
           <div className="identity-mark">F</div>
           <div className="identity-info">
             <div className="identity-name">FLZ · Studio</div>
@@ -527,9 +527,14 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                   Works & <span className="italic font-light text-white/70">Log</span>
                 </h2>
               </div>
-              <p className="text-[9px] font-mono text-white/70 mt-3 md:mt-0 uppercase tracking-widest border border-white/[0.05] px-4 py-2 rounded-xl">
-                @flzworks
-              </p>
+              <a
+                href="https://instagram.com/flzworks"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[10px] font-mono text-white/70 hover:text-white mt-3 md:mt-0 uppercase tracking-widest border border-white/10 hover:border-white/30 px-4 min-h-11 rounded-full inline-flex items-center transition-all"
+              >
+                @flzworks ↗
+              </a>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
               {instagramMedia.slice(0, 10).map((item) => (
@@ -561,7 +566,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
         )}
 
         {/* ── Footer ── */}
-        <footer className="footer">
+        <footer id="contact" className="footer">
           <div>
             <div className="footer-brand">FLZ</div>
             <div className="footer-meta">Design & Engineering · 2026</div>
@@ -570,6 +575,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             <button onClick={() => scrollToSection("hero")} className="footer-link text-left">Home</button>
             <button onClick={() => scrollToSection("archive")} className="footer-link text-left">Archive</button>
             <button onClick={() => scrollToSection("process")} className="footer-link text-left">Process</button>
+            <button onClick={() => scrollToSection("studio")} className="footer-link text-left">Studio</button>
             <a
               href="https://instagram.com/flzworks"
               target="_blank"
@@ -580,7 +586,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             </a>
           </div>
           <div style={{ fontFamily: "var(--font-mono)", fontSize: "8px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(255,255,255,0.7)", paddingTop: "8px", maxWidth: "200px", lineHeight: 1.8 }}>
-            Photorealistic 3D Automotive Design · System Architecture · High-Performance Web Rendering
+            Photorealistic 3D Automotive Design · System Architecture · Press H for showroom mode
           </div>
         </footer>
       </main>
@@ -592,7 +598,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
           onClick={() => setSelectedArticle(null)}
         >
           <div
-            className="relative w-full max-w-5xl bg-neutral-950/80 border border-white/10 rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 scale-100 max-h-[90vh] flex flex-col"
+            className="relative w-full max-w-5xl bg-neutral-950/80 border border-white/20 rounded-[14px] overflow-hidden shadow-2xl transition-all duration-500 scale-100 max-h-[90vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -608,7 +614,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
               <button
                 aria-label="Close details"
                 onClick={() => setSelectedArticle(null)}
-                className="w-11 h-11 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-all cursor-pointer"
+                className="w-11 h-11 flex items-center justify-center rounded-full bg-transparent border border-white/10 text-white/70 hover:text-white hover:border-white/30 transition-all cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -699,7 +705,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             <span aria-hidden="true">→</span>
           </button>
           <div
-            className="relative max-w-5xl w-full max-h-[85vh] mx-6"
+            className="relative max-w-5xl w-full h-[85vh] mx-6"
             onClick={(e) => e.stopPropagation()}
           >
             <Image
