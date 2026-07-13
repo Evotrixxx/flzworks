@@ -637,7 +637,7 @@ select[aria-invalid="true"] {
 .ticker-wrap {
   overflow: hidden;
   padding: 20px 0;
-  background: transparent;
+  background: #000000;
   position: relative;
   z-index: 10;
   /* Premium fade-out mask for the ticker content at screen edges */
