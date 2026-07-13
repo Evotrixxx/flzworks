@@ -205,187 +205,172 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
           <span className="bp-scroll-hint">SCROLL →</span>
         </div>
 
-        <div className="bp-filmstrip-track">
-          {filteredArticles.map((article) => {
-            const d = new Date(article.createdAt);
-            const mm = String(d.getMonth() + 1).padStart(2, "0");
-            const dd = String(d.getDate()).padStart(2, "0");
-            const sheetId = `X${mm}${dd}`;
-            const firstImg =
-              article.images.length > 0
-                ? `/api/portfolio/media/${article.folderName}/${article.images[0]}?w=640`
-                : null;
+        {/* Relative wrapper for track and floating scroll helper */}
+        <div className="relative">
+          <div id="filmstrip-track" className="bp-filmstrip-track">
+            {filteredArticles.map((article) => {
+              const d = new Date(article.createdAt);
+              const mm = String(d.getMonth() + 1).padStart(2, "0");
+              const dd = String(d.getDate()).padStart(2, "0");
+              const sheetId = `X${mm}${dd}`;
+              const firstImg =
+                article.images.length > 0
+                  ? `/api/portfolio/media/${article.folderName}/${article.images[0]}?w=640`
+                  : null;
 
-            return (
-              <button
-                key={article.id}
-                className="bp-sheet"
-                onClick={() => setSelectedArticle(article)}
-              >
-                <div className="bp-sheet-img">
-                  {firstImg ? (
-                    <Image
-                      src={firstImg}
-                      alt={article.title}
-                      fill
-                      className="bp-sheet-img-el object-cover"
-                      sizes="250px"
-                      unoptimized
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-[#dce7f5]/5 text-[#dce7f5]/30 text-[9px]">
-                      NO IMAGE
-                    </div>
-                  )}
-                </div>
-                <div className="bp-sheet-caption">
-                  {sheetId} — {article.title.toUpperCase()}
-                </div>
-              </button>
-            );
-          })}
-          {filteredArticles.length === 0 && (
-            <div className="py-12 text-[#dce7f5]/50 text-[10px] uppercase tracking-widest pl-8">
-              No sheets in this category
-            </div>
-          )}
+              return (
+                <button
+                  key={article.id}
+                  className="bp-sheet"
+                  onClick={() => setSelectedArticle(article)}
+                >
+                  <div className="bp-sheet-img">
+                    {firstImg ? (
+                      <Image
+                        src={firstImg}
+                        alt={article.title}
+                        fill
+                        className="bp-sheet-img-el object-cover"
+                        sizes="250px"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-[#dce7f5]/5 text-[#dce7f5]/30 text-[9px]">
+                        NO IMAGE
+                      </div>
+                    )}
+                  </div>
+                  <div className="bp-sheet-caption">
+                    {sheetId} — {article.title.toUpperCase()}
+                  </div>
+                </button>
+              );
+            })}
+            {filteredArticles.length === 0 && (
+              <div className="py-12 text-[#dce7f5]/50 text-[10px] uppercase tracking-widest pl-8">
+                No sheets in this category
+              </div>
+            )}
+          </div>
 
-          {/* Mobile: Social cards appended inline in the same filmstrip */}
-          <div className="bp-sheet bp-sheet-social-mobile">
-            <div className="bp-sheet-img bp-sheet-social-body">
-              <a
-                href="https://x.com/flzworks"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bp-sheet-social-link"
-              >
-                X ↗
-              </a>
-            </div>
-            <div className="bp-sheet-caption">X — @FLZWORKS</div>
-          </div>
-          <div className="bp-sheet bp-sheet-social-mobile">
-            <div className="bp-sheet-img bp-sheet-social-body">
-              <a
-                href="https://instagram.com/flzworks"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bp-sheet-social-link"
-              >
-                IG ↗
-              </a>
-            </div>
-            <div className="bp-sheet-caption">IG — @FLZWORKS</div>
-          </div>
-          <div className="bp-sheet bp-sheet-social-mobile">
-            <div className="bp-sheet-img bp-sheet-social-body">
-              <a
-                href="https://tiktok.com/@flzworks"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bp-sheet-social-link"
-              >
-                TT ↗
-              </a>
-            </div>
-            <div className="bp-sheet-caption">TIKTOK — @FLZWORKS</div>
-          </div>
-          <div className="bp-sheet bp-sheet-social-mobile">
-            <div className="bp-sheet-img bp-sheet-social-body">
-              <a
-                href="https://linkedin.com/in/benceflosz"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bp-sheet-social-link"
-              >
-                LI ↗
-              </a>
-            </div>
-            <div className="bp-sheet-caption">LINKEDIN</div>
-          </div>
+          {/* Floating scroll button on the right side over the track */}
+          <button
+            className="bp-filmstrip-scroll-btn"
+            onClick={() => {
+              const track = document.getElementById("filmstrip-track");
+              if (track) {
+                const maxScroll = track.scrollWidth - track.clientWidth;
+                if (track.scrollLeft < maxScroll - 15) {
+                  track.scrollBy({ left: 300, behavior: "smooth" });
+                } else {
+                  scrollToSection("transmissions");
+                }
+              }
+            }}
+            aria-label="Scroll right or down"
+          >
+            →
+          </button>
         </div>
       </section>
 
-      {/* Transmissions — hidden on mobile, shown via filmstrip social cards instead */}
-      <section id="transmissions" className="bp-transmissions bp-transmissions-desktop">
-        <div className="bp-section-label bp-accent">■ TRANSMISSIONS — X / IG / TIKTOK / LINKEDIN</div>
-        <div className="bp-transmissions-grid">
-          {/* X */}
-          <div className="bp-transmission">
-            <div className="bp-transmission-label">X — @FLZWORKS</div>
+      {/* Transmissions — now an identical horizontal filmstrip */}
+      <section id="transmissions" className="bp-filmstrip bp-transmissions">
+        <div className="bp-filmstrip-head">
+          <span className="bp-section-label bp-accent">■ TRANSMISSIONS — X / IG / TIKTOK / LINKEDIN</span>
+          <span className="bp-scroll-hint">SCROLL →</span>
+        </div>
+
+        <div className="relative">
+          <div id="transmissions-track" className="bp-filmstrip-track">
+            {/* X */}
             <a
               href="https://x.com/flzworks"
               target="_blank"
               rel="noopener noreferrer"
-              className="bp-transmission-placeholder hover:text-[#ffd166] hover:border-[#ffd166] transition-colors"
+              className="bp-sheet"
             >
-              X.COM/FLZWORKS ↗
-            </a>
-          </div>
-
-          {/* Instagram */}
-          <div className="bp-transmission">
-            <div className="bp-transmission-label">IG — @FLZWORKS</div>
-            {instagramMedia.length > 0 ? (
-              <div className="grid grid-cols-2 gap-1.5 aspect-video w-full">
-                {instagramMedia.slice(0, 4).map((item) => (
-                  <a
-                    key={item.id}
-                    href={item.permalink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="relative block w-full h-full overflow-hidden border border-[#dce7f5]/15 hover:border-[#dce7f5]/40"
-                  >
-                    {(item.thumbnail_url || item.media_url) && (
-                      <Image
-                        src={item.thumbnail_url || item.media_url || ""}
-                        alt={item.caption || "Instagram post"}
-                        fill
-                        className="object-cover opacity-80 hover:opacity-100 transition-opacity"
-                        sizes="100px"
-                        unoptimized
-                      />
-                    )}
-                  </a>
-                ))}
+              <div className="bp-sheet-img flex flex-col items-center justify-center bg-[#dce7f5]/5 transition-colors hover:bg-[#dce7f5]/10">
+                <span className="text-2xl font-bold tracking-wider text-[#ffd166]">X</span>
+                <span className="text-[8px] opacity-40 mt-1">X.COM/FLZWORKS</span>
               </div>
-            ) : (
-              <a
-                href="https://instagram.com/flzworks"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bp-transmission-placeholder hover:text-[#ffd166] hover:border-[#ffd166] transition-colors"
-              >
-                INSTAGRAM.COM/FLZWORKS ↗
-              </a>
-            )}
-          </div>
+              <div className="bp-sheet-caption">X — @FLZWORKS</div>
+            </a>
 
-          {/* TikTok */}
-          <div className="bp-transmission">
-            <div className="bp-transmission-label">TIKTOK — @FLZWORKS</div>
+            {/* Instagram */}
+            <a
+              href="https://instagram.com/flzworks"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bp-sheet"
+            >
+              <div className="bp-sheet-img">
+                {instagramMedia.length > 0 && (instagramMedia[0].thumbnail_url || instagramMedia[0].media_url) ? (
+                  <Image
+                    src={instagramMedia[0].thumbnail_url || instagramMedia[0].media_url || ""}
+                    alt="Instagram feed"
+                    fill
+                    className="bp-sheet-img-el object-cover"
+                    sizes="250px"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-[#dce7f5]/5 transition-colors hover:bg-[#dce7f5]/10">
+                    <span className="text-2xl font-bold tracking-wider text-[#ffd166]">IG</span>
+                    <span className="text-[8px] opacity-40 mt-1">INSTAGRAM.COM/FLZWORKS</span>
+                  </div>
+                )}
+              </div>
+              <div className="bp-sheet-caption">IG — @FLZWORKS</div>
+            </a>
+
+            {/* TikTok */}
             <a
               href="https://tiktok.com/@flzworks"
               target="_blank"
               rel="noopener noreferrer"
-              className="bp-transmission-placeholder hover:text-[#ffd166] hover:border-[#ffd166] transition-colors"
+              className="bp-sheet"
             >
-              TIKTOK.COM/@FLZWORKS ↗
+              <div className="bp-sheet-img flex flex-col items-center justify-center bg-[#dce7f5]/5 transition-colors hover:bg-[#dce7f5]/10">
+                <span className="text-2xl font-bold tracking-wider text-[#ffd166]">TT</span>
+                <span className="text-[8px] opacity-40 mt-1">TIKTOK.COM/@FLZWORKS</span>
+              </div>
+              <div className="bp-sheet-caption">TIKTOK — @FLZWORKS</div>
             </a>
-          </div>
 
-          {/* LinkedIn */}
-          <div className="bp-transmission">
-            <div className="bp-transmission-label">LINKEDIN</div>
+            {/* LinkedIn */}
             <a
               href="https://linkedin.com/in/benceflosz"
               target="_blank"
               rel="noopener noreferrer"
-              className="bp-transmission-placeholder hover:text-[#ffd166] hover:border-[#ffd166] transition-colors"
+              className="bp-sheet"
             >
-              LINKEDIN PROFILE ↗
+              <div className="bp-sheet-img flex flex-col items-center justify-center bg-[#dce7f5]/5 transition-colors hover:bg-[#dce7f5]/10">
+                <span className="text-2xl font-bold tracking-wider text-[#ffd166]">LI</span>
+                <span className="text-[8px] opacity-40 mt-1">LINKEDIN PROFILE</span>
+              </div>
+              <div className="bp-sheet-caption">LINKEDIN</div>
             </a>
           </div>
+
+          {/* Floating scroll button on the right side over the track */}
+          <button
+            className="bp-filmstrip-scroll-btn"
+            onClick={() => {
+              const track = document.getElementById("transmissions-track");
+              if (track) {
+                const maxScroll = track.scrollWidth - track.clientWidth;
+                if (track.scrollLeft < maxScroll - 15) {
+                  track.scrollBy({ left: 300, behavior: "smooth" });
+                } else {
+                  scrollToSection("contact");
+                }
+              }
+            }}
+            aria-label="Scroll right or down"
+          >
+            →
+          </button>
         </div>
       </section>
 

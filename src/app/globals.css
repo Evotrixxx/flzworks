@@ -2230,90 +2230,34 @@ select[aria-invalid="true"] {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* Floating MORE button — right side of filmstrip, scrolls page down */
-.bp-filmstrip-more {
+/* Floating scroll-right button over the filmstrip track */
+.bp-filmstrip-scroll-btn {
   position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  z-index: 10;
-  width: 36px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 25;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   background: var(--bp-bg);
-  border-left: var(--bp-border-strong);
+  border: var(--bp-border-strong);
   color: var(--bp-accent);
   font-family: inherit;
-  font-size: 8px;
-  letter-spacing: 0.18em;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
-  padding: 16px 0;
-}
-.bp-filmstrip-more:hover {
-  background: rgba(255, 209, 102, 0.06);
-  color: #ffe599;
-}
-.bp-filmstrip-more-arrow {
-  writing-mode: horizontal-tb;
-  font-size: 12px;
-  margin-top: 4px;
-}
-.bp-transmissions {
-  padding: 20px 32px 28px;
-  border-bottom: var(--bp-border-strong);
-}
-.bp-transmissions .bp-section-label {
-  display: block;
-  margin-bottom: 12px;
-}
-.bp-transmissions-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-  align-items: start;
-}
-/* Transmission card — unified with bp-sheet */
-.bp-transmission {
-  border: var(--bp-border-light);
-  display: block;
-  font-size: 9px;
-  letter-spacing: 0.12em;
-  width: 100%;
-  overflow: hidden;
-  transition: border-color 0.2s ease;
-}
-.bp-transmission:hover {
-  border-color: var(--bp-fg);
-}
-.bp-transmission-label {
-  padding: 7px 9px;
-  border-bottom: var(--bp-border-light);
-  font-size: 9px;
-  letter-spacing: 0.1em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.bp-transmission-placeholder {
-  aspect-ratio: 16/10;
+  font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(220, 231, 245, 0.5);
-  text-decoration: none;
-  font-size: 9px;
-  background: rgba(220, 231, 245, 0.04);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(18, 40, 75, 0.7);
   transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
-.bp-transmission-placeholder:hover {
-  color: var(--bp-accent);
-  background: rgba(255, 209, 102, 0.04);
+.bp-filmstrip-scroll-btn:hover {
+  background: var(--bp-accent);
+  color: var(--bp-bg);
+  transform: translateY(-50%) scale(1.05);
 }
 /* Floating footer */
 .bp-titleblock {
@@ -2487,37 +2431,57 @@ select[aria-invalid="true"] {
     text-align: left;
     align-self: flex-start;
   }
+@media (max-width: 900px) {
+  .bp-hero-media {
+    height: 50vh;
+  }
+  .bp-hero-title {
+    left: 20px;
+    bottom: 64px;
+    max-width: calc(100% - 40px);
+  }
+  .bp-hero-headline {
+    font-size: 34px;
+  }
+  .bp-hero-stats {
+    left: 20px;
+    right: auto;
+    bottom: 20px;
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 640px) {
+  .bp-topbar {
+    flex-wrap: wrap;
+    gap: 10px 0;
+    padding: 12px 16px;
+  }
+  .bp-nav {
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .bp-nav-item {
+    font-size: 9px;
+  }
+  /* Mobile: only the headline is centered */
+  .bp-hero-title {
+    left: 0;
+    right: 0;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 100%;
+    padding: 0 16px;
+  }
+  .bp-hero-eyebrow {
+    text-align: left;
+    align-self: flex-start;
+  }
   .bp-hero-stats {
     left: 16px;
     right: auto;
     bottom: 16px;
-  }
-  /* Mobile: show social cards inside filmstrip, hide the full transmissions section */
-  .bp-transmissions-desktop {
-    display: none;
-  }
-  /* Mobile: show social cards inside filmstrip */
-  .bp-sheet-social-mobile {
-    display: flex;
-    flex-direction: column;
-    width: 160px;
-    flex: none;
-  }
-  .bp-sheet-social-body {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(220, 231, 245, 0.04);
-  }
-  .bp-sheet-social-link {
-    font-size: 14px;
-    letter-spacing: 0.08em;
-    color: var(--bp-fg);
-    text-decoration: none;
-    transition: color 0.2s ease;
-  }
-  .bp-sheet-social-link:hover {
-    color: var(--bp-accent);
   }
   .bp-titleblock {
     grid-template-columns: 1fr 1fr;
@@ -2528,17 +2492,6 @@ select[aria-invalid="true"] {
   .bp-titleblock-cell:nth-child(1),
   .bp-titleblock-cell:nth-child(2) {
     border-bottom: var(--bp-border-light);
-  }
-}
-/* On desktop: hide the inline social filmstrip cards */
-@media (min-width: 641px) {
-  .bp-sheet-social-mobile {
-    display: none;
-  }
-}
-@media (max-width: 520px) {
-  .bp-transmissions-grid {
-    grid-template-columns: 1fr;
   }
 }
 
