@@ -371,7 +371,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
               frameBorder="0"
               allowFullScreen
               allow="autoplay; fullscreen; xr-spatial-tracking"
-              src="https://sketchfab.com/models/cbb1b3572d0545f8a8fdbdb09836ebd6/embed?autostart=1&camera=0&preload=1&transparent=1"
+              src="https://sketchfab.com/models/cbb1b3572d0545f8a8fdbdb09836ebd6/embed?autostart=1&preload=1&transparent=1&ui_hint=0"
               className="w-full h-full border-0"
             />
           </div>
