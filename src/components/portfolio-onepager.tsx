@@ -266,52 +266,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
 
           <div className="hero-vignette" />
 
-          {/* Side scroll track */}
-          <div className="hero-scroll-track">
-            <button
-              aria-label="Scroll to home"
-              onClick={() => scrollToSection("hero")}
-              className="w-11 h-11 flex items-center justify-center bg-transparent border-0 focus:outline-none cursor-pointer -my-4"
-            >
-              <div className={`hero-scroll-dot ${activeSection === "hero" ? "active" : ""}`} />
-            </button>
-            <button
-              aria-label="Scroll to featured"
-              onClick={() => scrollToSection("experience")}
-              className="w-11 h-11 flex items-center justify-center bg-transparent border-0 focus:outline-none cursor-pointer -my-4"
-            >
-              <div className={`hero-scroll-dot ${activeSection === "experience" ? "active" : ""}`} />
-            </button>
-            <button
-              aria-label="Scroll to archive"
-              onClick={() => scrollToSection("archive")}
-              className="w-11 h-11 flex items-center justify-center bg-transparent border-0 focus:outline-none cursor-pointer -my-4"
-            >
-              <div className={`hero-scroll-dot ${activeSection === "archive" ? "active" : ""}`} />
-            </button>
-            <button
-              aria-label="Scroll to studio"
-              onClick={() => scrollToSection("studio")}
-              className="w-11 h-11 flex items-center justify-center bg-transparent border-0 focus:outline-none cursor-pointer -my-4"
-            >
-              <div className={`hero-scroll-dot ${activeSection === "studio" ? "active" : ""}`} />
-            </button>
-            <button
-              aria-label="Scroll to contact"
-              onClick={() => scrollToSection("process")}
-              className="w-11 h-11 flex items-center justify-center bg-transparent border-0 focus:outline-none cursor-pointer -my-4"
-            >
-              <div className={`hero-scroll-dot ${activeSection === "process" ? "active" : ""}`} />
-            </button>
-            <button
-              aria-label="Scroll to signals"
-              onClick={() => scrollToSection("signals")}
-              className="w-11 h-11 flex items-center justify-center bg-transparent border-0 focus:outline-none cursor-pointer -my-4"
-            >
-              <div className={`hero-scroll-dot ${activeSection === "signals" ? "active" : ""}`} />
-            </button>
-            <div className="hero-scroll-line" />
-          </div>
+
 
           <div className="hero-content">
             <div className="hero-wordmark">
