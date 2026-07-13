@@ -3,6 +3,8 @@ import { PortfolioOnepager } from "@/components/portfolio-onepager";
 import { getInstagramMedia } from "@/lib/instagram";
 import { syncPortfolioArticles } from "@/lib/portfolio-sync";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "FLZ | Portfolio",
   description: "FLZ portfolio for game development, 3D modeling, automotive design, web development, and digital art.",

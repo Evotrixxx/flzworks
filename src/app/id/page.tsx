@@ -3,6 +3,8 @@ import { PortfolioOnepager } from "@/components/portfolio-onepager";
 import { getInstagramMedia } from "@/lib/instagram";
 import { syncPortfolioArticles } from "@/lib/portfolio-sync";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "FLZ | Identity",
   description: "Bence Flosz virtual namecard and contact details.",
