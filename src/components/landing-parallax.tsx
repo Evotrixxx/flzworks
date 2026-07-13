@@ -29,7 +29,7 @@ export function LandingParallax() {
     // scroll blur — keep the scroll parallax but skip mouse tracking + blur.
     const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
 
-    const DEPTH_ELEMENTS = [10, 22, 30, 38];
+    const DEPTH_ELEMENTS = [10, 22, 30, 38, 12];
     let running = false;
     let lastBlur = "";
     let lastScale = "";
@@ -192,6 +192,21 @@ export function LandingParallax() {
           className="absolute top-[18%] left-[6%] will-change-transform pointer-events-none"
         >
           <div className="w-[1px] h-[80px] bg-gradient-to-b from-transparent via-white/40 to-transparent opacity-60 animate-[depth-float-1_8s_ease-in-out_infinite]" />
+        </div>
+
+        {/* Depth Element 5: FLZ WORKS Wordmark (Between Back and Lego, depth: 12) */}
+        <div
+          ref={(el) => { depthRefs.current[4] = el; }}
+          className="absolute inset-0 flex items-center justify-center will-change-transform pointer-events-none"
+        >
+          <div className="hero-wordmark">
+            <span className="hero-wordmark-line1">
+              <span>F</span>
+              <span>L</span>
+              <span>Z</span>
+            </span>
+            <span className="hero-wordmark-line2">Works</span>
+          </div>
         </div>
 
         {/* Layer 1: Lego (depth: 16) */}

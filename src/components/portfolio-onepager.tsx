@@ -209,9 +209,8 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
 
       {/* Mobile Menu Overlay */}
       <div
-        className={`fixed inset-0 z-[990] bg-black/95 backdrop-blur-3xl flex flex-col justify-center p-12 transition-all duration-300 md:hidden ${
-          mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 z-[990] bg-black/95 backdrop-blur-3xl flex flex-col justify-center p-12 transition-all duration-300 md:hidden ${mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          }`}
       >
         <div className="flex flex-col space-y-6 max-w-md mx-auto w-full">
           {NAV_LINKS.map((lk, idx) => {
@@ -230,9 +229,8 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                     scrollToSection(lk.target);
                   }, 200);
                 }}
-                className={`text-4xl font-serif uppercase tracking-tight py-4 border-b border-white/5 transition-all text-left flex justify-between items-baseline ${
-                  active ? "text-white font-medium" : "text-white/40"
-                }`}
+                className={`text-4xl font-serif uppercase tracking-tight py-4 border-b border-white/5 transition-all text-left flex justify-between items-baseline ${active ? "text-white font-medium" : "text-white/40"
+                  }`}
               >
                 <span className="font-mono text-[9px] tracking-widest text-white/30">0{idx + 1}</span>
                 <span>{lk.label}</span>
@@ -244,21 +242,21 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
       </div>
 
       <main className="relative z-10 pb-24">
-        
+
         {/* ── Hero Section ── */}
         <section id="hero" className="hero">
           {/* Wireframe car SVG */}
           <div style={{ position: "absolute", inset: 0, zIndex: 1, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
             <div style={{ width: "70%", maxWidth: "900px", aspectRatio: "16/7", background: "radial-gradient(ellipse 60% 50% at 50% 55%, rgba(255,255,255,0.04) 0%, transparent 70%)", borderRadius: "4px", position: "relative", overflow: "hidden" }}>
               <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.06 }} viewBox="0 0 800 300" fill="none">
-                <line x1="0" y1="200" x2="800" y2="200" stroke="white" strokeWidth="0.5"/>
-                <line x1="0" y1="220" x2="800" y2="220" stroke="white" strokeWidth="0.3"/>
-                <line x1="100" y1="0" x2="100" y2="300" stroke="white" strokeWidth="0.3"/>
-                <line x1="400" y1="0" x2="400" y2="300" stroke="white" strokeWidth="0.3"/>
-                <line x1="700" y1="0" x2="700" y2="300" stroke="white" strokeWidth="0.3"/>
-                <ellipse cx="200" cy="220" rx="60" ry="18" stroke="white" strokeWidth="0.5"/>
-                <ellipse cx="600" cy="220" rx="60" ry="18" stroke="white" strokeWidth="0.5"/>
-                <path d="M 120 200 Q 200 120 300 110 L 500 110 Q 600 115 680 200" stroke="white" strokeWidth="0.8" fill="none"/>
+                <line x1="0" y1="200" x2="800" y2="200" stroke="white" strokeWidth="0.5" />
+                <line x1="0" y1="220" x2="800" y2="220" stroke="white" strokeWidth="0.3" />
+                <line x1="100" y1="0" x2="100" y2="300" stroke="white" strokeWidth="0.3" />
+                <line x1="400" y1="0" x2="400" y2="300" stroke="white" strokeWidth="0.3" />
+                <line x1="700" y1="0" x2="700" y2="300" stroke="white" strokeWidth="0.3" />
+                <ellipse cx="200" cy="220" rx="60" ry="18" stroke="white" strokeWidth="0.5" />
+                <ellipse cx="600" cy="220" rx="60" ry="18" stroke="white" strokeWidth="0.5" />
+                <path d="M 120 200 Q 200 120 300 110 L 500 110 Q 600 115 680 200" stroke="white" strokeWidth="0.8" fill="none" />
                 <text x="400" y="80" textAnchor="middle" fill="white" fontFamily="var(--font-mono), monospace" fontSize="8" letterSpacing="4" opacity="0.35">3D AUTOMOTIVE DESIGN</text>
               </svg>
             </div>
@@ -381,43 +379,43 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
 
                 const wireframeSVGs = [
                   <svg key="svg1" width="100%" height="100%" viewBox="0 0 400 530" fill="none" className="w-full h-full">
-                    <rect width="400" height="530" fill="#0d0d0d"/>
-                    <path d="M 60 380 Q 200 280 340 370" stroke="rgba(255,255,255,0.06)" strokeWidth="1.5" fill="none"/>
-                    <ellipse cx="110" cy="390" rx="45" ry="14" stroke="rgba(255,255,255,0.07)" strokeWidth="1"/>
-                    <ellipse cx="290" cy="390" rx="45" ry="14" stroke="rgba(255,255,255,0.07)" strokeWidth="1"/>
+                    <rect width="400" height="530" fill="#0d0d0d" />
+                    <path d="M 60 380 Q 200 280 340 370" stroke="rgba(255,255,255,0.06)" strokeWidth="1.5" fill="none" />
+                    <ellipse cx="110" cy="390" rx="45" ry="14" stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
+                    <ellipse cx="290" cy="390" rx="45" ry="14" stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
                     <text x="200" y="200" textAnchor="middle" fill="rgba(255,255,255,0.08)" fontFamily="var(--font-mono), monospace" fontSize="9" letterSpacing="3">MIRSAIREN</text>
                   </svg>,
                   <svg key="svg2" width="100%" height="100%" viewBox="0 0 400 225" fill="none" className="w-full h-full">
-                    <rect width="400" height="225" fill="#0f0d0d"/>
-                    <path d="M 20 160 L 80 120 Q 200 90 320 120 L 380 160" stroke="rgba(255,255,255,0.07)" strokeWidth="1" fill="none"/>
+                    <rect width="400" height="225" fill="#0f0d0d" />
+                    <path d="M 20 160 L 80 120 Q 200 90 320 120 L 380 160" stroke="rgba(255,255,255,0.07)" strokeWidth="1" fill="none" />
                     <text x="200" y="120" textAnchor="middle" fill="rgba(255,255,255,0.07)" fontFamily="var(--font-mono), monospace" fontSize="8" letterSpacing="4">HYDRA GTR</text>
                   </svg>,
                   <svg key="svg3" width="100%" height="100%" viewBox="0 0 300 300" fill="none" className="w-full h-full">
-                    <rect width="300" height="300" fill="#080c10"/>
-                    <rect x="60" y="60" width="180" height="180" stroke="rgba(255,255,255,0.05)" strokeWidth="1" fill="none"/>
-                    <rect x="90" y="90" width="120" height="120" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" fill="none"/>
+                    <rect width="300" height="300" fill="#080c10" />
+                    <rect x="60" y="60" width="180" height="180" stroke="rgba(255,255,255,0.05)" strokeWidth="1" fill="none" />
+                    <rect x="90" y="90" width="120" height="120" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" fill="none" />
                     <text x="150" y="158" textAnchor="middle" fill="rgba(255,255,255,0.09)" fontFamily="var(--font-mono), monospace" fontSize="8" letterSpacing="2">SYSTEM UI</text>
                   </svg>,
                   <svg key="svg4" width="100%" height="100%" viewBox="0 0 400 225" fill="none" className="w-full h-full">
-                    <rect width="400" height="225" fill="#0c0c0c"/>
-                    <path d="M 60 165 Q 200 95 340 155" stroke="rgba(255,255,255,0.06)" strokeWidth="1.2" fill="none"/>
-                    <ellipse cx="130" cy="175" rx="40" ry="12" stroke="rgba(255,255,255,0.06)" strokeWidth="0.8"/>
-                    <ellipse cx="270" cy="175" rx="40" ry="12" stroke="rgba(255,255,255,0.06)" strokeWidth="0.8"/>
+                    <rect width="400" height="225" fill="#0c0c0c" />
+                    <path d="M 60 165 Q 200 95 340 155" stroke="rgba(255,255,255,0.06)" strokeWidth="1.2" fill="none" />
+                    <ellipse cx="130" cy="175" rx="40" ry="12" stroke="rgba(255,255,255,0.06)" strokeWidth="0.8" />
+                    <ellipse cx="270" cy="175" rx="40" ry="12" stroke="rgba(255,255,255,0.06)" strokeWidth="0.8" />
                     <text x="200" y="110" textAnchor="middle" fill="rgba(255,255,255,0.07)" fontFamily="var(--font-mono), monospace" fontSize="7" letterSpacing="4">ATHAAN V2</text>
                   </svg>,
                   <svg key="svg5" width="100%" height="100%" viewBox="0 0 400 530" fill="none" className="w-full h-full">
-                    <rect width="400" height="530" fill="#0a0c0a"/>
-                    <circle cx="200" cy="265" r="100" stroke="rgba(255,255,255,0.04)" strokeWidth="1"/>
-                    <path d="M 100 265 L 300 265" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5"/>
-                    <path d="M 200 165 L 200 365" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5"/>
+                    <rect width="400" height="530" fill="#0a0c0a" />
+                    <circle cx="200" cy="265" r="100" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
+                    <path d="M 100 265 L 300 265" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" />
+                    <path d="M 200 165 L 200 365" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" />
                     <text x="200" y="273" textAnchor="middle" fill="rgba(255,255,255,0.09)" fontFamily="var(--font-mono), monospace" fontSize="9" letterSpacing="3">GODOT</text>
                   </svg>,
                   <svg key="svg6" width="100%" height="100%" viewBox="0 0 300 300" fill="none" className="w-full h-full">
-                    <rect width="300" height="300" fill="#0a0a0a"/>
-                    <line x1="0" y1="100" x2="300" y2="100" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5"/>
-                    <line x1="0" y1="200" x2="300" y2="200" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5"/>
-                    <line x1="100" y1="0" x2="100" y2="300" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5"/>
-                    <line x1="200" y1="0" x2="200" y2="300" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5"/>
+                    <rect width="300" height="300" fill="#0a0a0a" />
+                    <line x1="0" y1="100" x2="300" y2="100" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" />
+                    <line x1="0" y1="200" x2="300" y2="200" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" />
+                    <line x1="100" y1="0" x2="100" y2="300" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" />
+                    <line x1="200" y1="0" x2="200" y2="300" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" />
                     <text x="150" y="158" textAnchor="middle" fill="rgba(255,255,255,0.09)" fontFamily="var(--font-mono), monospace" fontSize="8" letterSpacing="2">WEB ARCH</text>
                   </svg>
                 ];
@@ -494,7 +492,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
           <div className="narrative-text">
             <div className="narrative-label">{"// Contact"}</div>
             <h2 className="narrative-title">Get in touch<br /><em>with the studio.</em></h2>
-            <p className="narrative-body">Have a project in mind, want to collaborate, or have questions about 3D automotive design, systems architecture, or custom web development? Let's build something exceptional.</p>
+            <p className="narrative-body">Have a project in mind, want to collaborate, or have questions about 3D automotive design, systems architecture, or custom web development? Let&apos;s build something exceptional.</p>
             <a href="mailto:floszbeni@gmail.com" className="narrative-link">Send an email</a>
           </div>
         </section>
