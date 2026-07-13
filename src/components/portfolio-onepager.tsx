@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import type { InstagramMediaItem } from "@/lib/instagram";
 import Image from "next/image";
 import type { PortfolioArticleWithImages } from "@/lib/portfolio-sync";
-import { Image as ImageIcon, ArrowUpRight, X, Zap } from "lucide-react";
-import { LandingParallax } from "./landing-parallax";
+import { Image as ImageIcon, X } from "lucide-react";
 
 const CATEGORY_LABELS: Record<string, string> = {
   CAR_DESIGN: "Automotive",
@@ -16,14 +15,6 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 type ArchiveCategory = "ALL" | "AUTOMOTIVE" | "BRICKWORKS" | "GAMES" | "MEDIA";
-
-const NAV_LINKS: { num: string; label: string; target: string; filter?: ArchiveCategory }[] = [
-  { num: "01", label: "Featured", target: "experience" },
-  { num: "02", label: "Automotive", target: "archive", filter: "AUTOMOTIVE" },
-  { num: "03", label: "Studio", target: "studio" },
-  { num: "04", label: "Social", target: "signals" },
-  { num: "05", label: "Contact", target: "process" },
-];
 
 interface PortfolioOnepagerProps {
   instagramMedia: InstagramMediaItem[];
@@ -38,21 +29,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
     index: number;
   } | null>(null);
   const [activeSection, setActiveSection] = useState("hero");
-  const [selectedCategory, setSelectedCategory] = useState<ArchiveCategory>("AUTOMOTIVE");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const shellRef = useRef<HTMLDivElement>(null);
-
-  // Write scroll progress directly to the DOM — avoids re-rendering the
-  // whole tree (masonry grid, modals) on every scroll frame.
-  useEffect(() => {
-    const handleScroll = () => {
-      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const percent = totalHeight > 0 ? (window.scrollY / totalHeight) * 100 : 0;
-      shellRef.current?.style.setProperty("--scroll-progress", `${percent}%`);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const [selectedCategory, setSelectedCategory] = useState<ArchiveCategory>("ALL");
 
   // Lock scroll when lightbox or detail modal is active
   useEffect(() => {
@@ -94,39 +71,27 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [activeGallery]);
 
-  // IntersectionObserver for scroll reveals
+  // IntersectionObserver to set active section for top bar highlights
   useEffect(() => {
-    const reveals = document.querySelectorAll(".reveal");
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          e.target.classList.add("visible");
-          io.unobserve(e.target);
-        }
-      });
-    }, { threshold: 0.12 });
-    reveals.forEach(el => io.observe(el));
-    return () => io.disconnect();
-  }, [selectedCategory]); // re-run when category changes (re-renders grid)
-
-  // IntersectionObserver to set active section for side scroll dots
-  useEffect(() => {
-    const sections = ["hero", "experience", "archive", "studio", "process", "signals"];
-    const observers = sections.map(id => {
+    const sections = ["hero", "filmstrip", "transmissions", "contact"];
+    const observers = sections.map((id) => {
       const el = document.getElementById(id);
       if (!el) return null;
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            setActiveSection(id);
-          }
-        });
-      }, { threshold: 0.2 });
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              setActiveSection(id);
+            }
+          });
+        },
+        { threshold: 0.2 }
+      );
       observer.observe(el);
       return { observer, el, id };
     });
     return () => {
-      observers.forEach(obs => {
+      observers.forEach((obs) => {
         if (obs) obs.observer.unobserve(obs.el);
       });
     };
@@ -143,473 +108,279 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    e.currentTarget.style.setProperty("--mouse-x", `${x}px`);
-    e.currentTarget.style.setProperty("--mouse-y", `${y}px`);
-  };
-
   return (
-    <div
-      ref={shellRef}
-      className="portfolio-shell min-h-screen text-white font-sans overflow-x-hidden selection:bg-white/20 selection:text-white"
-    >
-      <LandingParallax />
-
-      <nav className="nav-bar">
-        <button
-          type="button"
-          aria-label="Scroll to home"
-          className="nav-bar-logo"
-          onClick={() => {
-            setMobileMenuOpen(false);
-            scrollToSection("hero");
-          }}
-        >
-          FLZ
+    <div className="bp-root min-h-screen selection:bg-[#ffd166]/20 selection:text-[#ffd166]">
+      {/* Header */}
+      <header className="bp-topbar">
+        <button className="bp-logo" onClick={() => scrollToSection("hero")}>
+          FLZ.WORKS
         </button>
+        <nav className="bp-nav">
+          <button
+            className={`bp-nav-item ${activeSection === "hero" ? "is-active" : ""}`}
+            onClick={() => scrollToSection("hero")}
+          >
+            <span className="bp-nav-key">[F]</span> FEATURED
+          </button>
+          <button
+            className={`bp-nav-item ${activeSection === "filmstrip" ? "is-active" : ""}`}
+            onClick={() => {
+              setSelectedCategory("AUTOMOTIVE");
+              scrollToSection("filmstrip");
+            }}
+          >
+            <span className="bp-nav-key">[A]</span> AUTOMOTIVE
+          </button>
+          <button
+            className={`bp-nav-item ${activeSection === "transmissions" ? "is-active" : ""}`}
+            onClick={() => scrollToSection("transmissions")}
+          >
+            <span className="bp-nav-key">[S]</span> SOCIAL
+          </button>
+          <button
+            className={`bp-nav-item ${activeSection === "contact" ? "is-active" : ""}`}
+            onClick={() => scrollToSection("contact")}
+          >
+            <span className="bp-nav-key">[C]</span> CONTACT
+          </button>
+        </nav>
+      </header>
 
-        {/* Desktop Nav Links */}
-        <div className="hidden md:flex nav-bar-links">
-          {NAV_LINKS.map((lk) => {
-            const active = lk.filter
-              ? activeSection === lk.target && selectedCategory === lk.filter
-              : activeSection === lk.target;
+      {/* Hero Section */}
+      <section id="hero" className="bp-hero">
+        <div className="bp-hero-media">
+          <iframe
+            className="bp-hero-iframe"
+            title="Pentagon Athaan 2026"
+            src="https://sketchfab.com/models/cbb1b3572d0545f8a8fdbdb09836ebd6/embed?autostart=1&preload=1&transparent=1&ui_hint=0"
+            allow="autoplay; fullscreen; xr-spatial-tracking"
+            loading="lazy"
+          />
+        </div>
+        <div className="bp-hero-title">
+          <div className="bp-hero-eyebrow">DWG NO. FLZ-2026-001 · LIVE MODEL — DRAG TO ORBIT</div>
+          <h1 className="bp-hero-headline">
+            DRAWN, MODELED, RENDERED<span className="bp-accent">.</span>
+          </h1>
+        </div>
+        <div className="bp-hero-stats">
+          <span className="bp-chip">{publicArticles.length} SHEETS</span>
+          <span className="bp-chip bp-chip-accent">5+ YRS</span>
+        </div>
+      </section>
+
+      {/* Sheet Index (Filmstrip) */}
+      <section id="filmstrip" className="bp-filmstrip">
+        <div className="bp-filmstrip-head">
+          <div className="flex items-center gap-4 flex-wrap">
+            <span className="bp-section-label bp-accent">■ SHEET INDEX — WORKS &amp; LOG</span>
+            <div className="flex gap-2 font-mono text-[9px] tracking-wider uppercase">
+              <button
+                onClick={() => setSelectedCategory("ALL")}
+                className={`px-2 py-0.5 border border-[#dce7f5]/20 hover:border-[#dce7f5]/50 transition-colors ${
+                  selectedCategory === "ALL" ? "text-[#ffd166] border-[#ffd166]" : "text-[#dce7f5]/60"
+                }`}
+              >
+                [ALL]
+              </button>
+              <button
+                onClick={() => setSelectedCategory("AUTOMOTIVE")}
+                className={`px-2 py-0.5 border border-[#dce7f5]/20 hover:border-[#dce7f5]/50 transition-colors ${
+                  selectedCategory === "AUTOMOTIVE" ? "text-[#ffd166] border-[#ffd166]" : "text-[#dce7f5]/60"
+                }`}
+              >
+                [AUTOMOTIVE]
+              </button>
+            </div>
+          </div>
+          <span className="bp-scroll-hint">SCROLL →</span>
+        </div>
+
+        <div className="bp-filmstrip-track">
+          {filteredArticles.map((article, i) => {
+            const num = String(i + 1).padStart(3, "0");
+            const firstImg =
+              article.images.length > 0
+                ? `/api/portfolio/media/${article.folderName}/${article.images[0]}?w=640`
+                : null;
+
             return (
               <button
-                key={lk.label}
-                type="button"
-                onClick={() => {
-                  if (lk.filter) setSelectedCategory(lk.filter);
-                  scrollToSection(lk.target);
-                }}
-                className={`nav-bar-link min-h-[44px] ${active ? "active" : ""}`}
+                key={article.id}
+                className="bp-sheet"
+                onClick={() => setSelectedArticle(article)}
               >
-                <span>
-                  {lk.label}
-                </span>
-                <span className="nav-bar-link-rule" />
+                <div className="bp-sheet-img">
+                  {firstImg ? (
+                    <Image
+                      src={firstImg}
+                      alt={article.title}
+                      fill
+                      className="bp-sheet-img-el object-cover"
+                      sizes="250px"
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-[#dce7f5]/5 text-[#dce7f5]/30 text-[9px]">
+                      NO IMAGE
+                    </div>
+                  )}
+                </div>
+                <div className="bp-sheet-caption">
+                  SHT {num} — {article.title.toUpperCase()}
+                </div>
               </button>
             );
           })}
-        </div>
-
-        {/* Mobile Menu Toggle Button */}
-        <button
-          type="button"
-          aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="flex md:hidden items-center justify-center min-h-[44px] px-5 border border-white/10 hover:border-white/20 rounded-full font-mono text-[9px] tracking-widest uppercase transition-all bg-black/40 backdrop-blur-md text-white/80 hover:text-white"
-        >
-          {mobileMenuOpen ? "Close" : "Menu"}
-        </button>
-      </nav>
-
-      {/* Mobile Menu Overlay */}
-      <div
-        className={`fixed inset-0 z-[990] bg-black/95 backdrop-blur-3xl flex flex-col justify-center p-12 transition-all duration-300 md:hidden ${mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-          }`}
-      >
-        <div className="flex flex-col space-y-6 max-w-md mx-auto w-full">
-          {NAV_LINKS.map((lk, idx) => {
-            const active = lk.filter
-              ? activeSection === lk.target && selectedCategory === lk.filter
-              : activeSection === lk.target;
-            return (
-              <button
-                key={lk.label}
-                type="button"
-                onClick={() => {
-                  if (lk.filter) setSelectedCategory(lk.filter);
-                  setMobileMenuOpen(false);
-                  // Allow menu animation to start closing before scrolling
-                  setTimeout(() => {
-                    scrollToSection(lk.target);
-                  }, 200);
-                }}
-                className={`text-4xl font-serif uppercase tracking-tight py-4 border-b border-white/5 transition-all text-left flex justify-between items-baseline ${active ? "text-white font-medium" : "text-white/40"
-                  }`}
-              >
-                <span className="font-mono text-[9px] tracking-widest text-white/30">0{idx + 1}</span>
-                <span>{lk.label}</span>
-                <span className="text-xs text-white/30">↗</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <main className="relative z-10 pb-24">
-
-        {/* ── Hero Section ── */}
-        <section id="hero" className="hero">
-          {/* Wireframe car SVG */}
-          <div style={{ position: "absolute", inset: 0, zIndex: 1, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
-            <div style={{ width: "70%", maxWidth: "900px", aspectRatio: "16/7", background: "radial-gradient(ellipse 60% 50% at 50% 55%, rgba(255,255,255,0.04) 0%, transparent 70%)", borderRadius: "4px", position: "relative", overflow: "hidden" }}>
-              <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.06 }} viewBox="0 0 800 300" fill="none">
-                <line x1="0" y1="200" x2="800" y2="200" stroke="white" strokeWidth="0.5" />
-                <line x1="0" y1="220" x2="800" y2="220" stroke="white" strokeWidth="0.3" />
-                <line x1="100" y1="0" x2="100" y2="300" stroke="white" strokeWidth="0.3" />
-                <line x1="400" y1="0" x2="400" y2="300" stroke="white" strokeWidth="0.3" />
-                <line x1="700" y1="0" x2="700" y2="300" stroke="white" strokeWidth="0.3" />
-                <ellipse cx="200" cy="220" rx="60" ry="18" stroke="white" strokeWidth="0.5" />
-                <ellipse cx="600" cy="220" rx="60" ry="18" stroke="white" strokeWidth="0.5" />
-                <path d="M 120 200 Q 200 120 300 110 L 500 110 Q 600 115 680 200" stroke="white" strokeWidth="0.8" fill="none" />
-                <text x="400" y="80" textAnchor="middle" fill="white" fontFamily="var(--font-mono), monospace" fontSize="8" letterSpacing="4" opacity="0.35">3D AUTOMOTIVE DESIGN</text>
-              </svg>
-            </div>
-          </div>
-
-          <div className="hero-vignette" />
-
-
-
-          <div className="hero-content">
-            <div className="hero-wordmark">
-              <span className="hero-wordmark-line1">FLZ</span>
-              <span className="hero-wordmark-line2">Works</span>
-            </div>
-
-            <div className="hero-meta">
-              <p className="hero-tagline">Photorealistic automotive design & system architecture.</p>
-              <div className="hero-stats">
-                <div className="hero-stat">
-                  <span className="hero-stat-num">{publicArticles.length}</span>
-                  <span className="hero-stat-label">Projects</span>
-                </div>
-                <div className="hero-stat">
-                  <span className="hero-stat-num">5+</span>
-                  <span className="hero-stat-label">Years</span>
-                </div>
-                <div className="hero-stat">
-                  <span className="hero-stat-num">∞</span>
-                  <span className="hero-stat-label">Creativity</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="hero-cta">
-              <div className="hero-scroll-hint">
-                <div className="hero-scroll-hint-line" />
-                ↓ scroll to begin
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── Running Ticker ── */}
-        <div className="ticker-wrap">
-          <div className="ticker-inner">
-            {Array.from({ length: 4 }).map((_, idx) => (
-              <span key={idx} className="flex items-center">
-                <span className="ticker-item">3D Automotive Design<span className="ticker-dot" /></span>
-                <span className="ticker-item">System Architecture<span className="ticker-dot" /></span>
-                <span className="ticker-item">High-Performance Rendering<span className="ticker-dot" /></span>
-                <span className="ticker-item">FLZ Works · 2026<span className="ticker-dot" /></span>
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Sketchfab Interactive 3D Model Section ── */}
-        <section id="experience" className="pt-24 max-w-7xl mx-auto px-8 md:px-20 reveal">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-t border-white/5 pt-16">
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-1.5 h-1.5 bg-white/30 rounded-full animate-pulse" />
-                <p className="font-mono text-[9px] tracking-[0.4em] text-white/70 uppercase">
-                  Featured Works
-                </p>
-              </div>
-              <h2 className="text-5xl md:text-7xl font-serif font-semibold uppercase tracking-tighter leading-none">
-                Pentagon Athaan 2026 <span className="italic font-light text-white/70">on SketchFab</span>
-              </h2>
-            </div>
-            <div>
-              <span className="font-mono text-[9px] tracking-wider uppercase px-4 py-2 rounded-full border border-white/10 text-white/70">
-                Made in Blender
-              </span>
-            </div>
-          </div>
-
-          <div className="relative w-full rounded-2xl overflow-hidden border border-white/10 bg-black/40 shadow-2xl h-[500px] md:h-[650px]">
-            <iframe
-              title="Pentagon Athaan 2026"
-              frameBorder="0"
-              allowFullScreen
-              allow="autoplay; fullscreen; xr-spatial-tracking"
-              src="https://sketchfab.com/models/cbb1b3572d0545f8a8fdbdb09836ebd6/embed?autostart=1&preload=1&transparent=1&ui_hint=0"
-              className="w-full h-full border-0"
-            />
-          </div>
-        </section>
-
-        {/* ── Narrative Section 1: Process ── */}
-        <section id="archive" className="pt-24 max-w-7xl mx-auto px-8 md:px-20">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-t border-white/5 pt-16">
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-1.5 h-1.5 bg-white/30 rounded-full animate-pulse" />
-                <p className="font-mono text-[9px] tracking-[0.4em] text-white/70 uppercase">
-                  Blog
-                </p>
-              </div>
-              <h2 className="text-5xl md:text-7xl font-serif font-semibold uppercase tracking-tighter leading-none">
-                Works <span className="italic font-light text-white/70">& Log</span>
-              </h2>
-            </div>
-          </div>
-
-          {filteredArticles.length === 0 ? (
-            <div className="py-24 text-center border border-dashed border-white/[0.05] rounded-2xl">
-              <p className="text-[10px] font-mono tracking-widest uppercase text-white/60">
-                No projects in this category
-              </p>
-            </div>
-          ) : (
-            <div className="masonry-grid">
-              {filteredArticles.map((article, i) => {
-                const sizeClass = i % 3 === 0 ? "masonry-tall" : i % 3 === 1 ? "masonry-wide" : "masonry-square";
-                const fillClass = `fill-${(i % 5) + 1}`;
-                const firstImg = article.images.length > 0
-                  ? `/api/portfolio/media/${article.folderName}/${article.images[0]}?w=640`
-                  : null;
-
-                const wireframeSVGs = [
-                  <svg key="svg1" width="100%" height="100%" viewBox="0 0 400 530" fill="none" className="w-full h-full">
-                    <rect width="400" height="530" fill="#0d0d0d" />
-                    <path d="M 60 380 Q 200 280 340 370" stroke="rgba(255,255,255,0.06)" strokeWidth="1.5" fill="none" />
-                    <ellipse cx="110" cy="390" rx="45" ry="14" stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
-                    <ellipse cx="290" cy="390" rx="45" ry="14" stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
-                    <text x="200" y="200" textAnchor="middle" fill="rgba(255,255,255,0.08)" fontFamily="var(--font-mono), monospace" fontSize="9" letterSpacing="3">MIRSAIREN</text>
-                  </svg>,
-                  <svg key="svg2" width="100%" height="100%" viewBox="0 0 400 225" fill="none" className="w-full h-full">
-                    <rect width="400" height="225" fill="#0f0d0d" />
-                    <path d="M 20 160 L 80 120 Q 200 90 320 120 L 380 160" stroke="rgba(255,255,255,0.07)" strokeWidth="1" fill="none" />
-                    <text x="200" y="120" textAnchor="middle" fill="rgba(255,255,255,0.07)" fontFamily="var(--font-mono), monospace" fontSize="8" letterSpacing="4">HYDRA GTR</text>
-                  </svg>,
-                  <svg key="svg3" width="100%" height="100%" viewBox="0 0 300 300" fill="none" className="w-full h-full">
-                    <rect width="300" height="300" fill="#080c10" />
-                    <rect x="60" y="60" width="180" height="180" stroke="rgba(255,255,255,0.05)" strokeWidth="1" fill="none" />
-                    <rect x="90" y="90" width="120" height="120" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" fill="none" />
-                    <text x="150" y="158" textAnchor="middle" fill="rgba(255,255,255,0.09)" fontFamily="var(--font-mono), monospace" fontSize="8" letterSpacing="2">SYSTEM UI</text>
-                  </svg>,
-                  <svg key="svg4" width="100%" height="100%" viewBox="0 0 400 225" fill="none" className="w-full h-full">
-                    <rect width="400" height="225" fill="#0c0c0c" />
-                    <path d="M 60 165 Q 200 95 340 155" stroke="rgba(255,255,255,0.06)" strokeWidth="1.2" fill="none" />
-                    <ellipse cx="130" cy="175" rx="40" ry="12" stroke="rgba(255,255,255,0.06)" strokeWidth="0.8" />
-                    <ellipse cx="270" cy="175" rx="40" ry="12" stroke="rgba(255,255,255,0.06)" strokeWidth="0.8" />
-                    <text x="200" y="110" textAnchor="middle" fill="rgba(255,255,255,0.07)" fontFamily="var(--font-mono), monospace" fontSize="7" letterSpacing="4">ATHAAN V2</text>
-                  </svg>,
-                  <svg key="svg5" width="100%" height="100%" viewBox="0 0 400 530" fill="none" className="w-full h-full">
-                    <rect width="400" height="530" fill="#0a0c0a" />
-                    <circle cx="200" cy="265" r="100" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
-                    <path d="M 100 265 L 300 265" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" />
-                    <path d="M 200 165 L 200 365" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" />
-                    <text x="200" y="273" textAnchor="middle" fill="rgba(255,255,255,0.09)" fontFamily="var(--font-mono), monospace" fontSize="9" letterSpacing="3">GODOT</text>
-                  </svg>,
-                  <svg key="svg6" width="100%" height="100%" viewBox="0 0 300 300" fill="none" className="w-full h-full">
-                    <rect width="300" height="300" fill="#0a0a0a" />
-                    <line x1="0" y1="100" x2="300" y2="100" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" />
-                    <line x1="0" y1="200" x2="300" y2="200" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" />
-                    <line x1="100" y1="0" x2="100" y2="300" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" />
-                    <line x1="200" y1="0" x2="200" y2="300" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" />
-                    <text x="150" y="158" textAnchor="middle" fill="rgba(255,255,255,0.09)" fontFamily="var(--font-mono), monospace" fontSize="8" letterSpacing="2">WEB ARCH</text>
-                  </svg>
-                ];
-
-                return (
-                  <div
-                    key={article.id}
-                    className={`masonry-card ${sizeClass}`}
-                    onMouseMove={handleMouseMove}
-                    onClick={() => setSelectedArticle(article)}
-                  >
-                    <div className="relative w-full overflow-hidden bg-neutral-950/45 masonry-card-img-wrap">
-                      {firstImg ? (
-                        <Image
-                          src={firstImg}
-                          alt={article.title}
-                          fill
-                          className="masonry-card-img object-cover"
-                          sizes="(max-width: 768px) 100vw, 33vw"
-                          unoptimized
-                        />
-                      ) : (
-                        <div className={`masonry-img-placeholder ${fillClass} card-art w-full h-full`}>
-                          {wireframeSVGs[i % wireframeSVGs.length]}
-                        </div>
-                      )}
-                      <div className="masonry-card-index">#{String(i + 1).padStart(3, "0")}</div>
-                    </div>
-
-                    <div className="masonry-card-info">
-                      <span className="masonry-card-title">{article.title}</span>
-                      <span className="masonry-card-sub">
-                        {CATEGORY_LABELS[article.category] || "Other"} · 2026
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
+          {filteredArticles.length === 0 && (
+            <div className="py-12 text-[#dce7f5]/50 text-[10px] uppercase tracking-widest pl-8">
+              No sheets in this category
             </div>
           )}
-        </section>
+        </div>
+      </section>
 
-        {/* ── Identity Strip ── */}
-        <section id="studio" className="identity-strip reveal">
-          <div className="identity-mark">F</div>
-          <div className="identity-info">
-            <div className="identity-name">FLZ · Studio</div>
-            <p className="identity-bio">An independent design and engineering studio specializing in photorealistic 3D automotive design, system architecture, and high-performance rendering. Precision in every layer.</p>
-            <div className="identity-skills">
-              {["Blender", "Godot", "Three.js", "Next.js", "TypeScript", "Figma", "3D Automotive", "System Architecture"].map((tag) => (
-                <span key={tag} className="identity-skill">
-                  {tag}
-                </span>
-              ))}
-            </div>
+      {/* Transmissions */}
+      <section id="transmissions" className="bp-transmissions">
+        <div className="bp-section-label bp-accent">■ TRANSMISSIONS — X / IG / TIKTOK / LINKEDIN</div>
+        <div className="bp-transmissions-grid">
+          {/* X */}
+          <div className="bp-transmission">
+            <div className="bp-transmission-label">X — @FLZWORKS</div>
+            <a
+              href="https://x.com/flzworks"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bp-transmission-placeholder hover:text-[#ffd166] hover:border-[#ffd166] transition-colors"
+            >
+              X.COM/FLZWORKS ↗
+            </a>
           </div>
-        </section>
 
-        {/* ── Narrative: Get in Touch ── */}
-        <section id="process" className="narrative-section reveal">
-          <div className="narrative-visual">
-            <div className="relative w-full rounded-2xl overflow-hidden border border-white/10 bg-neutral-900 shadow-2xl" style={{ aspectRatio: "4/3" }}>
-              <Image
-                src="/profile.jpg"
-                alt="Bence Flosz"
-                fill
-                className="object-cover grayscale hover:grayscale-0 transition-all duration-500"
-                sizes="(max-width: 768px) 100vw, 40vw"
-                unoptimized
-              />
-            </div>
-            <div className="narrative-visual-tag">Bence Flosz</div>
-          </div>
-          <div className="narrative-text">
-            <div className="narrative-label">{"// Contact"}</div>
-            <h2 className="narrative-title">Get in touch<br /><em>with the studio.</em></h2>
-            <p className="narrative-body">Have a project in mind, want to collaborate, or have questions about 3D automotive design, systems architecture, or custom web development? Let&apos;s build something exceptional.</p>
-            <a href="mailto:floszbeni@gmail.com" className="narrative-link">Send an email</a>
-          </div>
-        </section>
-
-        {/* ── Instagram Signals ── */}
-        {instagramMedia.length > 0 && (
-          <section id="signals" className="mt-28 pt-16 border-t border-white/[0.05] max-w-7xl mx-auto px-8 md:px-20">
-            <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <Zap className="h-3 w-3 text-white/70 animate-pulse" />
-                  <p className="text-[9px] font-mono tracking-[0.4em] text-white/60 uppercase">
-                    Signals
-                  </p>
-                </div>
-                <h2 className="text-4xl md:text-6xl font-semibold font-serif uppercase tracking-tighter leading-none text-white/85">
-                  Works & <span className="italic font-light text-white/70">Log</span>
-                </h2>
+          {/* Instagram */}
+          <div className="bp-transmission">
+            <div className="bp-transmission-label">IG — @FLZWORKS</div>
+            {instagramMedia.length > 0 ? (
+              <div className="grid grid-cols-2 gap-1.5 aspect-video w-full">
+                {instagramMedia.slice(0, 4).map((item) => (
+                  <a
+                    key={item.id}
+                    href={item.permalink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="relative block w-full h-full overflow-hidden border border-[#dce7f5]/15 hover:border-[#dce7f5]/40"
+                  >
+                    {(item.thumbnail_url || item.media_url) && (
+                      <Image
+                        src={item.thumbnail_url || item.media_url || ""}
+                        alt={item.caption || "Instagram post"}
+                        fill
+                        className="object-cover opacity-80 hover:opacity-100 transition-opacity"
+                        sizes="100px"
+                        unoptimized
+                      />
+                    )}
+                  </a>
+                ))}
               </div>
+            ) : (
               <a
                 href="https://instagram.com/flzworks"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[10px] font-mono text-white/70 hover:text-white mt-3 md:mt-0 uppercase tracking-widest border border-white/10 hover:border-white/30 px-4 min-h-11 rounded-full inline-flex items-center transition-all"
+                className="bp-transmission-placeholder hover:text-[#ffd166] hover:border-[#ffd166] transition-colors"
               >
-                @flzworks ↗
+                INSTAGRAM.COM/FLZWORKS ↗
               </a>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-              {instagramMedia.slice(0, 10).map((item) => (
-                <a
-                  key={item.id}
-                  href={item.permalink}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="relative aspect-square overflow-hidden clip-squircle group bg-white/[0.02] border border-white/[0.05] hover:border-white/[0.14] transition-all duration-300"
-                >
-                  {(item.thumbnail_url || item.media_url) && (
-                    <Image
-                      src={item.thumbnail_url || item.media_url || ""}
-                      alt={item.caption || "Instagram post"}
-                      fill
-                      sizes="(max-width: 768px) 50vw, 20vw"
-                      className="object-cover opacity-70 group-hover:opacity-100 transition-all duration-400 grayscale-[20%] group-hover:grayscale-0"
-                      unoptimized
-                    />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-300" />
-                  <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition duration-200">
-                    <ArrowUpRight className="h-4 w-4 text-white/85" />
-                  </div>
-                </a>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* ── Footer ── */}
-        <footer id="contact" className="footer">
-          <div>
-            <div className="footer-brand">FLZ</div>
-            <div className="footer-meta">Design & Engineering · 2026</div>
+            )}
           </div>
-          <div className="footer-links">
-            <button onClick={() => scrollToSection("hero")} className="footer-link text-left">Home</button>
-            <button onClick={() => scrollToSection("archive")} className="footer-link text-left">Archive</button>
-            <button onClick={() => scrollToSection("process")} className="footer-link text-left">Process</button>
-            <button onClick={() => scrollToSection("studio")} className="footer-link text-left">Studio</button>
+
+          {/* TikTok */}
+          <div className="bp-transmission">
+            <div className="bp-transmission-label">TIKTOK — @FLZWORKS</div>
             <a
-              href="https://instagram.com/flzworks"
+              href="https://tiktok.com/@flzworks"
               target="_blank"
               rel="noopener noreferrer"
-              className="footer-link"
+              className="bp-transmission-placeholder hover:text-[#ffd166] hover:border-[#ffd166] transition-colors"
             >
-              Instagram
+              TIKTOK.COM/@FLZWORKS ↗
             </a>
           </div>
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: "8px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(255,255,255,0.7)", paddingTop: "8px", maxWidth: "200px", lineHeight: 1.8 }}>
-            Photorealistic 3D Automotive Design · System Architecture
-          </div>
-        </footer>
-      </main>
 
-      {/* ── Immersive Project Detail Modal ── */}
+          {/* LinkedIn */}
+          <div className="bp-transmission">
+            <div className="bp-transmission-label">LINKEDIN</div>
+            <a
+              href="https://linkedin.com/in/benceflosz"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bp-transmission-placeholder hover:text-[#ffd166] hover:border-[#ffd166] transition-colors"
+            >
+              LINKEDIN PROFILE ↗
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer / Titleblock */}
+      <footer id="contact" className="bp-titleblock">
+        <div className="bp-titleblock-cell">
+          <div className="bp-titleblock-label">DRAWN BY</div>
+          <div className="bp-titleblock-value">B. FLOSZ</div>
+        </div>
+        <div className="bp-titleblock-cell">
+          <div className="bp-titleblock-label">STUDIO</div>
+          <div className="bp-titleblock-value">FLZ WORKS</div>
+        </div>
+        <div className="bp-titleblock-cell">
+          <div className="bp-titleblock-label">DATE</div>
+          <div className="bp-titleblock-value">2026</div>
+        </div>
+        <div className="bp-titleblock-cell">
+          <div className="bp-titleblock-label">CONTACT</div>
+          <div className="bp-titleblock-value bp-accent">
+            <a className="bp-titleblock-link" href="mailto:floszbeni@gmail.com">
+              FLOSZBENI@GMAIL.COM ↗
+            </a>
+          </div>
+        </div>
+      </footer>
+
+      {/* Immersive Project Detail Modal */}
       {selectedArticle && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-3xl p-4 md:p-10 overflow-y-auto animate-fadeIn"
+          className="fixed inset-0 z-50 flex items-center justify-center bp-modal-overlay p-4 md:p-10 overflow-y-auto animate-fadeIn"
           onClick={() => setSelectedArticle(null)}
         >
           <div
-            className="relative w-full max-w-5xl bg-neutral-950/80 border border-white/20 rounded-[14px] overflow-hidden shadow-2xl transition-all duration-500 scale-100 max-h-[90vh] flex flex-col"
+            className="relative w-full max-w-5xl bp-modal-card rounded-none overflow-hidden shadow-2xl transition-all duration-500 scale-100 max-h-[90vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-8 py-6 border-b border-white/5">
+            <div className="flex items-center justify-between bp-modal-header">
               <div>
-                <span className="text-[9px] font-mono tracking-widest uppercase text-white/70">
+                <span className="text-[9px] font-mono tracking-widest uppercase bp-accent">
                   {CATEGORY_LABELS[selectedArticle.category] || "Other"}
                 </span>
-                <h3 className="font-serif text-2xl md:text-3xl font-semibold text-white mt-1">
+                <h3 className="font-sans text-xl md:text-2xl font-bold mt-1 uppercase tracking-tight">
                   {selectedArticle.title}
                 </h3>
               </div>
               <button
                 aria-label="Close details"
                 onClick={() => setSelectedArticle(null)}
-                className="w-11 h-11 flex items-center justify-center rounded-full bg-transparent border border-white/10 text-white/70 hover:text-white hover:border-white/30 transition-all cursor-pointer"
+                className="w-11 h-11 flex items-center justify-center bp-modal-close"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-8 space-y-8">
+            <div className="flex-1 overflow-y-auto bp-modal-content space-y-8">
               {/* Description */}
               <div className="max-w-3xl">
-                <p className="text-sm md:text-base text-white/70 leading-relaxed font-mono">
+                <p className="bp-modal-desc">
                   {selectedArticle.description || "Project description and technical specifications."}
                 </p>
               </div>
@@ -617,11 +388,11 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
               {/* Media Grid */}
               {selectedArticle.images.length > 0 && (
                 <div className="space-y-4">
-                  <h4 className="text-[9px] font-mono tracking-widest uppercase text-white/60 flex items-center gap-2">
+                  <h4 className="bp-modal-media-title flex items-center gap-2">
                     <ImageIcon className="h-3 w-3" />
-                    Project Media ({selectedArticle.images.length})
+                    PROJECT SHEET MEDIA ({selectedArticle.images.length})
                   </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="bp-modal-grid">
                     {selectedArticle.images.map((img, idx) => {
                       const imgPath = `/api/portfolio/media/${selectedArticle.folderName}/${img}?w=800`;
                       return (
@@ -634,17 +405,16 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                               index: idx,
                             });
                           }}
-                          className="relative aspect-video rounded-xl overflow-hidden bg-white/5 border border-white/10 hover:border-white/30 cursor-zoom-in transition-all duration-300 group"
+                          className="bp-modal-img-wrap"
                         >
                           <Image
                             src={imgPath}
                             alt={img}
                             fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                            className="object-cover hover:scale-102 transition-transform duration-500"
                             sizes="(max-width: 768px) 100vw, 33vw"
                             unoptimized
                           />
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition duration-300" />
                         </div>
                       );
                     })}
@@ -656,43 +426,44 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
         </div>
       )}
 
-      {/* ── Lightbox ── */}
+      {/* Lightbox */}
       {activeGallery && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 backdrop-blur-2xl animate-fadeIn"
+          className="fixed inset-0 z-[60] flex items-center justify-center bp-lightbox-overlay animate-fadeIn"
           onClick={() => setActiveGallery(null)}
         >
           <button
             aria-label="Close gallery"
-            className="absolute top-6 right-6 w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer z-10"
+            className="absolute top-6 right-6 w-11 h-11 flex items-center justify-center bp-lightbox-btn rounded-none cursor-pointer z-10"
             onClick={() => setActiveGallery(null)}
           >
             <X className="h-5 w-5" />
           </button>
           <button
             aria-label="Previous image"
-            className="absolute left-6 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer z-10"
+            className="absolute left-6 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center bp-lightbox-btn rounded-none cursor-pointer z-10 font-mono"
             onClick={(e) => {
               e.stopPropagation();
-              setActiveGallery((prev) => prev ? { ...prev, index: (prev.index - 1 + prev.images.length) % prev.images.length } : null);
+              setActiveGallery((prev) =>
+                prev ? { ...prev, index: (prev.index - 1 + prev.images.length) % prev.images.length } : null
+              );
             }}
           >
-            <span aria-hidden="true">←</span>
+            <span>←</span>
           </button>
           <button
             aria-label="Next image"
-            className="absolute right-6 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer z-10"
+            className="absolute right-6 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center bp-lightbox-btn rounded-none cursor-pointer z-10 font-mono"
             onClick={(e) => {
               e.stopPropagation();
-              setActiveGallery((prev) => prev ? { ...prev, index: (prev.index + 1) % prev.images.length } : null);
+              setActiveGallery((prev) =>
+                prev ? { ...prev, index: (prev.index + 1) % prev.images.length } : null
+              );
             }}
           >
-            <span aria-hidden="true">→</span>
+            <span>→</span>
           </button>
-          <div
-            className="relative max-w-5xl w-full h-[85vh] mx-6"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="relative max-w-5xl w-full h-[85vh] mx-6" onClick={(e) => e.stopPropagation()}>
             <Image
               src={`/api/portfolio/media/${activeGallery.folderName}/${activeGallery.images[activeGallery.index]}?w=1920`}
               alt={activeGallery.images[activeGallery.index]}
@@ -702,7 +473,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
               unoptimized
             />
           </div>
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 font-mono text-[10px] text-white/70 tracking-widest">
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 font-mono text-[10px] text-[#dce7f5]/70 tracking-widest">
             {activeGallery.index + 1} / {activeGallery.images.length}
           </div>
         </div>
