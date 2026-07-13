@@ -275,7 +275,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             </div>
 
             <div className="hero-meta">
-              <p className="hero-tagline">Photorealistic automotive design, system architecture & high-performance web rendering.</p>
+              <p className="hero-tagline">Photorealistic automotive design & system architecture.</p>
               <div className="hero-stats">
                 <div className="hero-stat">
                   <span className="hero-stat-num">{publicArticles.length}</span>
