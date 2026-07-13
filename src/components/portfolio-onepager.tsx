@@ -19,9 +19,10 @@ type ArchiveCategory = "ALL" | "AUTOMOTIVE" | "BRICKWORKS" | "GAMES" | "MEDIA";
 interface PortfolioOnepagerProps {
   instagramMedia: InstagramMediaItem[];
   articles: PortfolioArticleWithImages[];
+  forceNamecardOpen?: boolean;
 }
 
-export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepagerProps) {
+export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen }: PortfolioOnepagerProps) {
   const [selectedArticle, setSelectedArticle] = useState<PortfolioArticleWithImages | null>(null);
   const [activeGallery, setActiveGallery] = useState<{
     folderName: string;
@@ -30,6 +31,71 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
   } | null>(null);
   const [activeSection, setActiveSection] = useState("hero");
   const [selectedCategory, setSelectedCategory] = useState<ArchiveCategory>("ALL");
+
+  // Namecard and Contact Form states
+  const [isNamecardOpen, setIsNamecardOpen] = useState(forceNamecardOpen || false);
+  const [contactName, setContactName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactMessage, setContactMessage] = useState("");
+  const [formStatus, setFormStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [formError, setFormError] = useState("");
+
+  const handleSendEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!contactMessage.trim()) return;
+
+    setFormStatus("sending");
+    setFormError("");
+
+    try {
+      const res = await fetch("/api/portfolio/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: contactName,
+          email: contactEmail,
+          message: contactMessage,
+        }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Failed to send email");
+      }
+
+      setFormStatus("success");
+      setContactName("");
+      setContactEmail("");
+      setContactMessage("");
+    } catch (err: any) {
+      setFormStatus("error");
+      setFormError(err.message || "An error occurred.");
+    }
+  };
+
+  const downloadVCard = () => {
+    const vcard = [
+      "BEGIN:VCARD",
+      "VERSION:3.0",
+      "N:Flosz;Bence;;;",
+      "FN:Bence Flosz",
+      "ORG:FLZ Works",
+      "TITLE:3D Artist / Designer / Game Dev",
+      "EMAIL;TYPE=PREF,INTERNET:7bfloszb@gmail.com",
+      "URL:https://flz.works",
+      "END:VCARD"
+    ].join("\n");
+
+    const blob = new Blob([vcard], { type: "text/vcard;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "bence_flosz.vcf");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
 
   // Lock scroll when lightbox or detail modal is active
   useEffect(() => {
@@ -129,18 +195,6 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
               scrollToSection("filmstrip");
             }}
           >
-            <span className="bp-nav-key">[A]</span> AUTOMOTIVE
-          </button>
-          <button
-            className={`bp-nav-item ${activeSection === "transmissions" ? "is-active" : ""}`}
-            onClick={() => scrollToSection("transmissions")}
-          >
-            <span className="bp-nav-key">[S]</span> SOCIAL
-          </button>
-          <button
-            className={`bp-nav-item ${activeSection === "contact" ? "is-active" : ""}`}
-            onClick={() => scrollToSection("contact")}
-          >
             <span className="bp-nav-key">[C]</span> CONTACT
           </button>
         </nav>
@@ -158,45 +212,30 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
           />
         </div>
         <div className="bp-hero-title">
-          <div className="bp-hero-eyebrow">DWG NO. FLZ-2026-001 · LIVE MODEL — DRAG TO ORBIT</div>
+          <div className="bp-hero-eyebrow">PENTAGON ATHAAN 2026 · LIVE MODEL — DRAG TO ORBIT</div>
           <h1 className="bp-hero-headline">
-            DRAWN, MODELED, RENDERED<span className="bp-accent">.</span>
+            DRAWN, MODELED, RENDERED.<span className="bp-accent">.</span>
           </h1>
-        </div>
-        <div className="bp-hero-stats">
-          <span className="bp-chip">{publicArticles.length} SHEETS</span>
-          <span className="bp-chip bp-chip-accent">5+ YRS</span>
         </div>
       </section>
 
       {/* Sheet Index (Filmstrip) */}
       <section id="filmstrip" className="bp-filmstrip">
-        {/* Floating MORE button — scrolls page down to next section */}
-        <button
-          className="bp-filmstrip-more"
-          onClick={() => scrollToSection("transmissions")}
-          aria-label="Scroll to next section"
-        >
-          <span>MORE</span>
-          <span className="bp-filmstrip-more-arrow">↓</span>
-        </button>
         <div className="bp-filmstrip-head">
           <div className="flex items-center gap-4 flex-wrap">
             <span className="bp-section-label bp-accent">■ LOG</span>
             <div className="flex gap-2 font-mono text-[9px] tracking-wider uppercase">
               <button
                 onClick={() => setSelectedCategory("ALL")}
-                className={`px-2 py-0.5 border border-[#dce7f5]/20 hover:border-[#dce7f5]/50 transition-colors ${
-                  selectedCategory === "ALL" ? "text-[#ffd166] border-[#ffd166]" : "text-[#dce7f5]/60"
-                }`}
+                className={`px-2 py-0.5 border border-[#dce7f5]/20 hover:border-[#dce7f5]/50 transition-colors ${selectedCategory === "ALL" ? "text-[#ffd166] border-[#ffd166]" : "text-[#dce7f5]/60"
+                  }`}
               >
                 [ALL]
               </button>
               <button
                 onClick={() => setSelectedCategory("AUTOMOTIVE")}
-                className={`px-2 py-0.5 border border-[#dce7f5]/20 hover:border-[#dce7f5]/50 transition-colors ${
-                  selectedCategory === "AUTOMOTIVE" ? "text-[#ffd166] border-[#ffd166]" : "text-[#dce7f5]/60"
-                }`}
+                className={`px-2 py-0.5 border border-[#dce7f5]/20 hover:border-[#dce7f5]/50 transition-colors ${selectedCategory === "AUTOMOTIVE" ? "text-[#ffd166] border-[#ffd166]" : "text-[#dce7f5]/60"
+                  }`}
               >
                 [AUTOMOTIVE]
               </button>
@@ -277,7 +316,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
       {/* Transmissions — now an identical horizontal filmstrip */}
       <section id="transmissions" className="bp-filmstrip bp-transmissions">
         <div className="bp-filmstrip-head">
-          <span className="bp-section-label bp-accent">■ TRANSMISSIONS — X / IG / TIKTOK / LINKEDIN</span>
+          <span className="bp-section-label bp-accent">■ SOCIALS — X / IG / TIKTOK / LINKEDIN</span>
           <span className="bp-scroll-hint">SCROLL →</span>
         </div>
 
@@ -374,22 +413,83 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
         </div>
       </section>
 
+      {/* Contact Form Section */}
+      <section id="contact-form-section" className="bp-contact-form-sec">
+        <div className="bp-section-label bp-accent mb-6 px-8">■ SEND A MESSAGE</div>
+        <form onSubmit={handleSendEmail} className="bp-form">
+          <div className="bp-form-grid">
+            <div className="bp-form-group">
+              <label htmlFor="contact-name" className="bp-form-label">NAME</label>
+              <input
+                id="contact-name"
+                type="text"
+                value={contactName}
+                onChange={(e) => setContactName(e.target.value)}
+                placeholder="YOUR NAME"
+                className="bp-form-input"
+                maxLength={100}
+              />
+            </div>
+            <div className="bp-form-group">
+              <label htmlFor="contact-email" className="bp-form-label">EMAIL</label>
+              <input
+                id="contact-email"
+                type="email"
+                value={contactEmail}
+                onChange={(e) => setContactEmail(e.target.value)}
+                placeholder="YOUR.EMAIL@DOMAIN.COM"
+                className="bp-form-input"
+                maxLength={100}
+              />
+            </div>
+          </div>
+          <div className="bp-form-group mt-4">
+            <label htmlFor="contact-message" className="bp-form-label">MESSAGE</label>
+            <textarea
+              id="contact-message"
+              required
+              rows={4}
+              value={contactMessage}
+              onChange={(e) => setContactMessage(e.target.value)}
+              placeholder="WRITE YOUR MESSAGE HERE..."
+              className="bp-form-textarea"
+              maxLength={5000}
+            />
+          </div>
+          <div className="flex justify-between items-center flex-wrap gap-4 mt-6">
+            <button type="submit" disabled={formStatus === "sending"} className="bp-form-btn">
+              {formStatus === "sending" ? "SENDING..." : "SEND MESSAGE →"}
+            </button>
+            {formStatus === "success" && (
+              <span className="text-[10px] text-[#ffd166] font-mono tracking-wider animate-fadeIn">
+                MESSAGE SENT SUCCESSFULLY.
+              </span>
+            )}
+            {formStatus === "error" && (
+              <span className="text-[10px] text-red-400 font-mono tracking-wider animate-fadeIn">
+                ERROR: {formError.toUpperCase()}
+              </span>
+            )}
+          </div>
+        </form>
+      </section>
+
       {/* Footer / Titleblock */}
       <footer id="contact" className="bp-titleblock">
         <div className="bp-titleblock-cell">
-          <div className="bp-titleblock-label">DRAWN BY</div>
-          <div className="bp-titleblock-value">B. FLOSZ</div>
+          <div className="bp-titleblock-label">IMAGINED BY</div>
+          <div className="bp-titleblock-value">FLZ</div>
         </div>
         <div className="bp-titleblock-cell">
-          <div className="bp-titleblock-label">STUDIO</div>
+          <div className="bp-titleblock-label">CREATED BY</div>
           <div className="bp-titleblock-value">FLZ WORKS</div>
         </div>
         <div className="bp-titleblock-cell">
-          <div className="bp-titleblock-label">DATE</div>
-          <div className="bp-titleblock-value">2026</div>
+          <div className="bp-titleblock-label">GAMES BY</div>
+          <div className="bp-titleblock-value">FLZ STUDIO</div>
         </div>
         <div className="bp-titleblock-cell">
-          <div className="bp-titleblock-label">CONTACT</div>
+          <div className="bp-titleblock-label">SUBMISSION</div>
           <div className="bp-titleblock-value bp-accent">
             <a className="bp-titleblock-link" href="https://www.instagram.com/vision.flz/" target="_blank" rel="noopener noreferrer">
               VIA INSTAGRAM ↗
@@ -397,6 +497,120 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
           </div>
         </div>
       </footer>
+
+      {/* Floating ID Card Trigger Button (FAB) — only show if not forced open on /id page */}
+      {!forceNamecardOpen && (
+        <button
+          className="bp-id-fab"
+          onClick={() => setIsNamecardOpen(true)}
+          aria-label="Open virtual namecard"
+        >
+          <span className="bp-id-fab-icon">[ID]</span>
+          <span className="bp-id-fab-text">NAMECARD</span>
+        </button>
+      )}
+
+      {/* Virtual Namecard Modal Overlay */}
+      {isNamecardOpen && (
+        <div
+          className={`fixed inset-0 z-50 flex items-center justify-center bp-modal-overlay p-4 ${
+            forceNamecardOpen ? "bg-[#12284b]" : ""
+          }`}
+          onClick={() => !forceNamecardOpen && setIsNamecardOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-[420px] bp-namecard-box rounded-none shadow-2xl p-6 flex flex-col border-2"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            {!forceNamecardOpen && (
+              <button
+                aria-label="Close namecard"
+                onClick={() => setIsNamecardOpen(false)}
+                className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center bp-modal-close"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+
+            {/* Blueprint Header */}
+            <div className="border-b var(--bp-border-strong) pb-4 mb-4 font-mono text-[9px] tracking-widest text-[#ffd166] flex justify-between">
+              <span>FLZ WORKS // IDENTITY CARD</span>
+              <span>NO. 2026-001</span>
+            </div>
+
+            {/* Card Body */}
+            <div className="flex gap-4 items-start">
+              {/* Photo/Avatar area */}
+              <div className="w-20 h-24 border border-[#dce7f5]/30 flex flex-col items-center justify-center bg-[#dce7f5]/5 relative overflow-hidden shrink-0">
+                <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#ffd166_1px,transparent_1px)] [background-size:8px_8px]" />
+                <span className="text-[10px] font-mono text-[#dce7f5]/40">[PHOTO]</span>
+              </div>
+
+              {/* Details */}
+              <div className="flex-1 min-w-0">
+                <h3 className="font-sans text-xl font-bold uppercase tracking-tight text-[#dce7f5] leading-none mb-1">
+                  Bence Flosz
+                </h3>
+                <div className="text-[9px] font-mono tracking-wider text-[#ffd166] uppercase mb-4">
+                  3D Artist / Designer / Game Dev
+                </div>
+
+                <div className="space-y-1.5 font-mono text-[9px] text-[#dce7f5]/70">
+                  <div>STUDIO: FLZ WORKS</div>
+                  <div>LOC: BUDAPEST, HU</div>
+                  <div>URL: <a href="https://flz.works" target="_blank" rel="noopener noreferrer" className="text-[#ffd166] hover:underline">FLZ.WORKS</a></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Social Pill Links */}
+            <div className="grid grid-cols-2 gap-2 mt-6 font-mono text-[9px]">
+              <a
+                href="https://www.instagram.com/vision.flz/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border border-[#dce7f5]/30 p-2 text-center hover:border-[#ffd166] hover:text-[#ffd166] transition-colors"
+              >
+                IG ↗
+              </a>
+              <a
+                href="https://www.tiktok.com/@vision.flz"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border border-[#dce7f5]/30 p-2 text-center hover:border-[#ffd166] hover:text-[#ffd166] transition-colors"
+              >
+                TIKTOK ↗
+              </a>
+              <a
+                href="https://www.linkedin.com/in/bence-flosz-56134535a/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border border-[#dce7f5]/30 p-2 text-center hover:border-[#ffd166] hover:text-[#ffd166] transition-colors"
+              >
+                LINKEDIN ↗
+              </a>
+              <a
+                href="https://x.com/home"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border border-[#dce7f5]/30 p-2 text-center hover:border-[#ffd166] hover:text-[#ffd166] transition-colors"
+              >
+                X ↗
+              </a>
+            </div>
+
+            {/* vCard download trigger */}
+            <button
+              onClick={downloadVCard}
+              className="mt-4 w-full bg-[#ffd166] hover:bg-[#ffe599] text-[#12284b] font-mono text-[9px] font-bold tracking-widest py-2.5 transition-colors uppercase"
+            >
+              [DOWNLOAD VCARD]
+            </button>
+          </div>
+        </div>
+      )}
+
 
       {/* Immersive Project Detail Modal */}
       {selectedArticle && (

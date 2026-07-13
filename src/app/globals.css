@@ -2445,4 +2445,127 @@ select[aria-invalid="true"] {
   }
 }
 
+/* ===== Blueprint Contact Form Section ===== */
+.bp-contact-form-sec {
+  padding: 40px 32px 48px;
+  border-bottom: var(--bp-border-dashed);
+}
+.bp-form {
+  max-width: 600px;
+  margin: 0 auto;
+  font-family: inherit;
+}
+.bp-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 640px) {
+  .bp-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.bp-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.bp-form-label {
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  color: rgba(220, 231, 245, 0.5);
+  font-weight: 600;
+}
+.bp-form-input,
+.bp-form-textarea {
+  background: rgba(220, 231, 245, 0.03);
+  border: var(--bp-border-light);
+  color: var(--bp-fg);
+  font-family: inherit;
+  font-size: 11px;
+  padding: 10px 12px;
+  outline: none;
+  transition: all 0.2s ease;
+  border-radius: 0;
+}
+.bp-form-input:focus,
+.bp-form-textarea:focus {
+  border-color: var(--bp-accent);
+  background: rgba(220, 231, 245, 0.06);
+}
+.bp-form-btn {
+  background: transparent;
+  border: 1px solid var(--bp-accent);
+  color: var(--bp-accent);
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.bp-form-btn:hover {
+  background: var(--bp-accent);
+  color: var(--bp-bg);
+}
+.bp-form-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== Floating ID FAB ===== */
+.bp-id-fab {
+  position: fixed;
+  left: 24px;
+  bottom: 80px;
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(18, 40, 75, 0.8);
+  border: 1px solid var(--bp-accent);
+  color: var(--bp-accent);
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 8px 16px;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(18, 40, 75, 0.6);
+  transition: all 0.2s ease;
+}
+.bp-id-fab:hover {
+  background: var(--bp-accent);
+  color: var(--bp-bg);
+  transform: scale(1.05);
+}
+.bp-id-fab-icon {
+  font-weight: 800;
+}
+
+/* ===== Virtual Namecard ===== */
+.bp-namecard-box {
+  background: var(--bp-bg);
+  border-color: var(--bp-accent);
+  color: var(--bp-fg);
+  font-family: var(--font-ibm-plex-mono), ui-monospace, monospace;
+  box-shadow: 0 10px 30px rgba(18, 40, 75, 0.8);
+  background-image: linear-gradient(var(--bp-line) 1px, transparent 1px), linear-gradient(90deg, var(--bp-line) 1px, transparent 1px);
+  background-size: 14px 14px;
+}
+@media (max-width: 480px) {
+  .bp-namecard-box {
+    margin: 10px;
+    padding: 16px;
+  }
+  .bp-id-fab {
+    left: 16px;
+    bottom: 110px; /* Float slightly higher on mobile to clear floating footer spacing */
+  }
+}
+
+
 

@@ -249,6 +249,57 @@ async function sendWithBrevo(email: BuiltAccessRequestEmail) {
   }
 }
 
+export async function sendContactEmail(request: { name?: string; email?: string; message: string }) {
+  const fromEmail = process.env.BREVO_FROM?.trim() || process.env.GMAIL_SMTP_USER?.trim() || process.env.RESEND_FROM?.trim() || "noreply@flz.works";
+  const toEmail = "7bfloszb@gmail.com";
+
+  const built = {
+    from: fromEmail,
+    to: toEmail,
+    subject: `New Portfolio Message from ${request.name || "Anonymous"}`,
+    text: `Name: ${request.name || "N/A"}\nEmail: ${request.email || "N/A"}\n\nMessage:\n${request.message}`,
+    html: `
+      <div style="font-family:Arial,sans-serif;line-height:1.5;color:#111827">
+        <h1 style="font-size:18px">New Portfolio Message</h1>
+        <p><strong>Name:</strong> ${escapeHtml(request.name || "N/A")}</p>
+        <p><strong>Email:</strong> ${escapeHtml(request.email || "N/A")}</p>
+        <p style="margin-top:20px"><strong>Message:</strong></p>
+        <p style="white-space:pre-wrap;background:#f3f4f6;padding:12px">${escapeHtml(request.message)}</p>
+      </div>
+    `,
+  };
+
+  if (brevoConfigReady()) {
+    await sendWithBrevo(built);
+    return { sent: true };
+  }
+
+  if (smtpConfigReady()) {
+    const smtpUser = process.env.GMAIL_SMTP_USER?.trim();
+    const smtpPassword = process.env.GMAIL_SMTP_APP_PASSWORD?.replace(/\s+/g, "");
+    const smtpHost = await resolveGmailSmtpIpv4Host();
+
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: 587,
+      secure: false,
+      tls: { servername: "smtp.gmail.com" },
+      auth: { user: smtpUser, pass: smtpPassword },
+    });
+
+    await transporter.sendMail(built);
+    return { sent: true };
+  }
+
+  if (resendConfigReady()) {
+    await sendWithResend(built);
+    return { sent: true };
+  }
+
+  console.info("Contact email skipped because email delivery is not configured.", request);
+  return { sent: false };
+}
+
 async function resolveGmailSmtpIpv4Host() {
   const [address] = await resolve4("smtp.gmail.com");
   if (!address) {
