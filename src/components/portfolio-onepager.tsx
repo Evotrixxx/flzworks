@@ -558,20 +558,34 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
 
               {/* Details */}
               <div className="flex-1 min-w-0">
-                <h3 className="font-sans text-xl font-bold uppercase tracking-tight text-[#dce7f5] leading-none mb-1">
-                  Bence Flosz
+                <h3 className="font-mono text-sm font-bold uppercase tracking-tight text-[#dce7f5] leading-none mb-2">
+                  BENCE FLOSZ
                 </h3>
-                <div className="text-[9px] font-mono tracking-wider text-[#ffd166] uppercase mb-4">
+                <div className="text-[8px] font-mono tracking-wider text-[#ffd166] uppercase mb-4">
                   3D Artist / Designer / Game Dev
                 </div>
 
-                <div className="space-y-1.5 font-mono text-[9px] text-[#dce7f5]/70">
+                <div className="space-y-1.5 font-mono text-[8px] text-[#dce7f5]/70">
                   <div>STUDIO: FLZ WORKS</div>
                   <div>LOC: BUDAPEST, HU</div>
                   <div>URL: <a href="https://flz.works" target="_blank" rel="noopener noreferrer" className="text-[#ffd166] hover:underline">FLZ.WORKS</a></div>
                 </div>
               </div>
+
+              {/* QR Code area */}
+              <div className="w-20 h-24 border flex flex-col items-center justify-center bg-[#dce7f5]/5 relative overflow-hidden shrink-0 bp-namecard-qr p-1">
+                <div className="relative w-full h-full">
+                  <Image
+                    src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://flz.works&color=ffd166&bgcolor=12284b"
+                    alt="QR Code flz.works"
+                    fill
+                    className="object-contain"
+                    unoptimized
+                  />
+                </div>
+              </div>
             </div>
+
 
             {/* Social Pill Links */}
             <div className="grid grid-cols-2 gap-2 mt-6 font-mono text-[9px] bp-namecard-socials">
