@@ -61,27 +61,42 @@ export function LandingParallax() {
         lastOpacity = opacityVal;
       }
 
-      for (let i = 0; i < 4; i++) {
-        const el = layerRefs.current[i];
-        if (!el) continue;
-        const d = LAYERS[i].depth;
-        const mouseX = -current.current.x * d;
-        const mouseY = -current.current.y * d * 0.6;
-        // Deeper layers move slower, closer layers move faster to create vertical scroll depth
-        const scrollYOffset = -current.current.scrollY * d * 0.008;
-        el.style.transform =
-          `translate3d(${mouseX.toFixed(2)}px, ${(mouseY + scrollYOffset).toFixed(2)}px, 0) scale(${LAYER_SCALE})`;
-      }
+      const isMobile = window.matchMedia("(max-width: 768px)").matches || coarsePointer;
 
-      for (let i = 0; i < DEPTH_ELEMENTS.length; i++) {
-        const el = depthRefs.current[i];
-        if (!el) continue;
-        const d = DEPTH_ELEMENTS[i];
-        const mouseX = -current.current.x * d;
-        const mouseY = -current.current.y * d * 0.6;
-        const scrollYOffset = -current.current.scrollY * d * 0.008;
-        el.style.transform =
-          `translate3d(${mouseX.toFixed(2)}px, ${(mouseY + scrollYOffset).toFixed(2)}px, 0)`;
+      if (isMobile) {
+        for (let i = 0; i < 4; i++) {
+          const el = layerRefs.current[i];
+          if (!el) continue;
+          el.style.transform = `scale(${LAYER_SCALE})`;
+        }
+        for (let i = 0; i < DEPTH_ELEMENTS.length; i++) {
+          const el = depthRefs.current[i];
+          if (!el) continue;
+          el.style.transform = "";
+        }
+      } else {
+        for (let i = 0; i < 4; i++) {
+          const el = layerRefs.current[i];
+          if (!el) continue;
+          const d = LAYERS[i].depth;
+          const mouseX = -current.current.x * d;
+          const mouseY = -current.current.y * d * 0.6;
+          // Deeper layers move slower, closer layers move faster to create vertical scroll depth
+          const scrollYOffset = -current.current.scrollY * d * 0.008;
+          el.style.transform =
+            `translate3d(${mouseX.toFixed(2)}px, ${(mouseY + scrollYOffset).toFixed(2)}px, 0) scale(${LAYER_SCALE})`;
+        }
+
+        for (let i = 0; i < DEPTH_ELEMENTS.length; i++) {
+          const el = depthRefs.current[i];
+          if (!el) continue;
+          const d = DEPTH_ELEMENTS[i];
+          const mouseX = -current.current.x * d;
+          const mouseY = -current.current.y * d * 0.6;
+          const scrollYOffset = -current.current.scrollY * d * 0.008;
+          el.style.transform =
+            `translate3d(${mouseX.toFixed(2)}px, ${(mouseY + scrollYOffset).toFixed(2)}px, 0)`;
+        }
       }
     };
 

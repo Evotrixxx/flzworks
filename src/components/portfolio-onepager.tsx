@@ -39,6 +39,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
   } | null>(null);
   const [activeSection, setActiveSection] = useState("hero");
   const [selectedCategory, setSelectedCategory] = useState<ArchiveCategory>("AUTOMOTIVE");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const shellRef = useRef<HTMLDivElement>(null);
 
   // Write scroll progress directly to the DOM — avoids re-rendering the
@@ -162,11 +163,16 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
           type="button"
           aria-label="Scroll to home"
           className="nav-bar-logo"
-          onClick={() => scrollToSection("hero")}
+          onClick={() => {
+            setMobileMenuOpen(false);
+            scrollToSection("hero");
+          }}
         >
           FLZ
         </button>
-        <div className="nav-bar-links">
+
+        {/* Desktop Nav Links */}
+        <div className="hidden md:flex nav-bar-links">
           {NAV_LINKS.map((lk) => {
             const active = lk.filter
               ? activeSection === lk.target && selectedCategory === lk.filter
@@ -189,7 +195,53 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             );
           })}
         </div>
+
+        {/* Mobile Menu Toggle Button */}
+        <button
+          type="button"
+          aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="flex md:hidden items-center justify-center min-h-[44px] px-5 border border-white/10 hover:border-white/20 rounded-full font-mono text-[9px] tracking-widest uppercase transition-all bg-black/40 backdrop-blur-md text-white/80 hover:text-white"
+        >
+          {mobileMenuOpen ? "Close" : "Menu"}
+        </button>
       </nav>
+
+      {/* Mobile Menu Overlay */}
+      <div
+        className={`fixed inset-0 z-[990] bg-black/95 backdrop-blur-3xl flex flex-col justify-center p-12 transition-all duration-300 md:hidden ${
+          mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        <div className="flex flex-col space-y-6 max-w-md mx-auto w-full">
+          {NAV_LINKS.map((lk, idx) => {
+            const active = lk.filter
+              ? activeSection === lk.target && selectedCategory === lk.filter
+              : activeSection === lk.target;
+            return (
+              <button
+                key={lk.label}
+                type="button"
+                onClick={() => {
+                  if (lk.filter) setSelectedCategory(lk.filter);
+                  setMobileMenuOpen(false);
+                  // Allow menu animation to start closing before scrolling
+                  setTimeout(() => {
+                    scrollToSection(lk.target);
+                  }, 200);
+                }}
+                className={`text-4xl font-serif uppercase tracking-tight py-4 border-b border-white/5 transition-all text-left flex justify-between items-baseline ${
+                  active ? "text-white font-medium" : "text-white/40"
+                }`}
+              >
+                <span className="font-mono text-[9px] tracking-widest text-white/30">0{idx + 1}</span>
+                <span>{lk.label}</span>
+                <span className="text-xs text-white/30">↗</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       <main className="relative z-10 pb-24">
         
