@@ -562,7 +562,7 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
               </div>
 
               {/* Card Body */}
-              <div className="flex gap-4 items-start">
+              <div className="flex gap-4 items-start flex-1 mb-6">
                 {/* Photo/Avatar area */}
                 <div className="w-20 h-24 border flex flex-col items-center justify-center bg-[#dce7f5]/5 relative overflow-hidden shrink-0 bp-namecard-photo">
                   <Image
@@ -591,46 +591,10 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
                 </div>
               </div>
 
-              {/* Social Pill Links */}
-              <div className="grid grid-cols-2 gap-2 mt-6 font-mono text-[9px] bp-namecard-socials">
-                <a
-                  href="https://www.instagram.com/vision.flz/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 text-center transition-colors"
-                >
-                  IG ↗
-                </a>
-                <a
-                  href="https://www.tiktok.com/@vision.flz"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 text-center transition-colors"
-                >
-                  TIKTOK ↗
-                </a>
-                <a
-                  href="https://www.linkedin.com/in/bence-flosz-56134535a/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 text-center transition-colors"
-                >
-                  LINKEDIN ↗
-                </a>
-                <a
-                  href="https://x.com/home"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 text-center transition-colors"
-                >
-                  X ↗
-                </a>
-              </div>
-
               {/* vCard download trigger */}
               <button
                 onClick={downloadVCard}
-                className="mt-4 w-full bg-[#ffd166] hover:bg-[#ffe599] text-[#12284b] font-mono text-[9px] font-bold tracking-widest py-2.5 transition-colors uppercase bp-namecard-download-btn"
+                className="w-full bg-[#ffd166] hover:bg-[#ffe599] text-[#12284b] font-mono text-[9px] font-bold tracking-widest py-2.5 transition-colors uppercase bp-namecard-download-btn"
               >
                 [DOWNLOAD VCARD]
               </button>

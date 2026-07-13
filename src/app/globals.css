@@ -2621,15 +2621,6 @@ select[aria-invalid="true"] {
   border: var(--bp-border-strong) !important;
   border-color: var(--bp-accent) !important;
 }
-.bp-namecard-socials a {
-  border: var(--bp-border-light) !important;
-  color: var(--bp-fg);
-}
-.bp-namecard-socials a:hover {
-  border-color: var(--bp-accent) !important;
-  color: var(--bp-accent) !important;
-  background: rgba(255, 209, 102, 0.03);
-}
 .bp-namecard-download-btn {
   border: var(--bp-border-strong);
   border-color: var(--bp-accent);
