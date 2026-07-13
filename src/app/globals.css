@@ -2620,6 +2620,7 @@ select[aria-invalid="true"] {
 .bp-namecard-qr-aside {
   border: var(--bp-border-strong) !important;
   border-color: var(--bp-accent) !important;
+  background-color: #ffffff !important;
 }
 .bp-namecard-download-btn {
   border: var(--bp-border-strong);

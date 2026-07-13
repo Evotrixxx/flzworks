@@ -528,18 +528,17 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
             onClick={(e) => e.stopPropagation()}
           >
             {/* QR Card (Left Side) — White background, black QR Code, full height of ID Card */}
-            <div className="bg-white p-4 flex flex-col items-center justify-center shrink-0 w-full md:w-[130px] bp-namecard-qr-aside">
-              <div className="relative w-full aspect-square md:h-full md:w-auto flex items-center justify-center">
-                <Image
-                  src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://flz.works"
-                  alt="QR Code flz.works"
-                  width={250}
-                  height={250}
-                  className="object-contain"
-                  unoptimized
-                />
-              </div>
+            <div
+              style={{ backgroundColor: "#ffffff" }}
+              className="p-4 flex flex-col items-center justify-center shrink-0 w-full md:w-[155px] bp-namecard-qr-aside"
+            >
+              <img
+                src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://flz.works"
+                alt="QR Code flz.works"
+                className="w-full h-auto object-contain max-w-full"
+              />
             </div>
+
 
             {/* ID Card (Right Side) */}
             <div
