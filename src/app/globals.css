@@ -2478,16 +2478,16 @@ select[aria-invalid="true"] {
     right: auto;
     bottom: 16px;
   }
+  /* Mobile: show social cards inside filmstrip, hide the full transmissions section */
+  .bp-transmissions-desktop {
+    display: none;
+  }
   /* Mobile: show social cards inside filmstrip */
   .bp-sheet-social-mobile {
     display: flex;
     flex-direction: column;
     width: 160px;
     flex: none;
-    pointer-events: none;
-  }
-  .bp-sheet-social-mobile .bp-sheet-social-link {
-    pointer-events: all;
   }
   .bp-sheet-social-body {
     display: flex;

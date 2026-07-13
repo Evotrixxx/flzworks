@@ -197,17 +197,6 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
         </div>
 
         <div className="bp-filmstrip-track">
-          {/* MORE button — leftmost card */}
-          <button
-            className="bp-sheet bp-sheet-more"
-            onClick={() => setSelectedCategory("ALL")}
-          >
-            <div className="bp-sheet-img bp-sheet-more-body">
-              <span className="bp-sheet-more-label">ALL →</span>
-            </div>
-            <div className="bp-sheet-caption">MORE</div>
-          </button>
-
           {filteredArticles.map((article) => {
             const d = new Date(article.createdAt);
             const mm = String(d.getMonth() + 1).padStart(2, "0");
@@ -253,67 +242,74 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
           )}
 
           {/* Mobile: Social cards appended inline in the same filmstrip */}
-          <div className="bp-sheet bp-sheet-social-mobile" aria-hidden="true">
+          <div className="bp-sheet bp-sheet-social-mobile">
             <div className="bp-sheet-img bp-sheet-social-body">
               <a
                 href="https://x.com/flzworks"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bp-sheet-social-link"
-                onClick={(e) => e.stopPropagation()}
               >
                 X ↗
               </a>
             </div>
             <div className="bp-sheet-caption">X — @FLZWORKS</div>
           </div>
-          <div className="bp-sheet bp-sheet-social-mobile" aria-hidden="true">
+          <div className="bp-sheet bp-sheet-social-mobile">
             <div className="bp-sheet-img bp-sheet-social-body">
               <a
                 href="https://instagram.com/flzworks"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bp-sheet-social-link"
-                onClick={(e) => e.stopPropagation()}
               >
                 IG ↗
               </a>
             </div>
             <div className="bp-sheet-caption">IG — @FLZWORKS</div>
           </div>
-          <div className="bp-sheet bp-sheet-social-mobile" aria-hidden="true">
+          <div className="bp-sheet bp-sheet-social-mobile">
             <div className="bp-sheet-img bp-sheet-social-body">
               <a
                 href="https://tiktok.com/@flzworks"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bp-sheet-social-link"
-                onClick={(e) => e.stopPropagation()}
               >
                 TT ↗
               </a>
             </div>
             <div className="bp-sheet-caption">TIKTOK — @FLZWORKS</div>
           </div>
-          <div className="bp-sheet bp-sheet-social-mobile" aria-hidden="true">
+          <div className="bp-sheet bp-sheet-social-mobile">
             <div className="bp-sheet-img bp-sheet-social-body">
               <a
                 href="https://linkedin.com/in/benceflosz"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bp-sheet-social-link"
-                onClick={(e) => e.stopPropagation()}
               >
                 LI ↗
               </a>
             </div>
             <div className="bp-sheet-caption">LINKEDIN</div>
           </div>
+
+          {/* MORE — last card, scrolls down to next section */}
+          <button
+            className="bp-sheet bp-sheet-more"
+            onClick={() => scrollToSection("transmissions")}
+          >
+            <div className="bp-sheet-img bp-sheet-more-body">
+              <span className="bp-sheet-more-label">↓</span>
+            </div>
+            <div className="bp-sheet-caption">MORE</div>
+          </button>
         </div>
       </section>
 
-      {/* Transmissions */}
-      <section id="transmissions" className="bp-transmissions">
+      {/* Transmissions — hidden on mobile, shown via filmstrip social cards instead */}
+      <section id="transmissions" className="bp-transmissions bp-transmissions-desktop">
         <div className="bp-section-label bp-accent">■ TRANSMISSIONS — X / IG / TIKTOK / LINKEDIN</div>
         <div className="bp-transmissions-grid">
           {/* X */}
