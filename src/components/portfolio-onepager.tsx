@@ -287,7 +287,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                 </div>
                 <div className="hero-stat">
                   <span className="hero-stat-num">∞</span>
-                  <span className="hero-stat-label">Precision</span>
+                  <span className="hero-stat-label">Creativity</span>
                 </div>
               </div>
             </div>
@@ -326,12 +326,12 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                 </p>
               </div>
               <h2 className="text-5xl md:text-7xl font-serif font-semibold uppercase tracking-tighter leading-none">
-                Featured <span className="italic font-light text-white/70">Works</span>
+                Pentagon Athaan 2026 <span className="italic font-light text-white/70">on SketchFab</span>
               </h2>
             </div>
             <div>
               <span className="font-mono text-[9px] tracking-wider uppercase px-4 py-2 rounded-full border border-white/10 text-white/70">
-                Real-time WebGL
+                Made in Blender
               </span>
             </div>
           </div>
@@ -355,11 +355,11 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
               <div className="flex items-center gap-2 mb-3">
                 <span className="w-1.5 h-1.5 bg-white/30 rounded-full animate-pulse" />
                 <p className="font-mono text-[9px] tracking-[0.4em] text-white/70 uppercase">
-                  Archive
+                  Blog
                 </p>
               </div>
               <h2 className="text-5xl md:text-7xl font-serif font-semibold uppercase tracking-tighter leading-none">
-                Automotive <span className="italic font-light text-white/70">Archive</span>
+                Works <span className="italic font-light text-white/70">& Log</span>
               </h2>
             </div>
           </div>
