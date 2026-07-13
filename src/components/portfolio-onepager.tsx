@@ -37,9 +37,8 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
     images: string[];
     index: number;
   } | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<ArchiveCategory>("AUTOMOTIVE");
-  const [uiHidden, setUiHidden] = useState(false);
   const [activeSection, setActiveSection] = useState("hero");
+  const [selectedCategory, setSelectedCategory] = useState<ArchiveCategory>("AUTOMOTIVE");
   const shellRef = useRef<HTMLDivElement>(null);
 
   // Write scroll progress directly to the DOM — avoids re-rendering the
@@ -65,39 +64,6 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
       document.body.style.overflow = "";
     };
   }, [activeGallery, selectedArticle]);
-
-  // Keypress to enter showroom mode (pressing 'h' or 'H')
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA") {
-        return;
-      }
-      if (e.key.toLowerCase() === "h" && !selectedArticle && !activeGallery) {
-        setUiHidden(true);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedArticle, activeGallery]);
-
-  // Click or keypress to exit showroom mode (using capturing phase to prevent propagation)
-  useEffect(() => {
-    if (!uiHidden) return;
-    const handleExitShowroomClick = (e: MouseEvent) => {
-      e.stopPropagation();
-      e.preventDefault();
-      setUiHidden(false);
-    };
-    const handleExitShowroomKey = () => {
-      setUiHidden(false);
-    };
-    window.addEventListener("click", handleExitShowroomClick, true); // capturing phase
-    window.addEventListener("keydown", handleExitShowroomKey);
-    return () => {
-      window.removeEventListener("click", handleExitShowroomClick, true);
-      window.removeEventListener("keydown", handleExitShowroomKey);
-    };
-  }, [uiHidden]);
 
   // Keyboard navigation for lightbox
   useEffect(() => {
@@ -191,8 +157,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
     >
       <LandingParallax />
 
-      {/* ── Editorial Top Bar Nav ── */}
-      <nav className={`nav-bar ${uiHidden ? "opacity-0 -translate-y-full pointer-events-none" : "opacity-100 translate-y-0"}`}>
+      <nav className="nav-bar">
         <button
           type="button"
           aria-label="Scroll to home"
@@ -217,7 +182,6 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                 className={`nav-bar-link min-h-[44px] ${active ? "active" : ""}`}
               >
                 <span>
-                  <span className="nav-bar-link-num">{lk.num}</span>
                   {lk.label}
                 </span>
                 <span className="nav-bar-link-rule" />
@@ -227,7 +191,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
         </div>
       </nav>
 
-      <main className={`relative z-10 pb-24 transition-all duration-700 ${uiHidden ? "opacity-0 scale-[0.98] pointer-events-none" : "opacity-100 scale-100"}`}>
+      <main className="relative z-10 pb-24">
         
         {/* ── Hero Section ── */}
         <section id="hero" className="hero">
@@ -384,7 +348,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
               <div className="flex items-center gap-2 mb-3">
                 <span className="w-1.5 h-1.5 bg-white/30 rounded-full animate-pulse" />
                 <p className="font-mono text-[9px] tracking-[0.4em] text-white/70 uppercase">
-                  01 — Archive
+                  Archive
                 </p>
               </div>
               <h2 className="text-5xl md:text-7xl font-serif font-semibold uppercase tracking-tighter leading-none">
@@ -522,7 +486,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             <div className="narrative-visual-tag">FLZ · 2026</div>
           </div>
           <div className="narrative-text">
-            <div className="narrative-label">{"// 03 — Contact"}</div>
+            <div className="narrative-label">{"// Contact"}</div>
             <h2 className="narrative-title">Get in touch<br /><em>with the studio.</em></h2>
             <p className="narrative-body">Have a project in mind, want to collaborate, or have questions about 3D automotive design, systems architecture, or custom web development? Let's build something exceptional.</p>
             <a href="mailto:floszbeni@gmail.com" className="narrative-link">Send an email</a>
@@ -603,7 +567,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             </a>
           </div>
           <div style={{ fontFamily: "var(--font-mono)", fontSize: "8px", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(255,255,255,0.7)", paddingTop: "8px", maxWidth: "200px", lineHeight: 1.8 }}>
-            Photorealistic 3D Automotive Design · System Architecture · Press H for showroom mode
+            Photorealistic 3D Automotive Design · System Architecture
           </div>
         </footer>
       </main>
