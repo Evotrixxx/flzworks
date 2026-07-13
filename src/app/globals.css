@@ -294,12 +294,16 @@ select[aria-invalid="true"] {
 .portfolio-shell {
   --text-secondary: rgba(255,255,255,0.72);
   --text-tertiary: rgba(255,255,255,0.62);
-  background: linear-gradient(to bottom, #000000 0%, #000000 100vh, #161616 130vh, #161616 100%);
-  background-color: #161616;
+  background: #000000;
   color: #ffffff;
   position: relative;
   isolation: isolate;
   overflow-x: clip;
+}
+
+.portfolio-shell main {
+  background: linear-gradient(to bottom, transparent 0%, transparent 100vh, #161616 130vh, #161616 100%);
+  background-color: #161616;
 }
 
 /* ── EDITORIAL TOP BAR NAV ── */

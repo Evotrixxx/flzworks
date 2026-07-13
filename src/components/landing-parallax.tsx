@@ -43,7 +43,7 @@ export function LandingParallax() {
       const blurAmount = coarsePointer ? 0 : Math.round(progress * 8 * 2) / 2;
       const blurVal = blurAmount === 0 ? "none" : `blur(${blurAmount.toFixed(1)}px)`;
       const scaleVal = (1.0 + Math.round(progress * 0.08 * 200) / 200).toFixed(3);
-      const opacityVal = (Math.round(progress * 0.55 * 100) / 100).toFixed(2);
+      const opacityVal = (Math.round(progress * 1.00 * 100) / 100).toFixed(2);
 
       if (wrapperRef.current) {
         if (blurVal !== lastBlur) {
