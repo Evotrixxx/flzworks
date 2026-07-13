@@ -171,6 +171,15 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
 
       {/* Sheet Index (Filmstrip) */}
       <section id="filmstrip" className="bp-filmstrip">
+        {/* Floating MORE button — scrolls page down to next section */}
+        <button
+          className="bp-filmstrip-more"
+          onClick={() => scrollToSection("transmissions")}
+          aria-label="Scroll to next section"
+        >
+          <span>MORE</span>
+          <span className="bp-filmstrip-more-arrow">↓</span>
+        </button>
         <div className="bp-filmstrip-head">
           <div className="flex items-center gap-4 flex-wrap">
             <span className="bp-section-label bp-accent">■ LOG</span>
@@ -294,17 +303,6 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
             </div>
             <div className="bp-sheet-caption">LINKEDIN</div>
           </div>
-
-          {/* MORE — last card, scrolls down to next section */}
-          <button
-            className="bp-sheet bp-sheet-more"
-            onClick={() => scrollToSection("transmissions")}
-          >
-            <div className="bp-sheet-img bp-sheet-more-body">
-              <span className="bp-sheet-more-label">↓</span>
-            </div>
-            <div className="bp-sheet-caption">MORE</div>
-          </button>
         </div>
       </section>
 

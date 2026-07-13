@@ -2145,6 +2145,7 @@ select[aria-invalid="true"] {
   color: var(--bp-accent);
 }
 .bp-filmstrip {
+  position: relative;
   border-bottom: var(--bp-border-dashed);
 }
 .bp-filmstrip-head {
@@ -2229,26 +2230,39 @@ select[aria-invalid="true"] {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* MORE card */
-.bp-sheet-more {
-  width: 120px;
-  flex: none;
-}
-.bp-sheet-more-body {
+/* Floating MORE button — right side of filmstrip, scrolls page down */
+.bp-filmstrip-more {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 10;
+  width: 36px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(220, 231, 245, 0.03);
-  border: 1px dashed rgba(255, 209, 102, 0.4);
-}
-.bp-sheet-more-label {
-  font-size: 11px;
-  letter-spacing: 0.16em;
+  gap: 6px;
+  background: var(--bp-bg);
+  border-left: var(--bp-border-strong);
   color: var(--bp-accent);
+  font-family: inherit;
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  padding: 16px 0;
 }
-.bp-sheet-more:hover .bp-sheet-more-body {
-  border-color: var(--bp-accent);
-  background: rgba(255, 209, 102, 0.05);
+.bp-filmstrip-more:hover {
+  background: rgba(255, 209, 102, 0.06);
+  color: #ffe599;
+}
+.bp-filmstrip-more-arrow {
+  writing-mode: horizontal-tb;
+  font-size: 12px;
+  margin-top: 4px;
 }
 .bp-transmissions {
   padding: 20px 32px 28px;
