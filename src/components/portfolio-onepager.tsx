@@ -479,18 +479,17 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
         {/* ── Narrative: Get in Touch ── */}
         <section id="process" className="narrative-section reveal">
           <div className="narrative-visual">
-            <div className="narrative-img-placeholder fill-1 card-art" style={{ aspectRatio: "4/3" }}>
-              <svg width="100%" height="100%" viewBox="0 0 600 450" fill="none">
-                <rect width="600" height="450" fill="#0a0a0a"/>
-                <circle cx="300" cy="225" r="120" stroke="rgba(255,255,255,0.04)" strokeWidth="1"/>
-                <circle cx="300" cy="225" r="80" stroke="rgba(255,255,255,0.06)" strokeWidth="0.5"/>
-                <line x1="180" y1="225" x2="420" y2="225" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5"/>
-                <line x1="300" y1="105" x2="300" y2="345" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5"/>
-                <text x="300" y="235" textAnchor="middle" fill="rgba(255,255,255,0.12)" fontFamily="var(--font-mono), monospace" fontSize="10" letterSpacing="4">CONNECT</text>
-                <text x="300" y="260" textAnchor="middle" fill="rgba(255,255,255,0.06)" fontFamily="var(--font-mono), monospace" fontSize="7" letterSpacing="3">GET IN TOUCH</text>
-              </svg>
+            <div className="relative w-full rounded-2xl overflow-hidden border border-white/10 bg-neutral-900 shadow-2xl" style={{ aspectRatio: "4/3" }}>
+              <Image
+                src="/profile.jpg"
+                alt="Bence Flosz"
+                fill
+                className="object-cover grayscale hover:grayscale-0 transition-all duration-500"
+                sizes="(max-width: 768px) 100vw, 40vw"
+                unoptimized
+              />
             </div>
-            <div className="narrative-visual-tag">FLZ · 2026</div>
+            <div className="narrative-visual-tag">Bence Flosz</div>
           </div>
           <div className="narrative-text">
             <div className="narrative-label">{"// Contact"}</div>
