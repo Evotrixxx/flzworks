@@ -2022,6 +2022,7 @@ select[aria-invalid="true"] {
   --bp-border-dashed: 1px dashed rgba(220, 231, 245, 0.35);
   --bp-scrim: rgba(18, 40, 75, 0.75);
   min-height: 100vh;
+  padding-bottom: 56px;
   background-color: var(--bp-bg);
   color: var(--bp-fg);
   font-family: var(--font-ibm-plex-mono), ui-monospace, monospace;
@@ -2168,8 +2169,22 @@ select[aria-invalid="true"] {
   padding: 0 32px 24px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(220, 231, 245, 0.3) transparent;
+  scrollbar-width: auto;
+  scrollbar-color: var(--bp-accent) rgba(220, 231, 245, 0.08);
+}
+.bp-filmstrip-track::-webkit-scrollbar {
+  height: 6px;
+}
+.bp-filmstrip-track::-webkit-scrollbar-track {
+  background: rgba(220, 231, 245, 0.06);
+  border-radius: 0;
+}
+.bp-filmstrip-track::-webkit-scrollbar-thumb {
+  background: var(--bp-accent);
+  border-radius: 0;
+}
+.bp-filmstrip-track::-webkit-scrollbar-thumb:hover {
+  background: #ffe599;
 }
 .bp-sheet {
   flex: none;
@@ -2214,6 +2229,27 @@ select[aria-invalid="true"] {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* MORE card */
+.bp-sheet-more {
+  width: 120px;
+  flex: none;
+}
+.bp-sheet-more-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(220, 231, 245, 0.03);
+  border: 1px dashed rgba(255, 209, 102, 0.4);
+}
+.bp-sheet-more-label {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--bp-accent);
+}
+.bp-sheet-more:hover .bp-sheet-more-body {
+  border-color: var(--bp-accent);
+  background: rgba(255, 209, 102, 0.05);
+}
 .bp-transmissions {
   padding: 20px 32px 28px;
   border-bottom: var(--bp-border-strong);
@@ -2228,33 +2264,60 @@ select[aria-invalid="true"] {
   gap: 14px;
   align-items: start;
 }
+/* Transmission card — unified with bp-sheet */
 .bp-transmission {
   border: var(--bp-border-light);
-  padding: 10px;
+  display: block;
   font-size: 9px;
   letter-spacing: 0.12em;
   width: 100%;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+.bp-transmission:hover {
+  border-color: var(--bp-fg);
 }
 .bp-transmission-label {
-  margin-bottom: 8px;
+  padding: 7px 9px;
+  border-bottom: var(--bp-border-light);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .bp-transmission-placeholder {
-  aspect-ratio: 16/9;
-  border: 1px dashed rgba(220, 231, 245, 0.4);
+  aspect-ratio: 16/10;
   display: flex;
   align-items: center;
   justify-content: center;
   color: rgba(220, 231, 245, 0.5);
   text-decoration: none;
   font-size: 9px;
+  background: rgba(220, 231, 245, 0.04);
   transition: all 0.2s ease;
 }
+.bp-transmission-placeholder:hover {
+  color: var(--bp-accent);
+  background: rgba(255, 209, 102, 0.04);
+}
+/* Floating footer */
 .bp-titleblock {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   font-size: 9px;
   letter-spacing: 0.1em;
+  background: rgba(18, 40, 75, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: var(--bp-border-strong);
 }
+
 .bp-titleblock-cell {
   padding: 12px 16px;
   border-right: var(--bp-border-light);
@@ -2395,6 +2458,53 @@ select[aria-invalid="true"] {
   .bp-nav-item {
     font-size: 9px;
   }
+  /* Mobile: only the headline is centered */
+  .bp-hero-title {
+    left: 0;
+    right: 0;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 100%;
+    padding: 0 16px;
+  }
+  .bp-hero-eyebrow {
+    text-align: left;
+    align-self: flex-start;
+  }
+  .bp-hero-stats {
+    left: 16px;
+    right: auto;
+    bottom: 16px;
+  }
+  /* Mobile: show social cards inside filmstrip */
+  .bp-sheet-social-mobile {
+    display: flex;
+    flex-direction: column;
+    width: 160px;
+    flex: none;
+    pointer-events: none;
+  }
+  .bp-sheet-social-mobile .bp-sheet-social-link {
+    pointer-events: all;
+  }
+  .bp-sheet-social-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(220, 231, 245, 0.04);
+  }
+  .bp-sheet-social-link {
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    color: var(--bp-fg);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  .bp-sheet-social-link:hover {
+    color: var(--bp-accent);
+  }
   .bp-titleblock {
     grid-template-columns: 1fr 1fr;
   }
@@ -2404,6 +2514,12 @@ select[aria-invalid="true"] {
   .bp-titleblock-cell:nth-child(1),
   .bp-titleblock-cell:nth-child(2) {
     border-bottom: var(--bp-border-light);
+  }
+}
+/* On desktop: hide the inline social filmstrip cards */
+@media (min-width: 641px) {
+  .bp-sheet-social-mobile {
+    display: none;
   }
 }
 @media (max-width: 520px) {

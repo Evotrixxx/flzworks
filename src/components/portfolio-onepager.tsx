@@ -173,7 +173,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
       <section id="filmstrip" className="bp-filmstrip">
         <div className="bp-filmstrip-head">
           <div className="flex items-center gap-4 flex-wrap">
-            <span className="bp-section-label bp-accent">■ SHEET INDEX — WORKS &amp; LOG</span>
+            <span className="bp-section-label bp-accent">■ LOG</span>
             <div className="flex gap-2 font-mono text-[9px] tracking-wider uppercase">
               <button
                 onClick={() => setSelectedCategory("ALL")}
@@ -197,8 +197,22 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
         </div>
 
         <div className="bp-filmstrip-track">
-          {filteredArticles.map((article, i) => {
-            const num = String(i + 1).padStart(3, "0");
+          {/* MORE button — leftmost card */}
+          <button
+            className="bp-sheet bp-sheet-more"
+            onClick={() => setSelectedCategory("ALL")}
+          >
+            <div className="bp-sheet-img bp-sheet-more-body">
+              <span className="bp-sheet-more-label">ALL →</span>
+            </div>
+            <div className="bp-sheet-caption">MORE</div>
+          </button>
+
+          {filteredArticles.map((article) => {
+            const d = new Date(article.createdAt);
+            const mm = String(d.getMonth() + 1).padStart(2, "0");
+            const dd = String(d.getDate()).padStart(2, "0");
+            const sheetId = `X${mm}${dd}`;
             const firstImg =
               article.images.length > 0
                 ? `/api/portfolio/media/${article.folderName}/${article.images[0]}?w=640`
@@ -227,7 +241,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                   )}
                 </div>
                 <div className="bp-sheet-caption">
-                  SHT {num} — {article.title.toUpperCase()}
+                  {sheetId} — {article.title.toUpperCase()}
                 </div>
               </button>
             );
@@ -237,6 +251,64 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
               No sheets in this category
             </div>
           )}
+
+          {/* Mobile: Social cards appended inline in the same filmstrip */}
+          <div className="bp-sheet bp-sheet-social-mobile" aria-hidden="true">
+            <div className="bp-sheet-img bp-sheet-social-body">
+              <a
+                href="https://x.com/flzworks"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bp-sheet-social-link"
+                onClick={(e) => e.stopPropagation()}
+              >
+                X ↗
+              </a>
+            </div>
+            <div className="bp-sheet-caption">X — @FLZWORKS</div>
+          </div>
+          <div className="bp-sheet bp-sheet-social-mobile" aria-hidden="true">
+            <div className="bp-sheet-img bp-sheet-social-body">
+              <a
+                href="https://instagram.com/flzworks"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bp-sheet-social-link"
+                onClick={(e) => e.stopPropagation()}
+              >
+                IG ↗
+              </a>
+            </div>
+            <div className="bp-sheet-caption">IG — @FLZWORKS</div>
+          </div>
+          <div className="bp-sheet bp-sheet-social-mobile" aria-hidden="true">
+            <div className="bp-sheet-img bp-sheet-social-body">
+              <a
+                href="https://tiktok.com/@flzworks"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bp-sheet-social-link"
+                onClick={(e) => e.stopPropagation()}
+              >
+                TT ↗
+              </a>
+            </div>
+            <div className="bp-sheet-caption">TIKTOK — @FLZWORKS</div>
+          </div>
+          <div className="bp-sheet bp-sheet-social-mobile" aria-hidden="true">
+            <div className="bp-sheet-img bp-sheet-social-body">
+              <a
+                href="https://linkedin.com/in/benceflosz"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bp-sheet-social-link"
+                onClick={(e) => e.stopPropagation()}
+              >
+                LI ↗
+              </a>
+            </div>
+            <div className="bp-sheet-caption">LINKEDIN</div>
+          </div>
         </div>
       </section>
 
