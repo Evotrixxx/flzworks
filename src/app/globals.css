@@ -303,7 +303,6 @@ select[aria-invalid="true"] {
 
 .portfolio-shell main {
   background: linear-gradient(to bottom, transparent 0%, transparent 100vh, #161616 130vh, #161616 100%);
-  background-color: #161616;
 }
 
 /* ── EDITORIAL TOP BAR NAV ── */
