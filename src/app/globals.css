@@ -2326,7 +2326,7 @@ select[aria-invalid="true"] {
   grid-template-columns: repeat(4, 1fr);
   font-size: 9px;
   letter-spacing: 0.1em;
-  background: rgba(18, 40, 75, 0.85);
+  background: var(--bp-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-top: var(--bp-border-strong);
