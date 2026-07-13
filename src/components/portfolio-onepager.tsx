@@ -472,6 +472,39 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
           )}
         </section>
 
+        {/* ── Sketchfab Interactive 3D Model Section ── */}
+        <section id="experience" className="pt-24 max-w-7xl mx-auto px-8 md:px-20 reveal">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-t border-white/5 pt-16">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-1.5 h-1.5 bg-white/30 rounded-full animate-pulse" />
+                <p className="font-mono text-[9px] tracking-[0.4em] text-white/70 uppercase">
+                  Interactive 3D Experience
+                </p>
+              </div>
+              <h2 className="text-5xl md:text-7xl font-serif font-semibold uppercase tracking-tighter leading-none">
+                Pentagon <span className="italic font-light text-white/70">Athaan 2026</span>
+              </h2>
+            </div>
+            <div>
+              <span className="font-mono text-[9px] tracking-wider uppercase px-4 py-2 rounded-full border border-white/10 text-white/70">
+                Real-time WebGL
+              </span>
+            </div>
+          </div>
+
+          <div className="relative w-full rounded-2xl overflow-hidden border border-white/10 bg-black/40 shadow-2xl h-[500px] md:h-[650px]">
+            <iframe
+              title="Pentagon Athaan 2026"
+              frameBorder="0"
+              allowFullScreen
+              allow="autoplay; fullscreen; xr-spatial-tracking"
+              src="https://sketchfab.com/models/cbb1b3572d0545f8a8fdbdb09836ebd6/embed?autostart=1&camera=0&preload=1&transparent=1"
+              className="w-full h-full border-0"
+            />
+          </div>
+        </section>
+
         {/* ── Narrative: Process ── */}
         <section id="process" className="narrative-section reveal">
           <div className="narrative-visual">
