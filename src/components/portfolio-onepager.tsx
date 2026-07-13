@@ -285,21 +285,21 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
           <div id="transmissions-track" className="bp-filmstrip-track">
             {/* X */}
             <a
-              href="https://x.com/flzworks"
+              href="https://x.com/home"
               target="_blank"
               rel="noopener noreferrer"
               className="bp-sheet"
             >
               <div className="bp-sheet-img flex flex-col items-center justify-center bg-[#dce7f5]/5 transition-colors hover:bg-[#dce7f5]/10">
                 <span className="text-2xl font-bold tracking-wider text-[#ffd166]">X</span>
-                <span className="text-[8px] opacity-40 mt-1">X.COM/FLZWORKS</span>
+                <span className="text-[8px] opacity-40 mt-1">X.COM</span>
               </div>
-              <div className="bp-sheet-caption">X — @FLZWORKS</div>
+              <div className="bp-sheet-caption">X — HOME</div>
             </a>
 
             {/* Instagram */}
             <a
-              href="https://instagram.com/flzworks"
+              href="https://www.instagram.com/vision.flz/"
               target="_blank"
               rel="noopener noreferrer"
               className="bp-sheet"
@@ -317,30 +317,30 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center bg-[#dce7f5]/5 transition-colors hover:bg-[#dce7f5]/10">
                     <span className="text-2xl font-bold tracking-wider text-[#ffd166]">IG</span>
-                    <span className="text-[8px] opacity-40 mt-1">INSTAGRAM.COM/FLZWORKS</span>
+                    <span className="text-[8px] opacity-40 mt-1">INSTAGRAM.COM/VISION.FLZ</span>
                   </div>
                 )}
               </div>
-              <div className="bp-sheet-caption">IG — @FLZWORKS</div>
+              <div className="bp-sheet-caption">IG — @VISION.FLZ</div>
             </a>
 
             {/* TikTok */}
             <a
-              href="https://tiktok.com/@flzworks"
+              href="https://www.tiktok.com/@vision.flz"
               target="_blank"
               rel="noopener noreferrer"
               className="bp-sheet"
             >
               <div className="bp-sheet-img flex flex-col items-center justify-center bg-[#dce7f5]/5 transition-colors hover:bg-[#dce7f5]/10">
                 <span className="text-2xl font-bold tracking-wider text-[#ffd166]">TT</span>
-                <span className="text-[8px] opacity-40 mt-1">TIKTOK.COM/@FLZWORKS</span>
+                <span className="text-[8px] opacity-40 mt-1">TIKTOK.COM/@VISION.FLZ</span>
               </div>
-              <div className="bp-sheet-caption">TIKTOK — @FLZWORKS</div>
+              <div className="bp-sheet-caption">TIKTOK — @VISION.FLZ</div>
             </a>
 
             {/* LinkedIn */}
             <a
-              href="https://linkedin.com/in/benceflosz"
+              href="https://www.linkedin.com/in/bence-flosz-56134535a/"
               target="_blank"
               rel="noopener noreferrer"
               className="bp-sheet"
@@ -349,7 +349,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                 <span className="text-2xl font-bold tracking-wider text-[#ffd166]">LI</span>
                 <span className="text-[8px] opacity-40 mt-1">LINKEDIN PROFILE</span>
               </div>
-              <div className="bp-sheet-caption">LINKEDIN</div>
+              <div className="bp-sheet-caption">LINKEDIN — B. FLOSZ</div>
             </a>
           </div>
 
@@ -391,8 +391,8 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
         <div className="bp-titleblock-cell">
           <div className="bp-titleblock-label">CONTACT</div>
           <div className="bp-titleblock-value bp-accent">
-            <a className="bp-titleblock-link" href="mailto:floszbeni@gmail.com">
-              FLOSZBENI@GMAIL.COM ↗
+            <a className="bp-titleblock-link" href="https://www.instagram.com/vision.flz/" target="_blank" rel="noopener noreferrer">
+              VIA INSTAGRAM ↗
             </a>
           </div>
         </div>
