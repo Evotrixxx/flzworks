@@ -415,63 +415,67 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
 
       {/* Contact Form Section */}
       <section id="contact-form-section" className="bp-contact-form-sec">
-        <div className="bp-section-label bp-accent mb-6 px-8">■ SEND A MESSAGE</div>
-        <form onSubmit={handleSendEmail} className="bp-form">
-          <div className="bp-form-grid">
-            <div className="bp-form-group">
-              <label htmlFor="contact-name" className="bp-form-label">NAME</label>
-              <input
-                id="contact-name"
-                type="text"
-                value={contactName}
-                onChange={(e) => setContactName(e.target.value)}
-                placeholder="YOUR NAME"
-                className="bp-form-input"
-                maxLength={100}
-              />
+        <div className="bp-form-container">
+          <div className="bp-section-label bp-accent mb-4">■ SEND A MESSAGE</div>
+          <form onSubmit={handleSendEmail} className="bp-form-technical-table">
+            <div className="bp-form-row font-mono">
+              <div className="bp-form-cell">
+                <label htmlFor="contact-name" className="bp-form-cell-label">NAME</label>
+                <input
+                  id="contact-name"
+                  type="text"
+                  value={contactName}
+                  onChange={(e) => setContactName(e.target.value)}
+                  placeholder="YOUR NAME"
+                  className="bp-form-cell-input"
+                  maxLength={100}
+                />
+              </div>
+              <div className="bp-form-cell">
+                <label htmlFor="contact-email" className="bp-form-cell-label">EMAIL</label>
+                <input
+                  id="contact-email"
+                  type="email"
+                  value={contactEmail}
+                  onChange={(e) => setContactEmail(e.target.value)}
+                  placeholder="YOUR.EMAIL@DOMAIN.COM"
+                  className="bp-form-cell-input"
+                  maxLength={100}
+                />
+              </div>
             </div>
-            <div className="bp-form-group">
-              <label htmlFor="contact-email" className="bp-form-label">EMAIL</label>
-              <input
-                id="contact-email"
-                type="email"
-                value={contactEmail}
-                onChange={(e) => setContactEmail(e.target.value)}
-                placeholder="YOUR.EMAIL@DOMAIN.COM"
-                className="bp-form-input"
-                maxLength={100}
-              />
+            <div className="bp-form-row font-mono">
+              <div className="bp-form-cell full-width">
+                <label htmlFor="contact-message" className="bp-form-cell-label">MESSAGE</label>
+                <textarea
+                  id="contact-message"
+                  required
+                  rows={4}
+                  value={contactMessage}
+                  onChange={(e) => setContactMessage(e.target.value)}
+                  placeholder="WRITE YOUR MESSAGE HERE..."
+                  className="bp-form-cell-textarea"
+                  maxLength={5000}
+                />
+              </div>
             </div>
-          </div>
-          <div className="bp-form-group mt-4">
-            <label htmlFor="contact-message" className="bp-form-label">MESSAGE</label>
-            <textarea
-              id="contact-message"
-              required
-              rows={4}
-              value={contactMessage}
-              onChange={(e) => setContactMessage(e.target.value)}
-              placeholder="WRITE YOUR MESSAGE HERE..."
-              className="bp-form-textarea"
-              maxLength={5000}
-            />
-          </div>
-          <div className="flex justify-between items-center flex-wrap gap-4 mt-6">
-            <button type="submit" disabled={formStatus === "sending"} className="bp-form-btn">
-              {formStatus === "sending" ? "SENDING..." : "SEND MESSAGE →"}
-            </button>
-            {formStatus === "success" && (
-              <span className="text-[10px] text-[#ffd166] font-mono tracking-wider animate-fadeIn">
-                MESSAGE SENT SUCCESSFULLY.
-              </span>
-            )}
-            {formStatus === "error" && (
-              <span className="text-[10px] text-red-400 font-mono tracking-wider animate-fadeIn">
-                ERROR: {formError.toUpperCase()}
-              </span>
-            )}
-          </div>
-        </form>
+            <div className="bp-form-submit-row font-mono">
+              <button type="submit" disabled={formStatus === "sending"} className="bp-form-submit-btn">
+                {formStatus === "sending" ? "SENDING..." : "SEND MESSAGE →"}
+              </button>
+              {formStatus === "success" && (
+                <span className="bp-form-status-msg success">
+                  MESSAGE SENT SUCCESSFULLY.
+                </span>
+              )}
+              {formStatus === "error" && (
+                <span className="bp-form-status-msg error">
+                  ERROR: {formError.toUpperCase()}
+                </span>
+              )}
+            </div>
+          </form>
+        </div>
       </section>
 
       {/* Footer / Titleblock */}
@@ -534,7 +538,7 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
             )}
 
             {/* Blueprint Header */}
-            <div className="border-b var(--bp-border-strong) pb-4 mb-4 font-mono text-[9px] tracking-widest text-[#ffd166] flex justify-between">
+            <div className="border-b pb-4 mb-4 font-mono text-[9px] tracking-widest text-[#ffd166] flex justify-between bp-namecard-header">
               <span>FLZ WORKS // IDENTITY CARD</span>
               <span>NO. 2026-001</span>
             </div>
@@ -542,9 +546,14 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
             {/* Card Body */}
             <div className="flex gap-4 items-start">
               {/* Photo/Avatar area */}
-              <div className="w-20 h-24 border border-[#dce7f5]/30 flex flex-col items-center justify-center bg-[#dce7f5]/5 relative overflow-hidden shrink-0">
-                <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#ffd166_1px,transparent_1px)] [background-size:8px_8px]" />
-                <span className="text-[10px] font-mono text-[#dce7f5]/40">[PHOTO]</span>
+              <div className="w-20 h-24 border flex flex-col items-center justify-center bg-[#dce7f5]/5 relative overflow-hidden shrink-0 bp-namecard-photo">
+                <Image
+                  src="/profile.jpg"
+                  alt="Bence Flosz"
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
               </div>
 
               {/* Details */}
@@ -565,12 +574,12 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
             </div>
 
             {/* Social Pill Links */}
-            <div className="grid grid-cols-2 gap-2 mt-6 font-mono text-[9px]">
+            <div className="grid grid-cols-2 gap-2 mt-6 font-mono text-[9px] bp-namecard-socials">
               <a
                 href="https://www.instagram.com/vision.flz/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="border border-[#dce7f5]/30 p-2 text-center hover:border-[#ffd166] hover:text-[#ffd166] transition-colors"
+                className="p-2 text-center transition-colors"
               >
                 IG ↗
               </a>
@@ -578,7 +587,7 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
                 href="https://www.tiktok.com/@vision.flz"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="border border-[#dce7f5]/30 p-2 text-center hover:border-[#ffd166] hover:text-[#ffd166] transition-colors"
+                className="p-2 text-center transition-colors"
               >
                 TIKTOK ↗
               </a>
@@ -586,7 +595,7 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
                 href="https://www.linkedin.com/in/bence-flosz-56134535a/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="border border-[#dce7f5]/30 p-2 text-center hover:border-[#ffd166] hover:text-[#ffd166] transition-colors"
+                className="p-2 text-center transition-colors"
               >
                 LINKEDIN ↗
               </a>
@@ -594,7 +603,7 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
                 href="https://x.com/home"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="border border-[#dce7f5]/30 p-2 text-center hover:border-[#ffd166] hover:text-[#ffd166] transition-colors"
+                className="p-2 text-center transition-colors"
               >
                 X ↗
               </a>
@@ -603,13 +612,14 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
             {/* vCard download trigger */}
             <button
               onClick={downloadVCard}
-              className="mt-4 w-full bg-[#ffd166] hover:bg-[#ffe599] text-[#12284b] font-mono text-[9px] font-bold tracking-widest py-2.5 transition-colors uppercase"
+              className="mt-4 w-full bg-[#ffd166] hover:bg-[#ffe599] text-[#12284b] font-mono text-[9px] font-bold tracking-widest py-2.5 transition-colors uppercase bp-namecard-download-btn"
             >
               [DOWNLOAD VCARD]
             </button>
           </div>
         </div>
       )}
+
 
 
       {/* Immersive Project Detail Modal */}
