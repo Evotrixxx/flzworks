@@ -522,114 +522,119 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
           }`}
           onClick={() => !forceNamecardOpen && setIsNamecardOpen(false)}
         >
+          {/* Card & QR Wrapper */}
           <div
-            className="relative w-full max-w-[420px] bp-namecard-box rounded-none shadow-2xl p-6 flex flex-col border-2"
+            className="flex flex-col md:flex-row gap-4 items-stretch max-w-[560px] w-full"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close Button */}
-            {!forceNamecardOpen && (
-              <button
-                aria-label="Close namecard"
-                onClick={() => setIsNamecardOpen(false)}
-                className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center bp-modal-close"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-
-            {/* Blueprint Header */}
-            <div className="border-b pb-4 mb-4 font-mono text-[9px] tracking-widest text-[#ffd166] flex justify-between bp-namecard-header">
-              <span>FLZ WORKS // IDENTITY CARD</span>
-              <span>NO. 2026-001</span>
-            </div>
-
-            {/* Card Body */}
-            <div className="flex gap-4 items-start">
-              {/* Photo/Avatar area */}
-              <div className="w-20 h-24 border flex flex-col items-center justify-center bg-[#dce7f5]/5 relative overflow-hidden shrink-0 bp-namecard-photo">
+            {/* QR Card (Left Side) — White background, black QR Code, full height of ID Card */}
+            <div className="bg-white p-4 flex flex-col items-center justify-center shrink-0 w-full md:w-[130px] bp-namecard-qr-aside">
+              <div className="relative w-full aspect-square md:h-full md:w-auto flex items-center justify-center">
                 <Image
-                  src="/profile.jpg"
-                  alt="Bence Flosz"
-                  fill
-                  className="object-cover"
+                  src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://flz.works"
+                  alt="QR Code flz.works"
+                  width={250}
+                  height={250}
+                  className="object-contain"
                   unoptimized
                 />
               </div>
+            </div>
 
-              {/* Details */}
-              <div className="flex-1 min-w-0">
-                <h3 className="font-mono text-sm font-bold uppercase tracking-tight text-[#dce7f5] leading-none mb-2">
-                  BENCE FLOSZ
-                </h3>
-                <div className="text-[8px] font-mono tracking-wider text-[#ffd166] uppercase mb-4">
-                  3D Artist / Designer / Game Dev
-                </div>
+            {/* ID Card (Right Side) */}
+            <div
+              className="relative flex-1 bp-namecard-box rounded-none shadow-2xl p-6 flex flex-col border-2"
+            >
+              {/* Close Button */}
+              {!forceNamecardOpen && (
+                <button
+                  aria-label="Close namecard"
+                  onClick={() => setIsNamecardOpen(false)}
+                  className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center bp-modal-close"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
 
-                <div className="space-y-1.5 font-mono text-[8px] text-[#dce7f5]/70">
-                  <div>STUDIO: FLZ WORKS</div>
-                  <div>LOC: BUDAPEST, HU</div>
-                  <div>URL: <a href="https://flz.works" target="_blank" rel="noopener noreferrer" className="text-[#ffd166] hover:underline">FLZ.WORKS</a></div>
-                </div>
+              {/* Blueprint Header */}
+              <div className="border-b pb-4 mb-4 font-mono text-[9px] tracking-widest text-[#ffd166] flex justify-between bp-namecard-header">
+                <span>FLZ WORKS // IDENTITY CARD</span>
               </div>
 
-              {/* QR Code area */}
-              <div className="w-20 h-24 border flex flex-col items-center justify-center bg-[#dce7f5]/5 relative overflow-hidden shrink-0 bp-namecard-qr p-1">
-                <div className="relative w-full h-full">
+              {/* Card Body */}
+              <div className="flex gap-4 items-start">
+                {/* Photo/Avatar area */}
+                <div className="w-20 h-24 border flex flex-col items-center justify-center bg-[#dce7f5]/5 relative overflow-hidden shrink-0 bp-namecard-photo">
                   <Image
-                    src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://flz.works&color=ffd166&bgcolor=12284b"
-                    alt="QR Code flz.works"
+                    src="/profile.jpg"
+                    alt="Bence Flosz"
                     fill
-                    className="object-contain"
+                    className="object-cover"
                     unoptimized
                   />
                 </div>
+
+                {/* Details */}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-mono text-sm font-bold uppercase tracking-tight text-[#dce7f5] leading-none mb-2">
+                    BENCE FLOSZ
+                  </h3>
+                  <div className="text-[8px] font-mono tracking-wider text-[#ffd166] uppercase mb-4">
+                    3D Artist / Designer / Game Dev
+                  </div>
+
+                  <div className="space-y-1.5 font-mono text-[8px] text-[#dce7f5]/70">
+                    <div>STUDIO: FLZ WORKS</div>
+                    <div>LOC: BUDAPEST, HU</div>
+                    <div>URL: <a href="https://flz.works" target="_blank" rel="noopener noreferrer" className="text-[#ffd166] hover:underline">FLZ.WORKS</a></div>
+                  </div>
+                </div>
               </div>
+
+              {/* Social Pill Links */}
+              <div className="grid grid-cols-2 gap-2 mt-6 font-mono text-[9px] bp-namecard-socials">
+                <a
+                  href="https://www.instagram.com/vision.flz/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 text-center transition-colors"
+                >
+                  IG ↗
+                </a>
+                <a
+                  href="https://www.tiktok.com/@vision.flz"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 text-center transition-colors"
+                >
+                  TIKTOK ↗
+                </a>
+                <a
+                  href="https://www.linkedin.com/in/bence-flosz-56134535a/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 text-center transition-colors"
+                >
+                  LINKEDIN ↗
+                </a>
+                <a
+                  href="https://x.com/home"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 text-center transition-colors"
+                >
+                  X ↗
+                </a>
+              </div>
+
+              {/* vCard download trigger */}
+              <button
+                onClick={downloadVCard}
+                className="mt-4 w-full bg-[#ffd166] hover:bg-[#ffe599] text-[#12284b] font-mono text-[9px] font-bold tracking-widest py-2.5 transition-colors uppercase bp-namecard-download-btn"
+              >
+                [DOWNLOAD VCARD]
+              </button>
             </div>
-
-
-            {/* Social Pill Links */}
-            <div className="grid grid-cols-2 gap-2 mt-6 font-mono text-[9px] bp-namecard-socials">
-              <a
-                href="https://www.instagram.com/vision.flz/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 text-center transition-colors"
-              >
-                IG ↗
-              </a>
-              <a
-                href="https://www.tiktok.com/@vision.flz"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 text-center transition-colors"
-              >
-                TIKTOK ↗
-              </a>
-              <a
-                href="https://www.linkedin.com/in/bence-flosz-56134535a/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 text-center transition-colors"
-              >
-                LINKEDIN ↗
-              </a>
-              <a
-                href="https://x.com/home"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 text-center transition-colors"
-              >
-                X ↗
-              </a>
-            </div>
-
-            {/* vCard download trigger */}
-            <button
-              onClick={downloadVCard}
-              className="mt-4 w-full bg-[#ffd166] hover:bg-[#ffe599] text-[#12284b] font-mono text-[9px] font-bold tracking-widest py-2.5 transition-colors uppercase bp-namecard-download-btn"
-            >
-              [DOWNLOAD VCARD]
-            </button>
           </div>
         </div>
       )}

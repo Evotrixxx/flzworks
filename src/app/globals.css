@@ -2617,8 +2617,9 @@ select[aria-invalid="true"] {
 .bp-namecard-photo {
   border: var(--bp-border-light) !important;
 }
-.bp-namecard-qr {
-  border: var(--bp-border-light) !important;
+.bp-namecard-qr-aside {
+  border: var(--bp-border-strong) !important;
+  border-color: var(--bp-accent) !important;
 }
 .bp-namecard-socials a {
   border: var(--bp-border-light) !important;
