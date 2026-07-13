@@ -18,11 +18,11 @@ const CATEGORY_LABELS: Record<string, string> = {
 type ArchiveCategory = "ALL" | "AUTOMOTIVE" | "BRICKWORKS" | "GAMES" | "MEDIA";
 
 const NAV_LINKS: { num: string; label: string; target: string; filter?: ArchiveCategory }[] = [
-  { num: "01", label: "Automotive", target: "archive", filter: "AUTOMOTIVE" },
-  { num: "02", label: "Asset store", target: "archive", filter: "MEDIA" },
-  { num: "03", label: "Gamedev", target: "archive", filter: "GAMES" },
+  { num: "01", label: "Featured", target: "experience" },
+  { num: "02", label: "Automotive", target: "archive", filter: "AUTOMOTIVE" },
+  { num: "03", label: "Studio", target: "studio" },
   { num: "04", label: "Social", target: "signals" },
-  { num: "05", label: "Contact", target: "contact" },
+  { num: "05", label: "Contact", target: "process" },
 ];
 
 interface PortfolioOnepagerProps {
@@ -37,7 +37,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
     images: string[];
     index: number;
   } | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<ArchiveCategory>("ALL");
+  const [selectedCategory, setSelectedCategory] = useState<ArchiveCategory>("AUTOMOTIVE");
   const [uiHidden, setUiHidden] = useState(false);
   const [activeSection, setActiveSection] = useState("hero");
   const shellRef = useRef<HTMLDivElement>(null);
@@ -144,7 +144,7 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
 
   // IntersectionObserver to set active section for side scroll dots
   useEffect(() => {
-    const sections = ["hero", "archive", "process", "studio", "signals"];
+    const sections = ["hero", "experience", "archive", "studio", "process", "signals"];
     const observers = sections.map(id => {
       const el = document.getElementById(id);
       if (!el) return null;
@@ -260,6 +260,13 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
               <div className={`hero-scroll-dot ${activeSection === "hero" ? "active" : ""}`} />
             </button>
             <button
+              aria-label="Scroll to featured"
+              onClick={() => scrollToSection("experience")}
+              className="w-11 h-11 flex items-center justify-center bg-transparent border-0 focus:outline-none cursor-pointer -my-4"
+            >
+              <div className={`hero-scroll-dot ${activeSection === "experience" ? "active" : ""}`} />
+            </button>
+            <button
               aria-label="Scroll to archive"
               onClick={() => scrollToSection("archive")}
               className="w-11 h-11 flex items-center justify-center bg-transparent border-0 focus:outline-none cursor-pointer -my-4"
@@ -267,18 +274,18 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
               <div className={`hero-scroll-dot ${activeSection === "archive" ? "active" : ""}`} />
             </button>
             <button
-              aria-label="Scroll to process"
-              onClick={() => scrollToSection("process")}
-              className="w-11 h-11 flex items-center justify-center bg-transparent border-0 focus:outline-none cursor-pointer -my-4"
-            >
-              <div className={`hero-scroll-dot ${activeSection === "process" ? "active" : ""}`} />
-            </button>
-            <button
               aria-label="Scroll to studio"
               onClick={() => scrollToSection("studio")}
               className="w-11 h-11 flex items-center justify-center bg-transparent border-0 focus:outline-none cursor-pointer -my-4"
             >
               <div className={`hero-scroll-dot ${activeSection === "studio" ? "active" : ""}`} />
+            </button>
+            <button
+              aria-label="Scroll to contact"
+              onClick={() => scrollToSection("process")}
+              className="w-11 h-11 flex items-center justify-center bg-transparent border-0 focus:outline-none cursor-pointer -my-4"
+            >
+              <div className={`hero-scroll-dot ${activeSection === "process" ? "active" : ""}`} />
             </button>
             <button
               aria-label="Scroll to signals"
@@ -337,6 +344,39 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
           </div>
         </div>
 
+        {/* ── Sketchfab Interactive 3D Model Section ── */}
+        <section id="experience" className="pt-24 max-w-7xl mx-auto px-8 md:px-20 reveal">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-t border-white/5 pt-16">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-1.5 h-1.5 bg-white/30 rounded-full animate-pulse" />
+                <p className="font-mono text-[9px] tracking-[0.4em] text-white/70 uppercase">
+                  Featured Works
+                </p>
+              </div>
+              <h2 className="text-5xl md:text-7xl font-serif font-semibold uppercase tracking-tighter leading-none">
+                Featured <span className="italic font-light text-white/70">Works</span>
+              </h2>
+            </div>
+            <div>
+              <span className="font-mono text-[9px] tracking-wider uppercase px-4 py-2 rounded-full border border-white/10 text-white/70">
+                Real-time WebGL
+              </span>
+            </div>
+          </div>
+
+          <div className="relative w-full rounded-2xl overflow-hidden border border-white/10 bg-black/40 shadow-2xl h-[500px] md:h-[650px]">
+            <iframe
+              title="Pentagon Athaan 2026"
+              frameBorder="0"
+              allowFullScreen
+              allow="autoplay; fullscreen; xr-spatial-tracking"
+              src="https://sketchfab.com/models/cbb1b3572d0545f8a8fdbdb09836ebd6/embed?autostart=1&camera=0&preload=1&transparent=1"
+              className="w-full h-full border-0"
+            />
+          </div>
+        </section>
+
         {/* ── Narrative Section 1: Process ── */}
         <section id="archive" className="pt-24 max-w-7xl mx-auto px-8 md:px-20">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-t border-white/5 pt-16">
@@ -348,31 +388,8 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                 </p>
               </div>
               <h2 className="text-5xl md:text-7xl font-serif font-semibold uppercase tracking-tighter leading-none">
-                Selected <span className="italic font-light text-white/70">Works</span>
+                Automotive <span className="italic font-light text-white/70">Archive</span>
               </h2>
-            </div>
-
-            {/* Simple monochrome filter pills */}
-            <div className="flex flex-wrap gap-2">
-              {[
-                { label: "All", category: "ALL" as const },
-                { label: "Automotive", category: "AUTOMOTIVE" as const },
-                { label: "Brickworks", category: "BRICKWORKS" as const },
-                { label: "Games", category: "GAMES" as const },
-                { label: "Media", category: "MEDIA" as const },
-              ].map((item) => (
-                <button
-                  key={item.category}
-                  onClick={() => setSelectedCategory(item.category)}
-                  className={`font-mono text-[9px] tracking-wider uppercase px-4 min-h-10 rounded-full border transition-all cursor-pointer ${
-                    selectedCategory === item.category
-                      ? "bg-white/10 text-white border-white/20"
-                      : "text-white/70 border-transparent hover:text-white hover:border-white/10"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
             </div>
           </div>
 
@@ -472,63 +489,6 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
           )}
         </section>
 
-        {/* ── Sketchfab Interactive 3D Model Section ── */}
-        <section id="experience" className="pt-24 max-w-7xl mx-auto px-8 md:px-20 reveal">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-t border-white/5 pt-16">
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-1.5 h-1.5 bg-white/30 rounded-full animate-pulse" />
-                <p className="font-mono text-[9px] tracking-[0.4em] text-white/70 uppercase">
-                  Interactive 3D Experience
-                </p>
-              </div>
-              <h2 className="text-5xl md:text-7xl font-serif font-semibold uppercase tracking-tighter leading-none">
-                Pentagon <span className="italic font-light text-white/70">Athaan 2026</span>
-              </h2>
-            </div>
-            <div>
-              <span className="font-mono text-[9px] tracking-wider uppercase px-4 py-2 rounded-full border border-white/10 text-white/70">
-                Real-time WebGL
-              </span>
-            </div>
-          </div>
-
-          <div className="relative w-full rounded-2xl overflow-hidden border border-white/10 bg-black/40 shadow-2xl h-[500px] md:h-[650px]">
-            <iframe
-              title="Pentagon Athaan 2026"
-              frameBorder="0"
-              allowFullScreen
-              allow="autoplay; fullscreen; xr-spatial-tracking"
-              src="https://sketchfab.com/models/cbb1b3572d0545f8a8fdbdb09836ebd6/embed?autostart=1&camera=0&preload=1&transparent=1"
-              className="w-full h-full border-0"
-            />
-          </div>
-        </section>
-
-        {/* ── Narrative: Process ── */}
-        <section id="process" className="narrative-section reveal">
-          <div className="narrative-visual">
-            <div className="narrative-img-placeholder fill-1 card-art" style={{ aspectRatio: "4/3" }}>
-              <svg width="100%" height="100%" viewBox="0 0 600 450" fill="none">
-                <rect width="600" height="450" fill="#0a0a0a"/>
-                <circle cx="300" cy="225" r="120" stroke="rgba(255,255,255,0.04)" strokeWidth="1"/>
-                <circle cx="300" cy="225" r="80" stroke="rgba(255,255,255,0.06)" strokeWidth="0.5"/>
-                <line x1="180" y1="225" x2="420" y2="225" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5"/>
-                <line x1="300" y1="105" x2="300" y2="345" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5"/>
-                <text x="300" y="235" textAnchor="middle" fill="rgba(255,255,255,0.12)" fontFamily="var(--font-mono), monospace" fontSize="10" letterSpacing="4">DESIGN SYSTEM</text>
-                <text x="300" y="260" textAnchor="middle" fill="rgba(255,255,255,0.06)" fontFamily="var(--font-mono), monospace" fontSize="7" letterSpacing="3">PRECISION ENGINEERING</text>
-              </svg>
-            </div>
-            <div className="narrative-visual-tag">3D Auto · 2026</div>
-          </div>
-          <div className="narrative-text">
-            <div className="narrative-label">{"// 02 — Process"}</div>
-            <h2 className="narrative-title">Where precision<br /><em>meets craft.</em></h2>
-            <p className="narrative-body">Every project begins with a deep technical study of form, material, and motion. From clay model to rendered render, the workflow is engineered for maximum photorealism.</p>
-            <button type="button" onClick={() => scrollToSection("archive")} className="narrative-link">Explore the archive</button>
-          </div>
-        </section>
-
         {/* ── Identity Strip ── */}
         <section id="studio" className="identity-strip reveal">
           <div className="identity-mark">F</div>
@@ -542,6 +502,30 @@ export function PortfolioOnepager({ instagramMedia, articles }: PortfolioOnepage
                 </span>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* ── Narrative: Get in Touch ── */}
+        <section id="process" className="narrative-section reveal">
+          <div className="narrative-visual">
+            <div className="narrative-img-placeholder fill-1 card-art" style={{ aspectRatio: "4/3" }}>
+              <svg width="100%" height="100%" viewBox="0 0 600 450" fill="none">
+                <rect width="600" height="450" fill="#0a0a0a"/>
+                <circle cx="300" cy="225" r="120" stroke="rgba(255,255,255,0.04)" strokeWidth="1"/>
+                <circle cx="300" cy="225" r="80" stroke="rgba(255,255,255,0.06)" strokeWidth="0.5"/>
+                <line x1="180" y1="225" x2="420" y2="225" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5"/>
+                <line x1="300" y1="105" x2="300" y2="345" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5"/>
+                <text x="300" y="235" textAnchor="middle" fill="rgba(255,255,255,0.12)" fontFamily="var(--font-mono), monospace" fontSize="10" letterSpacing="4">CONNECT</text>
+                <text x="300" y="260" textAnchor="middle" fill="rgba(255,255,255,0.06)" fontFamily="var(--font-mono), monospace" fontSize="7" letterSpacing="3">GET IN TOUCH</text>
+              </svg>
+            </div>
+            <div className="narrative-visual-tag">FLZ · 2026</div>
+          </div>
+          <div className="narrative-text">
+            <div className="narrative-label">{"// 03 — Contact"}</div>
+            <h2 className="narrative-title">Get in touch<br /><em>with the studio.</em></h2>
+            <p className="narrative-body">Have a project in mind, want to collaborate, or have questions about 3D automotive design, systems architecture, or custom web development? Let's build something exceptional.</p>
+            <a href="mailto:floszbeni@gmail.com" className="narrative-link">Send an email</a>
           </div>
         </section>
 

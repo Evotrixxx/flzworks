@@ -469,9 +469,7 @@ select[aria-invalid="true"] {
   position: absolute;
   inset: 0;
   z-index: 3;
-  background:
-    radial-gradient(ellipse 80% 80% at 50% 50%, transparent 30%, rgba(0,0,0,0.85) 100%),
-    linear-gradient(to top, #000 0%, transparent 40%);
+  background: radial-gradient(ellipse 80% 80% at 50% 50%, transparent 30%, rgba(0,0,0,0.85) 100%);
   pointer-events: none;
 }
 
