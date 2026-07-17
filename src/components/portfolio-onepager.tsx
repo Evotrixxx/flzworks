@@ -214,7 +214,7 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
         <div className="bp-hero-title">
           <div className="bp-hero-eyebrow">PENTAGON ATHAAN 2026 · LIVE MODEL — DRAG TO ORBIT</div>
           <h1 className="bp-hero-headline">
-            DRAWN, MODELED, RENDERED.<span className="bp-accent">.</span>
+            DRAWN, MODELED, RENDERED.<span className="bp-accent"></span>
           </h1>
         </div>
       </section>
