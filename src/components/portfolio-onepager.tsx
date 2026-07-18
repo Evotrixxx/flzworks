@@ -369,26 +369,12 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
       {/* Transmissions — now an identical horizontal filmstrip */}
       <section id="signals" className="bp-filmstrip bp-transmissions">
         <div className="bp-filmstrip-head">
-          <span className="bp-section-label bp-accent">■ SOCIALS — X / IG / TIKTOK / LINKEDIN</span>
+          <span className="bp-section-label bp-accent">■ SOCIALS — IG / TIKTOK / LINKEDIN</span>
           <span className="bp-scroll-hint">SCROLL →</span>
         </div>
 
         <div className="relative">
           <div id="transmissions-track" className="bp-filmstrip-track">
-            {/* X */}
-            <a
-              href="https://x.com/home"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bp-sheet"
-            >
-              <div className="bp-sheet-img flex flex-col items-center justify-center bg-[#dce7f5]/5 transition-colors hover:bg-[#dce7f5]/10">
-                <span className="text-2xl font-bold tracking-wider text-[#ffd166]">X</span>
-                <span className="text-[8px] opacity-40 mt-1">X.COM</span>
-              </div>
-              <div className="bp-sheet-caption">X — HOME</div>
-            </a>
-
             {/* Instagram */}
             <a
               href="https://www.instagram.com/vision.flz/"
