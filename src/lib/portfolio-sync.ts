@@ -74,14 +74,16 @@ export async function syncPortfolioArticles(): Promise<PortfolioArticleWithImage
 
     if (!dbArticle) {
       // Smart default categorization
-      let defaultCategory = "CAR_DESIGN";
+      let defaultCategory = "OTHER";
       const nameLower = folder.toLowerCase();
-      if (
-        nameLower.includes("poster") ||
-        nameLower.includes("brosure") ||
-        nameLower.includes("present")
-      ) {
-        defaultCategory = "OTHER";
+      if (nameLower.includes("lego")) {
+        defaultCategory = "BRICKWORKS";
+      } else if (nameLower.includes("godot") || nameLower.includes("game")) {
+        defaultCategory = "GAMES";
+      } else if (nameLower.includes("poster") || nameLower.includes("video") || nameLower.includes("render") || nameLower.includes("media")) {
+        defaultCategory = "MEDIA";
+      } else if (nameLower.includes("car") || nameLower.includes("auto") || nameLower.includes("hypercar")) {
+        defaultCategory = "CAR_DESIGN";
       }
 
       dbArticle = await prisma.portfolioArticle.create({

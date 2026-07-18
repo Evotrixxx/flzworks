@@ -29,8 +29,10 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
     images: string[];
     index: number;
   } | null>(null);
-  const [activeSection, setActiveSection] = useState("hero");
   const [selectedCategory, setSelectedCategory] = useState<ArchiveCategory>("ALL");
+  const [uiHidden, setUiHidden] = useState(false);
+  const [activeSection, setActiveSection] = useState("hero");
+  const [imageAlign, setImageAlign] = useState<"fit" | "crop">("crop");
 
   // Namecard and Contact Form states
   const [isNamecardOpen, setIsNamecardOpen] = useState(forceNamecardOpen || false);
@@ -137,9 +139,42 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [activeGallery]);
 
+  // Showroom mode click listener
+  useEffect(() => {
+    if (!uiHidden) return;
+    const handleCaptureClick = (e: MouseEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
+      setUiHidden(false);
+    };
+    window.addEventListener("click", handleCaptureClick, true);
+    return () => window.removeEventListener("click", handleCaptureClick, true);
+  }, [uiHidden]);
+
+  // Global keyboard shortcuts for navigation
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (
+        document.activeElement?.tagName === "INPUT" ||
+        document.activeElement?.tagName === "TEXTAREA"
+      ) {
+        return;
+      }
+      const key = e.key.toLowerCase();
+      if (key === "f") {
+        scrollToSection("hero");
+      } else if (key === "c") {
+        const contactEl = document.getElementById("contact") || document.getElementById("contact-form-section");
+        contactEl?.scrollIntoView({ behavior: "smooth" });
+      }
+    };
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  }, []);
+
   // IntersectionObserver to set active section for top bar highlights
   useEffect(() => {
-    const sections = ["hero", "filmstrip", "transmissions", "contact"];
+    const sections = ["hero", "process", "archive", "interface", "signals", "filmstrip", "transmissions", "contact"];
     const observers = sections.map((id) => {
       const el = document.getElementById(id);
       if (!el) return null;
@@ -177,7 +212,7 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
   return (
     <div className="bp-root min-h-screen selection:bg-[#ffd166]/20 selection:text-[#ffd166]">
       {/* Header */}
-      <header className="bp-topbar">
+      <header className={`bp-topbar ${uiHidden ? "hidden" : ""}`} style={{ display: uiHidden ? 'none' : 'flex' }}>
         <button className="bp-logo" onClick={() => scrollToSection("hero")}>
           FLZ.WORKS
         </button>
@@ -189,13 +224,12 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
             <span className="bp-nav-key">[F]</span> FEATURED
           </button>
           <button
-            className={`bp-nav-item ${activeSection === "filmstrip" ? "is-active" : ""}`}
+            className={`bp-nav-item ${activeSection === "signals" || activeSection === "transmissions" ? "is-active" : ""}`}
             onClick={() => {
-              setSelectedCategory("AUTOMOTIVE");
-              scrollToSection("filmstrip");
+              scrollToSection("signals");
             }}
           >
-            <span className="bp-nav-key">[C]</span> CONTACT
+            <span className="bp-nav-key">[S]</span> SIGNALS
           </button>
         </nav>
       </header>
@@ -314,7 +348,7 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
       </section>
 
       {/* Transmissions — now an identical horizontal filmstrip */}
-      <section id="transmissions" className="bp-filmstrip bp-transmissions">
+      <section id="signals" className="bp-filmstrip bp-transmissions">
         <div className="bp-filmstrip-head">
           <span className="bp-section-label bp-accent">■ SOCIALS — X / IG / TIKTOK / LINKEDIN</span>
           <span className="bp-scroll-hint">SCROLL →</span>
@@ -495,7 +529,7 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
         <div className="bp-titleblock-cell">
           <div className="bp-titleblock-label">SUBMISSION</div>
           <div className="bp-titleblock-value bp-accent">
-            <a className="bp-titleblock-link" href="https://www.instagram.com/vision.flz/" target="_blank" rel="noopener noreferrer">
+            <a className="bp-titleblock-link" href="https://instagram.com/flzworks" target="_blank" rel="noopener noreferrer">
               VIA INSTAGRAM ↗
             </a>
           </div>
@@ -503,7 +537,7 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
       </footer>
 
       {/* Floating ID Card Trigger Button (FAB) — only show if not forced open on /id page */}
-      {!forceNamecardOpen && (
+      {!forceNamecardOpen && !uiHidden && (
         <button
           className="bp-id-fab"
           onClick={() => setIsNamecardOpen(true)}
@@ -645,10 +679,31 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
               {/* Media Grid */}
               {selectedArticle.images.length > 0 && (
                 <div className="space-y-4">
-                  <h4 className="bp-modal-media-title flex items-center gap-2">
-                    <ImageIcon className="h-3 w-3" />
-                    PROJECT SHEET MEDIA ({selectedArticle.images.length})
-                  </h4>
+                  <div className="flex items-center justify-between border-b border-[#dce7f5]/10 pb-2 mb-4 flex-wrap gap-2">
+                    <h4 className="bp-modal-media-title flex items-center gap-2 m-0 border-0 pb-0">
+                      <ImageIcon className="h-3 w-3" />
+                      PROJECT SHEET MEDIA ({selectedArticle.images.length})
+                    </h4>
+                    <div className="flex items-center gap-2 font-mono text-[9px] tracking-wider uppercase">
+                      <span className="text-[#dce7f5]/40">ALIGN:</span>
+                      <button
+                        onClick={() => setImageAlign("crop")}
+                        className={`px-2 py-0.5 border transition-colors ${
+                          imageAlign === "crop" ? "text-[#ffd166] border-[#ffd166]" : "text-[#dce7f5]/60 border-[#dce7f5]/20 hover:border-[#dce7f5]/50"
+                        }`}
+                      >
+                        [CROP]
+                      </button>
+                      <button
+                        onClick={() => setImageAlign("fit")}
+                        className={`px-2 py-0.5 border transition-colors ${
+                          imageAlign === "fit" ? "text-[#ffd166] border-[#ffd166]" : "text-[#dce7f5]/60 border-[#dce7f5]/20 hover:border-[#dce7f5]/50"
+                        }`}
+                      >
+                        [FIT]
+                      </button>
+                    </div>
+                  </div>
                   <div className="bp-modal-grid">
                     {selectedArticle.images.map((img, idx) => {
                       const imgPath = `/api/portfolio/media/${selectedArticle.folderName}/${img}?w=800`;
@@ -668,7 +723,9 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
                             src={imgPath}
                             alt={img}
                             fill
-                            className="object-cover hover:scale-102 transition-transform duration-500"
+                            className={`${
+                              imageAlign === "fit" ? "object-contain bg-[#12284b]" : "object-cover"
+                            } hover:scale-102 transition-transform duration-500`}
                             sizes="(max-width: 768px) 100vw, 33vw"
                             unoptimized
                           />
