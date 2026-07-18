@@ -305,10 +305,6 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
         <div className="relative">
           <div id="filmstrip-track" className="bp-filmstrip-track">
             {filteredArticles.map((article) => {
-              const d = new Date(article.createdAt);
-              const mm = String(d.getMonth() + 1).padStart(2, "0");
-              const dd = String(d.getDate()).padStart(2, "0");
-              const sheetId = `X${mm}${dd}`;
               const firstImg =
                 article.images.length > 0
                   ? `/api/portfolio/media/${article.folderName}/${article.images[0]}?w=640`
@@ -337,7 +333,7 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
                     )}
                   </div>
                   <div className="bp-sheet-caption">
-                    {sheetId} — {article.title.toUpperCase()}
+                    {article.title.toUpperCase()}
                   </div>
                 </button>
               );
@@ -592,18 +588,18 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
         >
           {/* Card & QR Wrapper */}
           <div
-            className="flex flex-col md:flex-row gap-4 items-stretch max-w-[560px] w-full"
+            className="flex flex-col md:flex-row gap-4 items-stretch max-w-[560px] md:max-w-[720px] w-full"
             onClick={(e) => e.stopPropagation()}
           >
             {/* QR Card (Left Side) — White background, black QR Code, full height of ID Card */}
             <div
               style={{ backgroundColor: "#ffffff" }}
-              className="p-4 flex flex-col items-center justify-center shrink-0 w-full md:w-[155px] bp-namecard-qr-aside"
+              className="p-3 flex flex-col items-center justify-center shrink-0 w-full md:w-auto bp-namecard-qr-aside"
             >
               <img
-                src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://flz.works"
+                src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://flz.works"
                 alt="QR Code flz.works"
-                className="w-full h-auto object-contain max-w-full"
+                className="w-full h-auto md:h-full md:w-auto object-contain max-w-full"
               />
             </div>
 
