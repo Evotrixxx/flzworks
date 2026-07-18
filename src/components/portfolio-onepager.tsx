@@ -46,6 +46,14 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
     e.preventDefault();
     if (!contactMessage.trim()) return;
 
+    // Validate the email format when one is provided so replies aren't lost.
+    const email = contactEmail.trim();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setFormStatus("error");
+      setFormError("Please enter a valid email address.");
+      return;
+    }
+
     setFormStatus("sending");
     setFormError("");
 
@@ -69,9 +77,9 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
       setContactName("");
       setContactEmail("");
       setContactMessage("");
-    } catch (err: any) {
+    } catch (err) {
       setFormStatus("error");
-      setFormError(err.message || "An error occurred.");
+      setFormError(err instanceof Error ? err.message : "An error occurred.");
     }
   };
 
@@ -96,6 +104,10 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const scrollToSection = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
 
 
@@ -139,42 +151,57 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [activeGallery]);
 
-  // Showroom mode click listener
+  // Showroom mode: exit on Escape only (no hostile global click capture that
+  // would swallow every interaction, including the 3D viewer drag). Let an open
+  // modal/lightbox consume Escape first so a single press doesn't both close the
+  // modal and drop showroom mode.
   useEffect(() => {
     if (!uiHidden) return;
-    const handleCaptureClick = (e: MouseEvent) => {
-      e.stopPropagation();
-      e.preventDefault();
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (selectedArticle || activeGallery || isNamecardOpen) return;
       setUiHidden(false);
     };
-    window.addEventListener("click", handleCaptureClick, true);
-    return () => window.removeEventListener("click", handleCaptureClick, true);
-  }, [uiHidden]);
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [uiHidden, selectedArticle, activeGallery, isNamecardOpen]);
 
-  // Global keyboard shortcuts for navigation
+  // Global keyboard shortcuts: navigation ([F]/[S]/[C]) + showroom toggle ([H]).
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      if (
-        document.activeElement?.tagName === "INPUT" ||
-        document.activeElement?.tagName === "TEXTAREA"
-      ) {
-        return;
-      }
-      const key = e.key.toLowerCase();
-      if (key === "f") {
-        scrollToSection("hero");
-      } else if (key === "c") {
-        const contactEl = document.getElementById("contact") || document.getElementById("contact-form-section");
-        contactEl?.scrollIntoView({ behavior: "smooth" });
+      // Don't hijack browser/OS shortcuts.
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      // Ignore while typing in a field or an editable element.
+      const el = document.activeElement as HTMLElement | null;
+      const tag = el?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || el?.isContentEditable) return;
+      // Ignore while a modal or the lightbox is open.
+      if (selectedArticle || activeGallery || isNamecardOpen) return;
+
+      switch (e.key.toLowerCase()) {
+        case "f":
+          scrollToSection("hero");
+          break;
+        case "s":
+          scrollToSection("signals");
+          break;
+        case "c":
+          document
+            .getElementById("contact-form-section")
+            ?.scrollIntoView({ behavior: "smooth" });
+          break;
+        case "h":
+          setUiHidden((v) => !v);
+          break;
       }
     };
     window.addEventListener("keydown", handleGlobalKeyDown);
     return () => window.removeEventListener("keydown", handleGlobalKeyDown);
-  }, []);
+  }, [selectedArticle, activeGallery, isNamecardOpen]);
 
   // IntersectionObserver to set active section for top bar highlights
   useEffect(() => {
-    const sections = ["hero", "process", "archive", "interface", "signals", "filmstrip", "transmissions", "contact"];
+    const sections = ["hero", "filmstrip", "signals", "contact-form-section", "contact"];
     const observers = sections.map((id) => {
       const el = document.getElementById(id);
       if (!el) return null;
@@ -205,10 +232,6 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
     return article.category === selectedCategory;
   });
 
-  const scrollToSection = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-  };
-
   return (
     <div className="bp-root min-h-screen selection:bg-[#ffd166]/20 selection:text-[#ffd166]">
       {/* Header */}
@@ -224,7 +247,7 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
             <span className="bp-nav-key">[F]</span> FEATURED
           </button>
           <button
-            className={`bp-nav-item ${activeSection === "signals" || activeSection === "transmissions" ? "is-active" : ""}`}
+            className={`bp-nav-item ${activeSection === "signals" ? "is-active" : ""}`}
             onClick={() => {
               scrollToSection("signals");
             }}
@@ -248,7 +271,7 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
         <div className="bp-hero-title">
           <div className="bp-hero-eyebrow">PENTAGON ATHAAN 2026 · LIVE MODEL — DRAG TO ORBIT</div>
           <h1 className="bp-hero-headline">
-            DRAWN, MODELED, RENDERED.<span className="bp-accent"></span>
+            DRAWN, MODELED, RENDERED.
           </h1>
         </div>
       </section>
@@ -282,10 +305,6 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
         <div className="relative">
           <div id="filmstrip-track" className="bp-filmstrip-track">
             {filteredArticles.map((article) => {
-              const d = new Date(article.createdAt);
-              const mm = String(d.getMonth() + 1).padStart(2, "0");
-              const dd = String(d.getDate()).padStart(2, "0");
-              const sheetId = `X${mm}${dd}`;
               const firstImg =
                 article.images.length > 0
                   ? `/api/portfolio/media/${article.folderName}/${article.images[0]}?w=640`
@@ -314,7 +333,7 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
                     )}
                   </div>
                   <div className="bp-sheet-caption">
-                    {sheetId} — {article.title.toUpperCase()}
+                    {article.title.toUpperCase()}
                   </div>
                 </button>
               );
@@ -350,26 +369,12 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
       {/* Transmissions — now an identical horizontal filmstrip */}
       <section id="signals" className="bp-filmstrip bp-transmissions">
         <div className="bp-filmstrip-head">
-          <span className="bp-section-label bp-accent">■ SOCIALS — X / IG / TIKTOK / LINKEDIN</span>
+          <span className="bp-section-label bp-accent">■ SOCIALS — IG / TIKTOK / LINKEDIN</span>
           <span className="bp-scroll-hint">SCROLL →</span>
         </div>
 
         <div className="relative">
           <div id="transmissions-track" className="bp-filmstrip-track">
-            {/* X */}
-            <a
-              href="https://x.com/home"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bp-sheet"
-            >
-              <div className="bp-sheet-img flex flex-col items-center justify-center bg-[#dce7f5]/5 transition-colors hover:bg-[#dce7f5]/10">
-                <span className="text-2xl font-bold tracking-wider text-[#ffd166]">X</span>
-                <span className="text-[8px] opacity-40 mt-1">X.COM</span>
-              </div>
-              <div className="bp-sheet-caption">X — HOME</div>
-            </a>
-
             {/* Instagram */}
             <a
               href="https://www.instagram.com/vision.flz/"
@@ -548,6 +553,17 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
         </button>
       )}
 
+      {/* Showroom-mode exit hint — the only affordance shown while UI is hidden */}
+      {uiHidden && (
+        <button
+          type="button"
+          className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 font-mono text-[10px] tracking-widest uppercase text-[#12284b] bg-[#ffd166]/90 hover:bg-[#ffe599] px-3 py-1.5 transition-colors"
+          onClick={() => setUiHidden(false)}
+        >
+          Press [H] or [Esc] to exit showroom
+        </button>
+      )}
+
       {/* Virtual Namecard Modal Overlay */}
       {isNamecardOpen && (
         <div
@@ -558,18 +574,18 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
         >
           {/* Card & QR Wrapper */}
           <div
-            className="flex flex-col md:flex-row gap-4 items-stretch max-w-[560px] w-full"
+            className="flex flex-col md:flex-row gap-4 items-stretch max-w-[560px] md:max-w-[720px] w-full"
             onClick={(e) => e.stopPropagation()}
           >
             {/* QR Card (Left Side) — White background, black QR Code, full height of ID Card */}
             <div
               style={{ backgroundColor: "#ffffff" }}
-              className="p-4 flex flex-col items-center justify-center shrink-0 w-full md:w-[155px] bp-namecard-qr-aside"
+              className="p-3 flex flex-col items-center justify-center shrink-0 w-full md:w-auto bp-namecard-qr-aside"
             >
               <img
-                src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://flz.works"
+                src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://flz.works"
                 alt="QR Code flz.works"
-                className="w-full h-auto object-contain max-w-full"
+                className="w-full h-auto md:h-full md:w-auto object-contain max-w-full"
               />
             </div>
 

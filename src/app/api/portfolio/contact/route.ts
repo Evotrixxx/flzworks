@@ -13,10 +13,20 @@ export async function POST(request: Request) {
       );
     }
 
+    // Validate the email format server-side when one is provided (client checks
+    // can be bypassed) so we don't send back replies to malformed addresses.
+    const trimmedEmail = typeof email === "string" ? email.trim() : "";
+    if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      return NextResponse.json(
+        { error: "Invalid email address" },
+        { status: 400 }
+      );
+    }
+
     const result = await sendContactEmail({
-      name: name?.slice(0, 100),
-      email: email?.slice(0, 100),
-      message: message?.slice(0, 5000),
+      name: typeof name === "string" ? name.trim().slice(0, 100) : undefined,
+      email: trimmedEmail ? trimmedEmail.slice(0, 100) : undefined,
+      message: message.slice(0, 5000),
     });
 
     return NextResponse.json({ success: true, sent: result.sent });
