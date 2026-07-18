@@ -152,15 +152,19 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
   }, [activeGallery]);
 
   // Showroom mode: exit on Escape only (no hostile global click capture that
-  // would swallow every interaction, including the 3D viewer drag).
+  // would swallow every interaction, including the 3D viewer drag). Let an open
+  // modal/lightbox consume Escape first so a single press doesn't both close the
+  // modal and drop showroom mode.
   useEffect(() => {
     if (!uiHidden) return;
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setUiHidden(false);
+      if (e.key !== "Escape") return;
+      if (selectedArticle || activeGallery || isNamecardOpen) return;
+      setUiHidden(false);
     };
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
-  }, [uiHidden]);
+  }, [uiHidden, selectedArticle, activeGallery, isNamecardOpen]);
 
   // Global keyboard shortcuts: navigation ([F]/[S]/[C]) + showroom toggle ([H]).
   useEffect(() => {
