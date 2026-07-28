@@ -44,8 +44,13 @@ const archivo = Archivo({
 });
 
 export const metadata: Metadata = {
-  title: "FLZ | Portfolio",
-  description: "Portfolio and private AutoPiac intranet by FLZ.",
+  metadataBase: new URL("https://flz.works"),
+  title: {
+    default: "FLZ — Bence Flosz | 3D Artist & Software Engineer",
+    template: "%s | FLZ Works",
+  },
+  description:
+    "Portfolio of Bence Flosz — Gazdaságinformatikus (BGE), Indie Game Developer, 3D Artist, and Backend Developer based in Budapest.",
 };
 
 export default async function RootLayout({
@@ -69,14 +74,35 @@ export default async function RootLayout({
         />
         <noscript>
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#03040a] text-white p-6 text-center">
-            <div className="max-w-md">
-              <h1 className="text-3xl font-black mb-4">FLZ WORKS</h1>
-              <p className="text-sm font-mono text-white/70 mb-6">
-                Photorealistic 3D automotive design, system architecture, high-performance web rendering, and prototype development.
+            <div className="max-w-lg space-y-4">
+              <h1 className="text-3xl font-black tracking-tight">FLZ WORKS</h1>
+              <p className="text-sm font-mono text-white/80 leading-relaxed">
+                Portfolio of Bence Flosz — Gazdaságinformatikus (BGE), Indie Game Developer, 3D Artist, and Backend Developer based in Budapest.
               </p>
-              <p className="text-xs text-white/50">
-                For the full experience of this site, please enable JavaScript in your browser.
+              <p className="text-xs text-white/60">
+                This interactive 3D portfolio and application suite requires JavaScript. Please enable JavaScript in your browser for the full experience.
               </p>
+              <div className="pt-4 text-xs font-mono flex flex-wrap justify-center gap-4 text-cyan-400">
+                <a href="mailto:floszbeni@gmail.com" className="underline hover:text-cyan-300">
+                  Email: floszbeni@gmail.com
+                </a>
+                <a
+                  href="https://github.com/Flzvision"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-cyan-300"
+                >
+                  GitHub
+                </a>
+                <a
+                  href="https://www.linkedin.com/in/bence-flosz-56134535a/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-cyan-300"
+                >
+                  LinkedIn
+                </a>
+              </div>
             </div>
           </div>
         </noscript>
