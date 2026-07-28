@@ -48,186 +48,6 @@ function ArrowUpRight({ size = 11 }: { size?: number }) {
   );
 }
 
-// ── Global CSS (keyframes injected once) ─────────────────────────────────────
-
-const CSS_KEYFRAMES = `
-@keyframes lucid-shell-in {
-  from { opacity: 0; transform: translateY(24px) scale(0.976); }
-  to   { opacity: 1; transform: translateY(0)    scale(1); }
-}
-@keyframes lucid-fade-up {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes lucid-pulse-dot {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.3; }
-}
-@keyframes lucid-shimmer {
-  0%   { background-position: -200% center; }
-  100% { background-position:  200% center; }
-}
-.lucid-link-chip {
-  display: inline-flex; align-items: center; gap: 5px;
-  height: 30px; padding: 0 13px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.11);
-  color: rgba(250,246,240,0.68);
-  font-size: 12px; font-family: var(--lucid-font-mono);
-  letter-spacing: 0.12em; text-transform: uppercase;
-  text-decoration: none;
-  transition: background 120ms ease, color 120ms ease, border-color 120ms ease, transform 120ms ease;
-  white-space: nowrap; cursor: pointer;
-}
-.lucid-link-chip:hover {
-  background: rgba(255,255,255,0.13);
-  border-color: rgba(255,255,255,0.2);
-  color: rgba(250,246,240,0.95);
-  transform: translateY(-1px);
-}
-.lucid-skill-row {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 10px 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  transition: background 120ms ease;
-}
-.lucid-skill-row:hover { background: rgba(255,255,255,0.04); }
-.lucid-skill-row:last-child { border-bottom: none; }
-.lucid-mini-card {
-  position: relative; overflow: hidden;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.09);
-  transition: border-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
-}
-.lucid-mini-card:hover {
-  border-color: rgba(255,255,255,0.16);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 28px -8px rgba(20,18,15,0.5);
-}
-.lucid-nav-pill {
-  display: inline-flex; align-items: center; justify-content: center;
-  height: 30px; padding: 0 14px;
-  border-radius: 999px;
-  font-size: 12px; font-family: var(--lucid-font-mono);
-  letter-spacing: 0.13em; text-transform: uppercase;
-  cursor: pointer; border: none;
-  transition: background 130ms ease, color 130ms ease, box-shadow 130ms ease;
-  text-decoration: none;
-}
-.lucid-icon-btn {
-  width: 30px; height: 30px; border-radius: 999px;
-  display: inline-flex; align-items: center; justify-content: center;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.06);
-  color: rgba(250,246,240,0.68);
-  cursor: pointer; text-decoration: none;
-  transition: background 120ms ease, color 120ms ease, transform 120ms ease;
-  flex-shrink: 0;
-}
-.lucid-icon-btn:hover { background: rgba(255,255,255,0.13); color: rgba(250,246,240,0.95); transform: scale(1.08); }
-.lucid-cta-primary {
-  display: inline-flex; align-items: center; gap: 7px;
-  height: 36px; padding: 0 18px;
-  border-radius: 999px;
-  background: #FAF6F0;
-  color: #14120F;
-  border: none;
-  font-size: 12px; font-family: var(--lucid-font-mono);
-  letter-spacing: 0.13em; text-transform: uppercase;
-  font-weight: 600;
-  cursor: pointer; text-decoration: none;
-  box-shadow: 0 4px 14px -4px rgba(20,18,15,0.35);
-  transition: background 120ms ease, transform 120ms ease, box-shadow 120ms ease;
-  white-space: nowrap;
-}
-.lucid-cta-primary:hover { background: #FFFFFF; transform: translateY(-1px); box-shadow: 0 8px 24px -6px rgba(20,18,15,0.4); }
-.lucid-cta-dark {
-  display: inline-flex; align-items: center; gap: 7px;
-  height: 36px; padding: 0 18px;
-  border-radius: 999px;
-  background: #14120F;
-  color: #FAF6F0;
-  border: 1px solid rgba(255,255,255,0.1);
-  font-size: 12px; font-family: var(--lucid-font-mono);
-  letter-spacing: 0.13em; text-transform: uppercase;
-  font-weight: 600;
-  cursor: pointer; text-decoration: none;
-  box-shadow: 0 4px 14px -4px rgba(20,18,15,0.55);
-  transition: background 120ms ease, transform 120ms ease, box-shadow 120ms ease;
-  white-space: nowrap;
-}
-.lucid-cta-dark:hover { background: #2C2925; transform: translateY(-1px); box-shadow: 0 8px 24px -6px rgba(20,18,15,0.6); }
-
-.lucid-body-grid {
-  display: grid;
-  grid-template-columns: 236px 1fr;
-  min-width: 0;
-}
-.lucid-body-grid > * { min-width: 0; }
-
-.lucid-hero-grid {
-  display: grid;
-  grid-template-columns: 1fr 176px;
-  grid-template-rows: auto 1fr auto;
-  gap: 14px;
-  min-width: 0;
-}
-.lucid-hero-grid > * { min-width: 0; }
-
-.lucid-hero-headline { grid-column: 1 / -1; }
-.lucid-hero-side { grid-column: 2 / 3; grid-row: 2 / 4; }
-.lucid-hero-archive { grid-column: 1 / 2; align-self: end; }
-
-@media (max-width: 860px) {
-  .lucid-body-grid {
-    grid-template-columns: 1fr;
-  }
-  .lucid-hero-grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto;
-  }
-  .lucid-hero-headline,
-  .lucid-hero-side,
-  .lucid-hero-archive {
-    grid-column: 1 / -1;
-    grid-row: auto;
-  }
-}
-
-@media (pointer: coarse) {
-  .lucid-icon-btn {
-    width: 44px;
-    height: 44px;
-  }
-  .lucid-nav-pill {
-    height: 44px;
-    padding: 0 18px;
-  }
-  .lucid-cta-primary,
-  .lucid-cta-dark {
-    height: 44px;
-    padding: 0 20px;
-  }
-  .lucid-link-chip {
-    height: 40px;
-    padding: 0 16px;
-  }
-}
-`;
-
-function StyleInjector() {
-  const injected = useRef(false);
-  useEffect(() => {
-    if (injected.current) return;
-    injected.current = true;
-    const style = document.createElement("style");
-    style.textContent = CSS_KEYFRAMES;
-    document.head.appendChild(style);
-  }, []);
-  return null;
-}
-
 // ── Primitives ────────────────────────────────────────────────────────────────
 
 /** Dark smoked glass sub-panel */
@@ -290,11 +110,11 @@ function Label({
 /** Large display numeral stat */
 function Stat({ val, unit, label, light }: { val: string; unit?: string; label: string; light?: boolean }) {
   const base = light ? "#14120F" : "#FAF6F0";
-  const muted = light ? "rgba(20,18,15,0.62)" : "rgba(250,246,240,0.64)";
+  const muted = light ? "rgba(20,18,15,0.72)" : "rgba(250,246,240,0.65)";
   return (
     <div>
       <div style={{ display: "flex", alignItems: "baseline", gap: 3 }}>
-        <span style={{ fontFamily: "var(--lucid-font-display)", fontWeight: 700, fontSize: 34, lineHeight: 1, letterSpacing: "-0.03em", color: base }}>{val}</span>
+        <span style={{ fontFamily: "var(--lucid-font-display)", fontWeight: 700, fontSize: 34, lineHeight: 1, letterSpacing: "-0.03em", color: base, fontFeatureSettings: '"tnum" 1, "cv05" 1' }}>{val}</span>
         {unit && <span style={{ fontFamily: "var(--lucid-font-mono)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: muted, marginBottom: 2 }}>{unit}</span>}
       </div>
       <span style={{ fontFamily: "var(--lucid-font-mono)", fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: muted, display: "block", marginTop: 2 }}>{label}</span>
@@ -312,8 +132,8 @@ interface LucidLandingProps {
 const SKILLS = [
   { icon: "🎮", label: "Game Dev", tags: ["Godot", "C#", "Multiplayer", "Level Design"] },
   { icon: "🎨", label: "3D · Visual", tags: ["Blender", "Photoshop", "Environment Art"] },
-  { icon: "💻", label: "Web · Backend", tags: ["Next.js", "PHP", "SQL", "Prisma"] },
-  { icon: "🤖", label: "AI · Tools", tags: ["Ollama", "PowerShell", "LLMs"] },
+  { icon: "💻", label: "Web · Backend", tags: ["PHP", "JavaScript", "SQL", "HTML5", "CSS3", "Bootstrap 5"] },
+  { icon: "🤖", label: "AI · Tools", tags: ["Ollama", "PowerShell", "Python"] },
 ];
 
 export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
@@ -359,11 +179,12 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
   const downloadVCard = useCallback(() => {
     const vcard = [
       "BEGIN:VCARD", "VERSION:3.0",
-      "N:Flosz;Bence;;;", "FN:Bence Flosz", "ORG:FLZ Works",
-      "TITLE:Game Developer · 3D Artist · Backend Engineer",
+      "N:Flosz;Bence;Norbert;;", "FN:Bence Flosz", "ORG:FLZ Works",
+      "TITLE:Gazdaságinformatikus (BGE) | Indie Game Developer & Studio Founder | Backend Developer",
       "EMAIL;TYPE=PREF,INTERNET:floszbeni@gmail.com",
       "TEL;TYPE=CELL:+36206282353",
       "URL:https://flz.works",
+      "X-SOCIALPROFILE;type=linkedin:https://www.linkedin.com/in/bence-flosz-56134535a/",
       "X-SOCIALPROFILE;type=github:https://github.com/Flzvision",
       "END:VCARD",
     ].join("\n");
@@ -379,8 +200,6 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
 
   return (
     <>
-      <StyleInjector />
-
       {/* ── Backdrop ─────────────────────────────────────────────────────── */}
       <div style={{
         minHeight: "100svh",
@@ -413,7 +232,7 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
           }} />
 
           {/* ── NAV BAR ─────────────────────────────────────────────────── */}
-          <div style={{
+          <div className="lucid-top-bar" style={{
             position: "relative", zIndex: 2,
             display: "flex", alignItems: "center", gap: 10,
             padding: "12px 18px 12px 20px",
@@ -471,7 +290,7 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
               <a href="https://github.com/Flzvision" target="_blank" rel="noopener noreferrer" className="lucid-icon-btn" aria-label="GitHub">
                 <GithubIcon size={13} />
               </a>
-              <a href="https://linkedin.com/in/bence-flosz-56134535a" target="_blank" rel="noopener noreferrer" className="lucid-icon-btn" aria-label="LinkedIn">
+              <a href="https://www.linkedin.com/in/bence-flosz-56134535a/" target="_blank" rel="noopener noreferrer" className="lucid-icon-btn" aria-label="LinkedIn">
                 <LinkedInIcon size={13} />
               </a>
               <a href="mailto:floszbeni@gmail.com" className="lucid-icon-btn" aria-label="Email">
@@ -518,7 +337,7 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
                   letterSpacing: "0.13em", textTransform: "uppercase",
                   color: "rgba(250,246,240,0.62)", lineHeight: 1.55,
                 }}>
-                  Indie Game Dev<br />3D Artist · Backend Eng
+                  Gazdaságinformatikus (BGE)<br />Indie Game Developer & Studio Founder<br />Backend Developer
                 </p>
 
                 {/* Stats */}
@@ -532,7 +351,7 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
 
               {/* Current build card */}
               <div style={{ padding: "12px 14px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-                <D style={{ padding: "12px 14px" }} r={10}>
+                <D style={{ padding: "12px 14px" }} r={12}>
                   <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 7 }}>
                     <div style={{
                       width: 5, height: 5, borderRadius: "50%",
@@ -591,14 +410,32 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
               {/* Education footer */}
               <div style={{ padding: "12px 18px" }}>
                 <Label dim as="h2" style={{ fontSize: 11 }}>Education</Label>
-                <p style={{
-                  margin: "4px 0 0",
-                  fontFamily: "var(--lucid-font-display)", fontWeight: 600,
-                  fontSize: 12, color: "rgba(250,246,240,0.65)",
-                }}>
-                  BGE
-                </p>
-                <Label dim style={{ fontSize: 11, marginTop: 2 }}>Business Informatics BSc</Label>
+                <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 6 }}>
+                  <div>
+                    <p style={{ margin: 0, fontFamily: "var(--lucid-font-display)", fontWeight: 600, fontSize: 11.5, color: "rgba(250,246,240,0.85)" }}>
+                      BGE — Gazdaságinformatika BSc
+                    </p>
+                    <Label dim style={{ fontSize: 10, marginTop: 1 }}>Budapesti Gazdasági Egyetem · 2025 – Jelenleg</Label>
+                  </div>
+                  <div>
+                    <p style={{ margin: 0, fontFamily: "var(--lucid-font-display)", fontWeight: 600, fontSize: 11.5, color: "rgba(250,246,240,0.75)" }}>
+                      PPKE — Mérnökinformatikus
+                    </p>
+                    <Label dim style={{ fontSize: 10, marginTop: 1 }}>Pázmány Péter Katolikus Egyetem · 2023 – 2024</Label>
+                  </div>
+                  <div>
+                    <p style={{ margin: 0, fontFamily: "var(--lucid-font-display)", fontWeight: 600, fontSize: 11.5, color: "rgba(250,246,240,0.75)" }}>
+                      Schola Europa Akadémia
+                    </p>
+                    <Label dim style={{ fontSize: 10, marginTop: 1 }}>Szoftverfejlesztő és -tesztelő · 2021 – 2023</Label>
+                  </div>
+                  <div>
+                    <p style={{ margin: 0, fontFamily: "var(--lucid-font-display)", fontWeight: 600, fontSize: 11.5, color: "rgba(250,246,240,0.75)" }}>
+                      Óbudai Gimnázium
+                    </p>
+                    <Label dim style={{ fontSize: 10, marginTop: 1 }}>Érettségi · 2017 – 2021</Label>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -625,7 +462,7 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
                       color: "#FAF6F0",
                     }}>
                       Building worlds.<br />
-                      <span style={{ color: "rgba(250,246,240,0.45)" }}>Shipping products.</span>
+                      <span style={{ color: "rgba(250,246,240,0.65)" }}>Shipping products.</span>
                     </h2>
                   </div>
 
@@ -642,7 +479,7 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
                     margin: "0 0 10px",
                     fontFamily: "var(--lucid-font-mono)", fontSize: 11,
                     letterSpacing: "0.13em", textTransform: "uppercase",
-                    color: "rgba(20,18,15,0.62)",
+                    color: "rgba(20,18,15,0.72)",
                   }}>
                     About
                   </h2>
@@ -657,6 +494,7 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
                   {/* Experience pills */}
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                     {[
+                      { name: "Független Játékfejlesztő", role: "Studio Setup · 2024–Jelenleg" },
                       { name: "Boredo Systems", role: "Backend Dev · 2024–25" },
                       { name: "Freelance", role: "Marketing · 2023–24" },
                     ].map((e) => (
@@ -664,7 +502,7 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
                         padding: "8px 12px",
                         background: "rgba(20,18,15,0.06)",
                         border: "1px solid rgba(20,18,15,0.09)",
-                        borderRadius: 10,
+                        borderRadius: 12,
                       }}>
                         <div style={{
                           fontFamily: "var(--lucid-font-display)", fontWeight: 700,
@@ -675,7 +513,7 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
                         <div style={{
                           fontFamily: "var(--lucid-font-mono)", fontSize: 11,
                           letterSpacing: "0.11em", textTransform: "uppercase",
-                          color: "rgba(20,18,15,0.62)", marginTop: 2,
+                          color: "rgba(20,18,15,0.72)", marginTop: 2,
                         }}>
                           {e.role}
                         </div>
@@ -689,11 +527,11 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
                   display: "flex", flexDirection: "column", gap: 10,
                 }}>
                   {/* Steam target */}
-                  <L style={{ padding: "14px" }} r={10}>
+                  <L style={{ padding: "14px" }} r={12}>
                     <div style={{
                       fontFamily: "var(--lucid-font-mono)", fontSize: 11,
                       letterSpacing: "0.13em", textTransform: "uppercase",
-                      color: "rgba(20,18,15,0.6)", marginBottom: 5,
+                      color: "rgba(20,18,15,0.72)", marginBottom: 5,
                     }}>
                       Target
                     </div>
@@ -703,14 +541,14 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
                     <div style={{
                       fontFamily: "var(--lucid-font-mono)", fontSize: 11,
                       letterSpacing: "0.1em", textTransform: "uppercase",
-                      color: "rgba(20,18,15,0.6)", marginTop: 2,
+                      color: "rgba(20,18,15,0.72)", marginTop: 2,
                     }}>
                       Commercial release
                     </div>
                   </L>
 
                   {/* Also: Roblox */}
-                  <D style={{ padding: "14px" }} r={10}>
+                  <D style={{ padding: "14px" }} r={12}>
                     <Label dim style={{ marginBottom: 4 }}>Also</Label>
                     <div style={{ fontFamily: "var(--lucid-font-display)", fontWeight: 700, fontSize: 13, color: "#FAF6F0" }}>
                       Roblox Studio
@@ -720,12 +558,12 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
 
                   {/* Instagram */}
                   {instagramMedia.length > 0 && (
-                    <D style={{ padding: "12px" }} r={10}>
+                    <D style={{ padding: "12px" }} r={12}>
                       <Label dim style={{ marginBottom: 8 }}>Instagram</Label>
                       <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
                         {instagramMedia.slice(0, 4).map((item) => (
                           <a key={item.id} href={item.permalink} target="_blank" rel="noopener noreferrer"
-                            style={{ flex: "0 0 36px", width: 36, height: 36, borderRadius: 7, overflow: "hidden", position: "relative", display: "block", border: "1px solid rgba(255,255,255,0.1)" }}
+                            style={{ flex: "0 0 36px", width: 36, height: 36, borderRadius: 8, overflow: "hidden", position: "relative", display: "block", border: "1px solid rgba(255,255,255,0.1)" }}
                             aria-label="Instagram post"
                           >
                             {item.media_type !== "VIDEO" && item.media_url && (
@@ -783,7 +621,7 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
                   Flzvision
                 </a>
 
-                <a href="https://linkedin.com/in/bence-flosz-56134535a" id="lucid-linkedin-link" target="_blank" rel="noopener noreferrer" className="lucid-link-chip">
+                <a href="https://www.linkedin.com/in/bence-flosz-56134535a/" id="lucid-linkedin-link" target="_blank" rel="noopener noreferrer" className="lucid-link-chip">
                   <LinkedInIcon size={10} />
                   LinkedIn
                 </a>
@@ -793,7 +631,7 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
 
                 {/* Autopiac — dark CTA */}
                 <Link href="/autosalon" id="lucid-autopiac-link" className="lucid-cta-dark">
-                  Autopiac
+                  Portfolio Archive
                   <ArrowUpRight size={11} />
                 </Link>
               </div>
