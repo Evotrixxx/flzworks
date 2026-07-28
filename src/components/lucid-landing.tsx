@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { InstagramMediaItem } from "@/lib/instagram";
 import type { PortfolioArticleWithImages } from "@/lib/portfolio-sync";
 
-// ── SVG Icons ─────────────────────────────────────────────────────────────────
+// ── Icons ─────────────────────────────────────────────────────────────────────
 
 function GithubIcon({ size = 16 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
       <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
     </svg>
   );
@@ -18,7 +18,7 @@ function GithubIcon({ size = 16 }: { size?: number }) {
 
 function LinkedInIcon({ size = 16 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
       <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
     </svg>
   );
@@ -26,317 +26,242 @@ function LinkedInIcon({ size = 16 }: { size?: number }) {
 
 function MailIcon({ size = 14 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="2" y="4" width="20" height="16" rx="2" />
-      <path d="m22 7-10 7L2 7" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-10 7L2 7" />
     </svg>
   );
 }
 
-function DownloadIcon({ size = 14 }: { size?: number }) {
+function DownloadIcon({ size = 13 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
     </svg>
   );
 }
 
-function ArrowRightIcon({ size = 14 }: { size?: number }) {
+function ArrowUpRight({ size = 11 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M5 12h14M12 5l7 7-7 7" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M7 17L17 7M7 7h10v10" />
     </svg>
   );
 }
 
-// ── Shared style constants ─────────────────────────────────────────────────────
+// ── Global CSS (keyframes injected once) ─────────────────────────────────────
 
-const MONO_LABEL: React.CSSProperties = {
-  font: "var(--lucid-type-label)",
-  letterSpacing: "var(--lucid-tracking-label)",
-  textTransform: "uppercase" as const,
-};
+const CSS_KEYFRAMES = `
+@keyframes lucid-shell-in {
+  from { opacity: 0; transform: translateY(24px) scale(0.976); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+@keyframes lucid-fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes lucid-pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+@keyframes lucid-shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+.lucid-link-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  height: 30px; padding: 0 13px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.11);
+  color: rgba(250,246,240,0.55);
+  font-size: 9px; font-family: var(--lucid-font-mono);
+  letter-spacing: 0.12em; text-transform: uppercase;
+  text-decoration: none;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease, transform 120ms ease;
+  white-space: nowrap; cursor: pointer;
+}
+.lucid-link-chip:hover {
+  background: rgba(255,255,255,0.13);
+  border-color: rgba(255,255,255,0.2);
+  color: rgba(250,246,240,0.9);
+  transform: translateY(-1px);
+}
+.lucid-skill-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  transition: background 120ms ease;
+}
+.lucid-skill-row:hover { background: rgba(255,255,255,0.04); }
+.lucid-skill-row:last-child { border-bottom: none; }
+.lucid-mini-card {
+  position: relative; overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.09);
+  transition: border-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
+}
+.lucid-mini-card:hover {
+  border-color: rgba(255,255,255,0.16);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px -8px rgba(20,18,15,0.5);
+}
+.lucid-nav-pill {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 30px; padding: 0 14px;
+  border-radius: 999px;
+  font-size: 9px; font-family: var(--lucid-font-mono);
+  letter-spacing: 0.13em; text-transform: uppercase;
+  cursor: pointer; border: none;
+  transition: background 130ms ease, color 130ms ease, box-shadow 130ms ease;
+  text-decoration: none;
+}
+.lucid-icon-btn {
+  width: 30px; height: 30px; border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: rgba(250,246,240,0.55);
+  cursor: pointer; text-decoration: none;
+  transition: background 120ms ease, color 120ms ease, transform 120ms ease;
+  flex-shrink: 0;
+}
+.lucid-icon-btn:hover { background: rgba(255,255,255,0.13); color: rgba(250,246,240,0.95); transform: scale(1.08); }
+.lucid-cta-primary {
+  display: inline-flex; align-items: center; gap: 7px;
+  height: 36px; padding: 0 18px;
+  border-radius: 999px;
+  background: #FAF6F0;
+  color: #14120F;
+  border: none;
+  font-size: 9px; font-family: var(--lucid-font-mono);
+  letter-spacing: 0.13em; text-transform: uppercase;
+  font-weight: 600;
+  cursor: pointer; text-decoration: none;
+  box-shadow: 0 4px 14px -4px rgba(20,18,15,0.35);
+  transition: background 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+  white-space: nowrap;
+}
+.lucid-cta-primary:hover { background: #FFFFFF; transform: translateY(-1px); box-shadow: 0 8px 24px -6px rgba(20,18,15,0.4); }
+.lucid-cta-dark {
+  display: inline-flex; align-items: center; gap: 7px;
+  height: 36px; padding: 0 18px;
+  border-radius: 999px;
+  background: #14120F;
+  color: #FAF6F0;
+  border: 1px solid rgba(255,255,255,0.1);
+  font-size: 9px; font-family: var(--lucid-font-mono);
+  letter-spacing: 0.13em; text-transform: uppercase;
+  font-weight: 600;
+  cursor: pointer; text-decoration: none;
+  box-shadow: 0 4px 14px -4px rgba(20,18,15,0.55);
+  transition: background 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+  white-space: nowrap;
+}
+.lucid-cta-dark:hover { background: #2C2925; transform: translateY(-1px); box-shadow: 0 8px 24px -6px rgba(20,18,15,0.6); }
+`;
 
-const MONO_CAPTION: React.CSSProperties = {
-  font: "var(--lucid-type-caption)",
-  letterSpacing: "var(--lucid-tracking-caption)",
-  textTransform: "uppercase" as const,
-};
+function StyleInjector() {
+  const injected = useRef(false);
+  useEffect(() => {
+    if (injected.current) return;
+    injected.current = true;
+    const style = document.createElement("style");
+    style.textContent = CSS_KEYFRAMES;
+    document.head.appendChild(style);
+  }, []);
+  return null;
+}
 
-// ── Inner dark sub-panel (nested inside main shell) ───────────────────────────
-function DarkCard({
-  children,
-  style,
-  radius = "var(--lucid-radius-md)",
-}: {
-  children: React.ReactNode;
-  style?: React.CSSProperties;
-  radius?: string;
-}) {
+// ── Primitives ────────────────────────────────────────────────────────────────
+
+/** Dark smoked glass sub-panel */
+function D({ children, style, r = 12 }: { children: React.ReactNode; style?: React.CSSProperties; r?: number }) {
   return (
-    <div
-      style={{
-        position: "relative",
-        background: "color-mix(in srgb, #14120F 52%, transparent)",
-        border: "1px solid color-mix(in srgb, #FFFFFF 10%, transparent)",
-        borderRadius: radius,
-        backdropFilter: "blur(8px) saturate(150%)",
-        WebkitBackdropFilter: "blur(8px) saturate(150%)",
-        boxShadow: "inset 0 1px 0 color-mix(in srgb, #FFFFFF 12%, transparent)",
-        overflow: "hidden",
-        ...style,
-      }}
-    >
+    <div style={{
+      position: "relative", overflow: "hidden",
+      background: "rgba(20,18,15,0.52)",
+      border: "1px solid rgba(255,255,255,0.08)",
+      borderRadius: r,
+      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1)",
+      ...style,
+    }}>
       {children}
     </div>
   );
 }
 
-// ── Light cream sub-panel (high contrast inside dark shell) ───────────────────
-function LightCard({
-  children,
-  style,
-  radius = "var(--lucid-radius-md)",
-}: {
-  children: React.ReactNode;
-  style?: React.CSSProperties;
-  radius?: string;
-}) {
+/** Cream/light sub-panel */
+function L({ children, style, r = 12 }: { children: React.ReactNode; style?: React.CSSProperties; r?: number }) {
   return (
-    <div
-      style={{
-        position: "relative",
-        background: "color-mix(in srgb, #FAF6F0 88%, transparent)",
-        border: "1px solid color-mix(in srgb, #14120F 8%, transparent)",
-        borderRadius: radius,
-        overflow: "hidden",
-        ...style,
-      }}
-    >
+    <div style={{
+      background: "rgba(250,246,240,0.92)",
+      border: "1px solid rgba(20,18,15,0.08)",
+      borderRadius: r,
+      ...style,
+    }}>
       {children}
     </div>
   );
 }
 
-// ── Stat block — big display numeral over mono label ─────────────────────────
-function StatBlock({
-  value,
-  unit,
-  label,
-  dark = true,
-}: {
-  value: string;
-  unit?: string;
-  label: string;
-  dark?: boolean;
-}) {
-  const textColor = dark ? "var(--lucid-text-on-dark)" : "var(--lucid-text-primary)";
-  const mutedColor = dark ? "rgba(250,246,240,0.45)" : "var(--lucid-text-muted)";
+/** Mono uppercase label */
+function Label({ children, dim = false, style }: { children: React.ReactNode; dim?: boolean; style?: React.CSSProperties }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+    <span style={{
+      display: "block",
+      fontFamily: "var(--lucid-font-mono)",
+      fontSize: 9, letterSpacing: "0.13em",
+      textTransform: "uppercase",
+      color: dim ? "rgba(250,246,240,0.32)" : "rgba(250,246,240,0.52)",
+      ...style,
+    }}>
+      {children}
+    </span>
+  );
+}
+
+/** Large display numeral stat */
+function Stat({ val, unit, label, light }: { val: string; unit?: string; label: string; light?: boolean }) {
+  const base = light ? "#14120F" : "#FAF6F0";
+  const muted = light ? "rgba(20,18,15,0.42)" : "rgba(250,246,240,0.38)";
+  return (
+    <div>
       <div style={{ display: "flex", alignItems: "baseline", gap: 3 }}>
-        <span
-          style={{
-            fontFamily: "var(--lucid-font-display)",
-            fontWeight: 700,
-            fontSize: 36,
-            lineHeight: 1,
-            letterSpacing: "var(--lucid-tracking-display)",
-            color: textColor,
-          }}
-        >
-          {value}
-        </span>
-        {unit && (
-          <span style={{ ...MONO_LABEL, fontSize: 11, color: mutedColor }}>{unit}</span>
-        )}
+        <span style={{ fontFamily: "var(--lucid-font-display)", fontWeight: 700, fontSize: 34, lineHeight: 1, letterSpacing: "-0.03em", color: base }}>{val}</span>
+        {unit && <span style={{ fontFamily: "var(--lucid-font-mono)", fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase", color: muted, marginBottom: 2 }}>{unit}</span>}
       </div>
-      <span style={{ ...MONO_CAPTION, color: mutedColor }}>{label}</span>
+      <span style={{ fontFamily: "var(--lucid-font-mono)", fontSize: 8, letterSpacing: "0.14em", textTransform: "uppercase", color: muted, display: "block", marginTop: 2 }}>{label}</span>
     </div>
   );
 }
 
-// ── Nav pill segment ──────────────────────────────────────────────────────────
-function NavPill({
-  label,
-  active,
-  href,
-  onClick,
-}: {
-  label: string;
-  active?: boolean;
-  href?: string;
-  onClick?: () => void;
-}) {
-  const base: React.CSSProperties = {
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    height: 30,
-    padding: "0 14px",
-    borderRadius: "var(--lucid-radius-pill)",
-    font: "var(--lucid-type-label)",
-    letterSpacing: "var(--lucid-tracking-label)",
-    textTransform: "uppercase",
-    cursor: "pointer",
-    transition: "var(--lucid-transition)",
-    textDecoration: "none",
-    border: "none",
-    background: active
-      ? "color-mix(in srgb, #FAF6F0 92%, transparent)"
-      : "transparent",
-    color: active ? "var(--lucid-ink-900)" : "rgba(250,246,240,0.55)",
-    boxShadow: active ? "var(--lucid-shadow-sm)" : "none",
-  };
-
-  if (href) {
-    return (
-      <Link href={href} style={base}>
-        {label}
-      </Link>
-    );
-  }
-  return (
-    <button style={base} onClick={onClick}>
-      {label}
-    </button>
-  );
-}
-
-// ── Icon round button ─────────────────────────────────────────────────────────
-function IconBtn({
-  children,
-  href,
-  onClick,
-  label,
-  light = false,
-}: {
-  children: React.ReactNode;
-  href?: string;
-  onClick?: () => void;
-  label: string;
-  light?: boolean;
-}) {
-  const base: React.CSSProperties = {
-    width: 32,
-    height: 32,
-    borderRadius: "var(--lucid-radius-pill)",
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    background: light
-      ? "color-mix(in srgb, #FAF6F0 88%, transparent)"
-      : "color-mix(in srgb, #14120F 55%, transparent)",
-    border: light
-      ? "1px solid color-mix(in srgb, #14120F 10%, transparent)"
-      : "1px solid color-mix(in srgb, #FFFFFF 14%, transparent)",
-    color: light ? "var(--lucid-ink-900)" : "var(--lucid-cream-25)",
-    cursor: "pointer",
-    transition: "var(--lucid-transition)",
-    textDecoration: "none",
-    flexShrink: 0,
-  };
-
-  if (href) {
-    return (
-      <a href={href} style={base} aria-label={label} target="_blank" rel="noopener noreferrer">
-        {children}
-      </a>
-    );
-  }
-  return (
-    <button style={base} onClick={onClick} aria-label={label}>
-      {children}
-    </button>
-  );
-}
-
-// ── Skill row inside sidebar ──────────────────────────────────────────────────
-function SkillRow({ icon, label, tags }: { icon: string; label: string; tags: string[] }) {
-  return (
-    <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 14px" }}>
-      <span style={{ fontSize: 16, lineHeight: 1, marginTop: 1 }}>{icon}</span>
-      <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
-        <span style={{ ...MONO_LABEL, color: "rgba(250,246,240,0.75)", fontSize: 9 }}>
-          {label}
-        </span>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-          {tags.map((t) => (
-            <span
-              key={t}
-              style={{
-                ...MONO_CAPTION,
-                fontSize: 8,
-                padding: "2px 7px",
-                borderRadius: "var(--lucid-radius-pill)",
-                background: "color-mix(in srgb, #FFFFFF 10%, transparent)",
-                border: "1px solid color-mix(in srgb, #FFFFFF 14%, transparent)",
-                color: "rgba(250,246,240,0.5)",
-              }}
-            >
-              {t}
-            </span>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Instagram thumbnail strip ─────────────────────────────────────────────────
-function InstagramStrip({ media }: { media: InstagramMediaItem[] }) {
-  if (!media.length) return null;
-  return (
-    <div style={{ display: "flex", gap: 6 }}>
-      {media.slice(0, 5).map((item) => (
-        <a
-          key={item.id}
-          href={item.permalink}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            flex: "0 0 40px",
-            width: 40,
-            height: 40,
-            borderRadius: "var(--lucid-radius-xs)",
-            overflow: "hidden",
-            position: "relative",
-            display: "block",
-            border: "1px solid color-mix(in srgb, #FFFFFF 12%, transparent)",
-          }}
-          aria-label="Instagram post"
-        >
-          {item.media_type !== "VIDEO" && item.media_url && (
-            <Image src={item.media_url} alt="" fill style={{ objectFit: "cover" }} sizes="40px" />
-          )}
-        </a>
-      ))}
-    </div>
-  );
-}
-
-// ── Main Component ─────────────────────────────────────────────────────────────
+// ── Component ─────────────────────────────────────────────────────────────────
 
 interface LucidLandingProps {
   instagramMedia: InstagramMediaItem[];
   articles: PortfolioArticleWithImages[];
 }
 
+const SKILLS = [
+  { icon: "🎮", label: "Game Dev", tags: ["Godot", "C#", "Multiplayer", "Level Design"] },
+  { icon: "🎨", label: "3D · Visual", tags: ["Blender", "Photoshop", "Environment Art"] },
+  { icon: "💻", label: "Web · Backend", tags: ["Next.js", "PHP", "SQL", "Prisma"] },
+  { icon: "🤖", label: "AI · Tools", tags: ["Ollama", "PowerShell", "LLMs"] },
+];
+
 export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
-  const [activeNav, setActiveNav] = useState<"home" | "projects" | "contact">("home");
   const [vcardDone, setVcardDone] = useState(false);
+  const [activeNav, setActiveNav] = useState<"home" | "projects" | "contact">("home");
 
   const downloadVCard = useCallback(() => {
     const vcard = [
       "BEGIN:VCARD", "VERSION:3.0",
-      "N:Flosz;Bence;;;", "FN:Bence Flosz",
-      "ORG:FLZ Works",
+      "N:Flosz;Bence;;;", "FN:Bence Flosz", "ORG:FLZ Works",
       "TITLE:Game Developer · 3D Artist · Backend Engineer",
       "EMAIL;TYPE=PREF,INTERNET:floszbeni@gmail.com",
       "TEL;TYPE=CELL:+36206282353",
       "URL:https://flz.works",
       "X-SOCIALPROFILE;type=github:https://github.com/Flzvision",
-      "X-SOCIALPROFILE;type=linkedin:https://linkedin.com/in/bence-flosz-56134535a",
       "END:VCARD",
     ].join("\n");
     const blob = new Blob([vcard], { type: "text/vcard;charset=utf-8;" });
@@ -350,494 +275,428 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
   }, []);
 
   return (
-    /* ── Viewport wrapper with dusk backdrop ── */
-    <div
-      style={{
+    <>
+      <StyleInjector />
+
+      {/* ── Backdrop ─────────────────────────────────────────────────────── */}
+      <div style={{
         minHeight: "100svh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "clamp(16px, 3vw, 32px)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "clamp(12px, 2.5vw, 28px)",
         background: "var(--lucid-backdrop-dusk)",
         backgroundAttachment: "fixed",
         fontFamily: "var(--lucid-font-ui)",
-      }}
-    >
-      {/* ══════════════════════════════════════════════════════════════════════
-          MAIN GLASS SHELL — the single floating "app window"
-          Dark smoked glass, large rounded corners, floats over the backdrop.
-          All content lives inside this shell.
-          ══════════════════════════════════════════════════════════════════════ */}
-      <div
-        style={{
+      }}>
+
+        {/* ── OUTER GLASS SHELL ─────────────────────────────────────────── */}
+        <div style={{
           position: "relative",
-          width: "100%",
-          maxWidth: 1160,
-          minHeight: "min(88vh, 740px)",
-          borderRadius: 28,
-          /* Dark smoked glass */
-          background: "color-mix(in srgb, #191713 48%, transparent)",
-          border: "1px solid color-mix(in srgb, #FFFFFF 14%, transparent)",
-          backdropFilter: "blur(40px) saturate(180%)",
-          WebkitBackdropFilter: "blur(40px) saturate(180%)",
-          boxShadow:
-            "0 48px 120px -32px color-mix(in srgb, #14120F 70%, transparent)," +
-            "inset 0 1px 0 color-mix(in srgb, #FFFFFF 20%, transparent)," +
-            "inset 0 -1px 1px color-mix(in srgb, #FFFFFF 6%, transparent)",
-          display: "flex",
-          flexDirection: "column",
+          width: "100%", maxWidth: 1100,
+          borderRadius: 24,
+          background: "rgba(28,24,20,0.52)",
+          border: "1px solid rgba(255,255,255,0.13)",
+          backdropFilter: "blur(44px) saturate(175%)",
+          WebkitBackdropFilter: "blur(44px) saturate(175%)",
+          boxShadow: "0 52px 120px -32px rgba(10,8,6,0.75), inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(255,255,255,0.05)",
+          display: "flex", flexDirection: "column",
           overflow: "hidden",
-        }}
-      >
-        {/* Specular highlight layer */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            inset: 0,
-            borderRadius: "inherit",
-            background:
-              "linear-gradient(180deg, color-mix(in srgb,#FFFFFF 14%,transparent) 0%, color-mix(in srgb,#FFFFFF 3%,transparent) 18%, transparent 45%)",
-            pointerEvents: "none",
-            zIndex: 0,
-          }}
-        />
+          animation: "lucid-shell-in 0.7s cubic-bezier(0.22,1,0.36,1) both",
+        }}>
 
-        {/* ── TOP NAV BAR ─────────────────────────────────────────────────── */}
-        <div
-          style={{
-            position: "relative",
-            zIndex: 1,
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            padding: "14px 20px",
-            borderBottom: "1px solid color-mix(in srgb, #FFFFFF 9%, transparent)",
-          }}
-        >
-          {/* Wordmark */}
-          <span
-            style={{
-              fontFamily: "var(--lucid-font-display)",
-              fontWeight: 800,
-              fontSize: 18,
-              letterSpacing: "var(--lucid-tracking-display)",
-              color: "var(--lucid-cream-25)",
-              marginRight: 8,
-              userSelect: "none",
-            }}
-          >
-            FLZ
-          </span>
+          {/* Specular gradient overlay */}
+          <div aria-hidden style={{
+            position: "absolute", inset: 0, borderRadius: "inherit", pointerEvents: "none", zIndex: 0,
+            background: "linear-gradient(180deg, rgba(255,255,255,0.11) 0%, rgba(255,255,255,0.03) 20%, transparent 55%)",
+          }} />
 
-          {/* Segment pills */}
-          <div
-            style={{
-              display: "flex",
-              gap: 2,
-              background: "color-mix(in srgb, #14120F 40%, transparent)",
-              border: "1px solid color-mix(in srgb, #FFFFFF 10%, transparent)",
-              borderRadius: "var(--lucid-radius-pill)",
-              padding: 3,
-            }}
-          >
-            <NavPill label="Home" active={activeNav === "home"} onClick={() => setActiveNav("home")} />
-            <NavPill label="Projects" active={activeNav === "projects"} onClick={() => setActiveNav("projects")} />
-            <NavPill label="Contact" active={activeNav === "contact"} onClick={() => setActiveNav("contact")} />
-          </div>
-
-          {/* Spacer */}
-          <div style={{ flex: 1 }} />
-
-          {/* Right icons */}
-          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            <span style={{ ...MONO_CAPTION, color: "rgba(250,246,240,0.35)", marginRight: 6, fontSize: 8 }}>
-              Budapest · 2026
+          {/* ── NAV BAR ─────────────────────────────────────────────────── */}
+          <div style={{
+            position: "relative", zIndex: 2,
+            display: "flex", alignItems: "center", gap: 10,
+            padding: "12px 18px 12px 20px",
+            borderBottom: "1px solid rgba(255,255,255,0.08)",
+          }}>
+            {/* Brand */}
+            <span style={{
+              fontFamily: "var(--lucid-font-display)", fontWeight: 800, fontSize: 17,
+              letterSpacing: "-0.03em", color: "#FAF6F0", userSelect: "none", flexShrink: 0,
+            }}>
+              FLZ
             </span>
-            <IconBtn href="https://github.com/Flzvision" label="GitHub">
-              <GithubIcon size={14} />
-            </IconBtn>
-            <IconBtn href="https://linkedin.com/in/bence-flosz-56134535a" label="LinkedIn">
-              <LinkedInIcon size={14} />
-            </IconBtn>
-            <IconBtn href="mailto:floszbeni@gmail.com" label="Email">
-              <MailIcon size={14} />
-            </IconBtn>
-          </div>
-        </div>
 
-        {/* ── BODY — sidebar + main content ──────────────────────────────── */}
-        <div
-          style={{
-            position: "relative",
-            zIndex: 1,
-            flex: 1,
-            display: "grid",
-            gridTemplateColumns: "220px 1fr",
-            gap: 0,
-            overflow: "hidden",
-          }}
-        >
-          {/* ── LEFT SIDEBAR ──────────────────────────────────────────────── */}
-          <div
-            style={{
-              borderRight: "1px solid color-mix(in srgb, #FFFFFF 9%, transparent)",
-              display: "flex",
-              flexDirection: "column",
-              gap: 0,
-              overflow: "hidden",
-            }}
-          >
-            {/* Identity block */}
-            <div style={{ padding: "20px 16px 16px", borderBottom: "1px solid color-mix(in srgb,#FFFFFF 8%,transparent)" }}>
-              <div style={{ marginBottom: 14 }}>
-                <h1
+            {/* Divider */}
+            <div style={{ width: 1, height: 16, background: "rgba(255,255,255,0.12)", marginLeft: 4, marginRight: 4, flexShrink: 0 }} />
+
+            {/* Segment nav */}
+            <div style={{
+              display: "flex", gap: 2, padding: 3,
+              background: "rgba(0,0,0,0.28)",
+              border: "1px solid rgba(255,255,255,0.09)",
+              borderRadius: 999,
+            }}>
+              {(["home", "projects", "contact"] as const).map((id) => (
+                <button
+                  key={id}
+                  className="lucid-nav-pill"
+                  onClick={() => setActiveNav(id)}
                   style={{
-                    margin: 0,
-                    fontFamily: "var(--lucid-font-display)",
-                    fontWeight: 800,
-                    fontSize: "clamp(42px, 5vw, 60px)",
-                    lineHeight: 0.9,
-                    letterSpacing: "var(--lucid-tracking-display)",
-                    color: "var(--lucid-cream-25)",
+                    background: activeNav === id ? "rgba(250,246,240,0.92)" : "transparent",
+                    color: activeNav === id ? "#14120F" : "rgba(250,246,240,0.45)",
+                    boxShadow: activeNav === id ? "0 1px 6px rgba(0,0,0,0.2)" : "none",
                   }}
                 >
+                  {id.charAt(0).toUpperCase() + id.slice(1)}
+                </button>
+              ))}
+            </div>
+
+            {/* Spacer */}
+            <div style={{ flex: 1 }} />
+
+            {/* Live dot */}
+            <div style={{ display: "flex", alignItems: "center", gap: 5, marginRight: 8 }}>
+              <div style={{
+                width: 6, height: 6, borderRadius: "50%",
+                background: "rgba(140,230,160,0.85)",
+                animation: "lucid-pulse-dot 2s ease-in-out infinite",
+              }} />
+              <Label dim style={{ fontSize: 8 }}>Available</Label>
+            </div>
+
+            {/* Icon buttons */}
+            <div style={{ display: "flex", gap: 6 }}>
+              <a href="https://github.com/Flzvision" target="_blank" rel="noopener noreferrer" className="lucid-icon-btn" aria-label="GitHub">
+                <GithubIcon size={13} />
+              </a>
+              <a href="https://linkedin.com/in/bence-flosz-56134535a" target="_blank" rel="noopener noreferrer" className="lucid-icon-btn" aria-label="LinkedIn">
+                <LinkedInIcon size={13} />
+              </a>
+              <a href="mailto:floszbeni@gmail.com" className="lucid-icon-btn" aria-label="Email">
+                <MailIcon size={13} />
+              </a>
+            </div>
+          </div>
+
+          {/* ── BODY ────────────────────────────────────────────────────── */}
+          <div style={{
+            position: "relative", zIndex: 1,
+            display: "grid",
+            gridTemplateColumns: "236px 1fr",
+            flex: 1,
+          }}>
+
+            {/* ── SIDEBAR ─────────────────────────────────────────────── */}
+            <div style={{
+              borderRight: "1px solid rgba(255,255,255,0.08)",
+              display: "flex", flexDirection: "column",
+              animation: "lucid-fade-up 0.6s 0.15s cubic-bezier(0.22,1,0.36,1) both",
+            }}>
+
+              {/* Identity section */}
+              <div style={{ padding: "22px 18px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+                <Label dim style={{ marginBottom: 10 }}>Identity</Label>
+                <h1 style={{
+                  margin: 0,
+                  fontFamily: "var(--lucid-font-display)", fontWeight: 800,
+                  fontSize: 54, lineHeight: 0.88,
+                  letterSpacing: "-0.04em", color: "#FAF6F0",
+                }}>
                   FLZ
                 </h1>
-                <p style={{ ...MONO_LABEL, fontSize: 8, color: "rgba(250,246,240,0.45)", margin: "8px 0 0" }}>
-                  Indie Game Dev · 3D Artist
+                <p style={{
+                  margin: "10px 0 0",
+                  fontFamily: "var(--lucid-font-mono)", fontSize: 8.5,
+                  letterSpacing: "0.13em", textTransform: "uppercase",
+                  color: "rgba(250,246,240,0.4)", lineHeight: 1.55,
+                }}>
+                  Indie Game Dev<br />3D Artist · Backend Eng
                 </p>
-                <p style={{ ...MONO_CAPTION, fontSize: 8, color: "rgba(250,246,240,0.3)", margin: "2px 0 0" }}>
-                  Backend Engineer · BGE Student
-                </p>
+
+                {/* Stats */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 10px", marginTop: 18 }}>
+                  <Stat val={articles.length > 0 ? String(articles.length) : "6"} label="Portfolio items" />
+                  <Stat val="B2" label="English" />
+                  <Stat val="3+" unit="yr" label="Experience" />
+                  <Stat val="4" unit="plr" label="Co-op target" />
+                </div>
               </div>
 
-              {/* Stat blocks row */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                <StatBlock value={String(articles.length || "6")} label="Portfolio" />
-                <StatBlock value="B2" label="English" />
+              {/* Current build card */}
+              <div style={{ padding: "12px 14px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+                <D style={{ padding: "12px 14px" }} r={10}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 7 }}>
+                    <div style={{
+                      width: 5, height: 5, borderRadius: "50%",
+                      background: "rgba(140,230,160,0.85)",
+                      animation: "lucid-pulse-dot 2s 0.4s ease-in-out infinite",
+                    }} />
+                    <Label dim style={{ fontSize: 8 }}>Active Build</Label>
+                  </div>
+                  <p style={{
+                    margin: "0 0 4px",
+                    fontFamily: "var(--lucid-font-display)", fontWeight: 700, fontSize: 14,
+                    letterSpacing: "-0.02em", color: "#FAF6F0", lineHeight: 1.2,
+                  }}>
+                    4-Player Co-op Game
+                  </p>
+                  <Label dim>Liminal · Dreamcore · Godot C#</Label>
+                </D>
               </div>
-            </div>
 
-            {/* Current project */}
-            <DarkCard
-              style={{ margin: "12px 12px 0", flexShrink: 0 }}
-              radius="var(--lucid-radius-sm)"
-            >
-              <div style={{ padding: "12px 14px" }}>
-                <span style={{ ...MONO_CAPTION, color: "rgba(250,246,240,0.35)" }}>Active Build</span>
-                <p
-                  style={{
-                    margin: "6px 0 4px",
-                    fontFamily: "var(--lucid-font-display)",
-                    fontWeight: 700,
-                    fontSize: 13,
-                    letterSpacing: "var(--lucid-tracking-tight)",
-                    color: "var(--lucid-cream-25)",
-                    lineHeight: 1.2,
-                  }}
-                >
-                  4-Player Co-op
-                </p>
-                <p style={{ ...MONO_CAPTION, color: "rgba(250,246,240,0.35)", margin: 0 }}>
-                  Liminal · Dreamcore · Godot C#
-                </p>
-              </div>
-            </DarkCard>
-
-            {/* Skills */}
-            <div
-              style={{
-                flex: 1,
-                overflowY: "auto",
-                marginTop: 8,
-                borderTop: "1px solid color-mix(in srgb,#FFFFFF 7%,transparent)",
-              }}
-            >
-              <div style={{ padding: "6px 0" }}>
-                {[
-                  { icon: "🎮", label: "Game Dev", tags: ["Godot", "C#", "Multiplayer"] },
-                  { icon: "🎨", label: "3D · Visual", tags: ["Blender", "Photoshop"] },
-                  { icon: "💻", label: "Backend · Web", tags: ["Next.js", "PHP", "SQL"] },
-                  { icon: "🤖", label: "AI · Tools", tags: ["Ollama", "PowerShell"] },
-                ].map((s) => (
-                  <SkillRow key={s.label} {...s} />
+              {/* Skills */}
+              <div style={{ flex: 1, borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+                <div style={{ padding: "10px 18px 4px" }}>
+                  <Label dim>Skills</Label>
+                </div>
+                {SKILLS.map((s) => (
+                  <div key={s.label} className="lucid-skill-row">
+                    <span style={{ fontSize: 14, lineHeight: 1, marginTop: 1, flexShrink: 0 }}>{s.icon}</span>
+                    <div style={{ minWidth: 0 }}>
+                      <span style={{
+                        display: "block",
+                        fontFamily: "var(--lucid-font-mono)", fontSize: 9,
+                        letterSpacing: "0.12em", textTransform: "uppercase",
+                        color: "rgba(250,246,240,0.7)", marginBottom: 4,
+                      }}>
+                        {s.label}
+                      </span>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                        {s.tags.map((t) => (
+                          <span key={t} style={{
+                            fontFamily: "var(--lucid-font-mono)", fontSize: 8,
+                            letterSpacing: "0.1em", textTransform: "uppercase",
+                            padding: "2px 7px", borderRadius: 999,
+                            background: "rgba(255,255,255,0.07)",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                            color: "rgba(250,246,240,0.42)",
+                          }}>
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 ))}
               </div>
-            </div>
 
-            {/* Education footer */}
-            <div
-              style={{
-                padding: "10px 14px",
-                borderTop: "1px solid color-mix(in srgb,#FFFFFF 8%,transparent)",
-              }}
-            >
-              <span style={{ ...MONO_CAPTION, color: "rgba(250,246,240,0.3)" }}>
-                BGE — Business Informatics BSc
-              </span>
-            </div>
-          </div>
-
-          {/* ── MAIN CONTENT AREA ──────────────────────────────────────────── */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateRows: "1fr auto",
-              overflow: "hidden",
-            }}
-          >
-            {/* Hero area */}
-            <div
-              style={{
-                padding: "clamp(20px, 3vw, 36px)",
-                display: "grid",
-                gridTemplateColumns: "1fr auto",
-                gridTemplateRows: "auto 1fr auto",
-                gap: 20,
-                overflow: "hidden",
-              }}
-            >
-              {/* Top row: headline + stats */}
-              <div style={{ gridColumn: "1 / -1", display: "flex", alignItems: "flex-start", gap: 24, flexWrap: "wrap" }}>
-                {/* Main heading */}
-                <div style={{ flex: 1, minWidth: 220 }}>
-                  <p style={{ ...MONO_CAPTION, color: "rgba(250,246,240,0.35)", margin: "0 0 10px" }}>
-                    Identity · Portfolio · 2026
-                  </p>
-                  <h2
-                    style={{
-                      margin: 0,
-                      fontFamily: "var(--lucid-font-display)",
-                      fontWeight: 700,
-                      fontSize: "clamp(28px, 4vw, 44px)",
-                      lineHeight: 1.0,
-                      letterSpacing: "var(--lucid-tracking-display)",
-                      color: "var(--lucid-cream-25)",
-                    }}
-                  >
-                    Building worlds.<br />
-                    Shipping products.
-                  </h2>
-                </div>
-
-                {/* Stat cluster */}
-                <div style={{ display: "flex", gap: 32, flexShrink: 0 }}>
-                  <div style={{ textAlign: "right" }}>
-                    <StatBlock value="4" unit="PLR" label="Co-op players" />
-                  </div>
-                  <div style={{ textAlign: "right" }}>
-                    <StatBlock value="3+" unit="YRS" label="Dev experience" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Bio card */}
-              <LightCard style={{ padding: "18px 22px", gridColumn: "1 / 2" }}>
-                <span style={{ ...MONO_CAPTION, color: "var(--lucid-text-muted)" }}>About</span>
-                <p
-                  style={{
-                    margin: "8px 0 0",
-                    font: "var(--lucid-type-body-sm)",
-                    color: "var(--lucid-text-secondary)",
-                    lineHeight: 1.65,
-                    maxWidth: 460,
-                  }}
-                >
-                  Business Informatics student at BGE and indie game studio founder. I build 4-player co-op games with a liminal/dreamcore aesthetic using Godot + Blender, and full-stack web platforms in Next.js. My goal: release commercially on Steam.
+              {/* Education footer */}
+              <div style={{ padding: "12px 18px" }}>
+                <Label dim style={{ fontSize: 8 }}>Education</Label>
+                <p style={{
+                  margin: "4px 0 0",
+                  fontFamily: "var(--lucid-font-display)", fontWeight: 600,
+                  fontSize: 12, color: "rgba(250,246,240,0.65)",
+                }}>
+                  BGE
                 </p>
-                {/* Experience row */}
-                <div style={{ display: "flex", gap: 20, marginTop: 14, flexWrap: "wrap" }}>
-                  {[
-                    { name: "Boredo Systems", role: "Backend Dev · 2024–25" },
-                    { name: "Freelance", role: "Marketing · Branding · 2023–24" },
-                  ].map((exp) => (
-                    <div key={exp.name}>
-                      <div
-                        style={{
-                          fontFamily: "var(--lucid-font-display)",
-                          fontWeight: 600,
-                          fontSize: 12,
-                          color: "var(--lucid-text-primary)",
-                        }}
-                      >
-                        {exp.name}
-                      </div>
-                      <div style={{ ...MONO_CAPTION, color: "var(--lucid-text-muted)" }}>{exp.role}</div>
-                    </div>
-                  ))}
+                <Label dim style={{ fontSize: 8, marginTop: 2 }}>Business Informatics BSc</Label>
+              </div>
+            </div>
+
+            {/* ── MAIN CONTENT ──────────────────────────────────────────── */}
+            <div style={{
+              display: "flex", flexDirection: "column",
+              animation: "lucid-fade-up 0.6s 0.25s cubic-bezier(0.22,1,0.36,1) both",
+            }}>
+
+              {/* Hero area */}
+              <div style={{
+                flex: 1, padding: "clamp(18px,2.5vw,32px)",
+                display: "grid",
+                gridTemplateColumns: "1fr 176px",
+                gridTemplateRows: "auto 1fr auto",
+                gap: 14,
+                overflow: "hidden",
+              }}>
+
+                {/* ── Headline row ── */}
+                <div style={{ gridColumn: "1 / -1", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 20 }}>
+                  <div>
+                    <Label dim style={{ marginBottom: 10 }}>Portfolio · Budapest · 2026</Label>
+                    <h2 style={{
+                      margin: 0,
+                      fontFamily: "var(--lucid-font-display)", fontWeight: 700,
+                      fontSize: "clamp(26px, 3.6vw, 42px)",
+                      lineHeight: 1.0, letterSpacing: "-0.035em",
+                      color: "#FAF6F0",
+                    }}>
+                      Building worlds.<br />
+                      <span style={{ color: "rgba(250,246,240,0.45)" }}>Shipping products.</span>
+                    </h2>
+                  </div>
+
+                  {/* Stat pair — top right */}
+                  <div style={{ display: "flex", gap: 20, flexShrink: 0 }}>
+                    <Stat val="4" unit="PLR" label="Co-op" />
+                    <Stat val="3+" unit="YRS" label="Dev" />
+                  </div>
                 </div>
-              </LightCard>
 
-              {/* Right column: mini cards */}
-              <div style={{ gridColumn: "2 / 3", gridRow: "2 / 4", display: "flex", flexDirection: "column", gap: 10, width: 190 }}>
-                {/* Roblox Studio note */}
-                <DarkCard style={{ padding: "14px" }} radius="var(--lucid-radius-sm)">
-                  <span style={{ ...MONO_CAPTION, color: "rgba(250,246,240,0.3)" }}>Also</span>
-                  <p style={{ margin: "4px 0 0", fontFamily: "var(--lucid-font-display)", fontWeight: 700, fontSize: 13, color: "var(--lucid-cream-25)" }}>
-                    Roblox Studio
+                {/* ── Bio card (main left) ── */}
+                <L style={{ padding: "18px 20px", alignSelf: "start" }}>
+                  <div style={{
+                    fontFamily: "var(--lucid-font-mono)", fontSize: 8.5,
+                    letterSpacing: "0.13em", textTransform: "uppercase",
+                    color: "rgba(20,18,15,0.38)", marginBottom: 10,
+                  }}>
+                    About
+                  </div>
+                  <p style={{
+                    margin: "0 0 14px",
+                    fontFamily: "var(--lucid-font-ui)", fontSize: 13.5, lineHeight: 1.65,
+                    color: "rgba(20,18,15,0.68)",
+                  }}>
+                    Business Informatics student at BGE and indie game studio founder. I build 4-player co-op games with a liminal/dreamcore aesthetic using Godot&nbsp;+&nbsp;Blender, and full-stack web platforms. Goal: release commercially on Steam.
                   </p>
-                  <p style={{ ...MONO_CAPTION, color: "rgba(250,246,240,0.3)", margin: "2px 0 0" }}>
-                    Early dev experience
-                  </p>
-                </DarkCard>
 
-                {/* Steam target */}
-                <LightCard style={{ padding: "14px" }} radius="var(--lucid-radius-sm)">
-                  <span style={{ ...MONO_CAPTION, color: "var(--lucid-text-muted)" }}>Target</span>
-                  <p style={{ margin: "4px 0 0", fontFamily: "var(--lucid-font-display)", fontWeight: 700, fontSize: 13, color: "var(--lucid-text-primary)" }}>
-                    Steam Release
-                  </p>
-                  <p style={{ ...MONO_CAPTION, color: "var(--lucid-text-muted)", margin: "2px 0 0" }}>
-                    Indie studio · Commercial
-                  </p>
-                </LightCard>
+                  {/* Experience pills */}
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {[
+                      { name: "Boredo Systems", role: "Backend Dev · 2024–25" },
+                      { name: "Freelance", role: "Marketing · 2023–24" },
+                    ].map((e) => (
+                      <div key={e.name} style={{
+                        padding: "8px 12px",
+                        background: "rgba(20,18,15,0.06)",
+                        border: "1px solid rgba(20,18,15,0.09)",
+                        borderRadius: 10,
+                      }}>
+                        <div style={{
+                          fontFamily: "var(--lucid-font-display)", fontWeight: 700,
+                          fontSize: 12, color: "#14120F",
+                        }}>
+                          {e.name}
+                        </div>
+                        <div style={{
+                          fontFamily: "var(--lucid-font-mono)", fontSize: 8,
+                          letterSpacing: "0.11em", textTransform: "uppercase",
+                          color: "rgba(20,18,15,0.38)", marginTop: 2,
+                        }}>
+                          {e.role}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </L>
 
-                {/* Instagram */}
-                {instagramMedia.length > 0 && (
-                  <DarkCard style={{ padding: "12px" }} radius="var(--lucid-radius-sm)">
-                    <span style={{ ...MONO_CAPTION, color: "rgba(250,246,240,0.3)" }}>Instagram</span>
-                    <div style={{ marginTop: 8 }}>
-                      <InstagramStrip media={instagramMedia} />
+                {/* ── Right mini-cards column ── */}
+                <div style={{
+                  gridColumn: "2 / 3", gridRow: "2 / 4",
+                  display: "flex", flexDirection: "column", gap: 10,
+                }}>
+                  {/* Steam target */}
+                  <L style={{ padding: "14px" }} r={10}>
+                    <div style={{
+                      fontFamily: "var(--lucid-font-mono)", fontSize: 8,
+                      letterSpacing: "0.13em", textTransform: "uppercase",
+                      color: "rgba(20,18,15,0.35)", marginBottom: 5,
+                    }}>
+                      Target
                     </div>
-                  </DarkCard>
+                    <div style={{ fontFamily: "var(--lucid-font-display)", fontWeight: 700, fontSize: 14, color: "#14120F" }}>
+                      Steam
+                    </div>
+                    <div style={{
+                      fontFamily: "var(--lucid-font-mono)", fontSize: 8,
+                      letterSpacing: "0.1em", textTransform: "uppercase",
+                      color: "rgba(20,18,15,0.35)", marginTop: 2,
+                    }}>
+                      Commercial release
+                    </div>
+                  </L>
+
+                  {/* Also: Roblox */}
+                  <D style={{ padding: "14px" }} r={10}>
+                    <Label dim style={{ marginBottom: 4 }}>Also</Label>
+                    <div style={{ fontFamily: "var(--lucid-font-display)", fontWeight: 700, fontSize: 13, color: "#FAF6F0" }}>
+                      Roblox Studio
+                    </div>
+                    <Label dim style={{ marginTop: 2, fontSize: 8 }}>Early game dev roots</Label>
+                  </D>
+
+                  {/* Instagram */}
+                  {instagramMedia.length > 0 && (
+                    <D style={{ padding: "12px" }} r={10}>
+                      <Label dim style={{ marginBottom: 8 }}>Instagram</Label>
+                      <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                        {instagramMedia.slice(0, 4).map((item) => (
+                          <a key={item.id} href={item.permalink} target="_blank" rel="noopener noreferrer"
+                            style={{ flex: "0 0 36px", width: 36, height: 36, borderRadius: 7, overflow: "hidden", position: "relative", display: "block", border: "1px solid rgba(255,255,255,0.1)" }}
+                            aria-label="Instagram post"
+                          >
+                            {item.media_type !== "VIDEO" && item.media_url && (
+                              <Image src={item.media_url} alt="" fill style={{ objectFit: "cover" }} sizes="36px" />
+                            )}
+                          </a>
+                        ))}
+                      </div>
+                    </D>
+                  )}
+                </div>
+
+                {/* ── Portfolio archive ── */}
+                {articles.length > 0 && (
+                  <div style={{ gridColumn: "1 / 2", alignSelf: "end" }}>
+                    <Link href="/autosalon" className="lucid-link-chip" style={{ gap: 8 }}>
+                      <span>View portfolio archive</span>
+                      <span style={{ opacity: 0.4 }}>· {articles.length} items</span>
+                      <ArrowUpRight size={10} />
+                    </Link>
+                  </div>
                 )}
               </div>
 
-              {/* Portfolio archive link */}
-              {articles.length > 0 && (
-                <div style={{ gridColumn: "1 / 2" }}>
-                  <Link
-                    href="/autosalon"
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 8,
-                      padding: "10px 18px",
-                      borderRadius: "var(--lucid-radius-pill)",
-                      background: "color-mix(in srgb,#FFFFFF 9%,transparent)",
-                      border: "1px solid color-mix(in srgb,#FFFFFF 14%,transparent)",
-                      color: "var(--lucid-cream-25)",
-                      font: "var(--lucid-type-button)",
-                      letterSpacing: "var(--lucid-tracking-tight)",
-                      textDecoration: "none",
-                      transition: "var(--lucid-transition)",
-                    }}
-                  >
-                    <span>View portfolio archive</span>
-                    <span style={{ ...MONO_CAPTION, color: "rgba(250,246,240,0.45)" }}>
-                      · {articles.length} items
-                    </span>
-                    <ArrowRightIcon size={13} />
-                  </Link>
-                </div>
-              )}
-            </div>
+              {/* ── ACTION STRIP ───────────────────────────────────────── */}
+              <div style={{
+                borderTop: "1px solid rgba(255,255,255,0.08)",
+                padding: "13px 24px",
+                display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap",
+                animation: "lucid-fade-up 0.6s 0.35s cubic-bezier(0.22,1,0.36,1) both",
+              }}>
 
-            {/* ── BOTTOM ACTION STRIP ──────────────────────────────────────── */}
-            <div
-              style={{
-                borderTop: "1px solid color-mix(in srgb,#FFFFFF 9%,transparent)",
-                padding: "14px 28px",
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                flexWrap: "wrap",
-              }}
-            >
-              <span style={{ ...MONO_CAPTION, color: "rgba(250,246,240,0.3)", marginRight: 4 }}>
-                Connect
-              </span>
-
-              <button
-                id="lucid-vcard-btn"
-                onClick={downloadVCard}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  height: 32,
-                  padding: "0 14px",
-                  borderRadius: "var(--lucid-radius-pill)",
-                  background: "var(--lucid-cream-25)",
-                  color: "var(--lucid-ink-900)",
-                  border: "none",
-                  font: "var(--lucid-type-label)",
-                  letterSpacing: "var(--lucid-tracking-label)",
-                  textTransform: "uppercase",
-                  cursor: "pointer",
-                  transition: "var(--lucid-transition)",
-                  boxShadow: "var(--lucid-shadow-sm)",
-                }}
-                aria-label="Download vCard"
-              >
-                <DownloadIcon size={12} />
-                {vcardDone ? "Saved ✓" : "vCard"}
-              </button>
-
-              {[
-                { id: "lucid-email-link", href: "mailto:floszbeni@gmail.com", label: "floszbeni@gmail.com" },
-                { id: "lucid-github-link", href: "https://github.com/Flzvision", label: "GitHub / Flzvision" },
-                { id: "lucid-linkedin-link", href: "https://linkedin.com/in/bence-flosz-56134535a", label: "LinkedIn" },
-              ].map((l) => (
-                <a
-                  key={l.id}
-                  id={l.id}
-                  href={l.href}
-                  target={l.href.startsWith("mailto") ? undefined : "_blank"}
-                  rel="noopener noreferrer"
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    height: 32,
-                    padding: "0 14px",
-                    borderRadius: "var(--lucid-radius-pill)",
-                    background: "color-mix(in srgb,#FFFFFF 8%,transparent)",
-                    border: "1px solid color-mix(in srgb,#FFFFFF 12%,transparent)",
-                    color: "rgba(250,246,240,0.6)",
-                    font: "var(--lucid-type-label)",
-                    letterSpacing: "var(--lucid-tracking-label)",
-                    textTransform: "uppercase",
-                    textDecoration: "none",
-                    transition: "var(--lucid-transition)",
-                    fontSize: 9,
-                  }}
+                {/* vCard primary CTA */}
+                <button
+                  id="lucid-vcard-btn"
+                  className="lucid-cta-primary"
+                  onClick={downloadVCard}
+                  aria-label="Download vCard"
                 >
-                  {l.label}
+                  <DownloadIcon size={12} />
+                  {vcardDone ? "Saved ✓" : "vCard"}
+                </button>
+
+                {/* Separator */}
+                <div style={{ width: 1, height: 18, background: "rgba(255,255,255,0.1)", margin: "0 2px" }} />
+
+                {/* Link chips */}
+                <a href="mailto:floszbeni@gmail.com" id="lucid-email-link" className="lucid-link-chip">
+                  <MailIcon size={10} />
+                  floszbeni@gmail.com
                 </a>
-              ))}
 
-              <div style={{ flex: 1 }} />
+                <a href="https://github.com/Flzvision" id="lucid-github-link" target="_blank" rel="noopener noreferrer" className="lucid-link-chip">
+                  <GithubIcon size={10} />
+                  Flzvision
+                </a>
 
-              {/* Autopiac link */}
-              <Link
-                id="lucid-autopiac-link"
-                href="/autosalon"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  height: 32,
-                  padding: "0 14px",
-                  borderRadius: "var(--lucid-radius-pill)",
-                  background: "var(--lucid-ink-900)",
-                  color: "var(--lucid-cream-25)",
-                  font: "var(--lucid-type-label)",
-                  letterSpacing: "var(--lucid-tracking-label)",
-                  textTransform: "uppercase",
-                  textDecoration: "none",
-                  border: "1px solid color-mix(in srgb,#FFFFFF 10%,transparent)",
-                  boxShadow: "var(--lucid-shadow-md)",
-                  transition: "var(--lucid-transition)",
-                }}
-              >
-                Autopiac
-                <ArrowRightIcon size={11} />
-              </Link>
+                <a href="https://linkedin.com/in/bence-flosz-56134535a" id="lucid-linkedin-link" target="_blank" rel="noopener noreferrer" className="lucid-link-chip">
+                  <LinkedInIcon size={10} />
+                  LinkedIn
+                </a>
+
+                {/* Spacer */}
+                <div style={{ flex: 1 }} />
+
+                {/* Autopiac — dark CTA */}
+                <Link href="/autosalon" id="lucid-autopiac-link" className="lucid-cta-dark">
+                  Autopiac
+                  <ArrowUpRight size={11} />
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
