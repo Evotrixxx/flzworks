@@ -295,7 +295,6 @@ function MainSlab({
         </div>
         <div style={{ flexShrink: 0, display: "flex", gap: 12 }}>
           <StatTile label="Building since 2023.09.01" value={daysBuilding} unit="days" />
-          <StatTile label="Projects" value="48" />
           <StatTile label="Followers" value="1.2" unit="k" />
           <StatTile label="Wishlists" value="9.4" unit="k" />
         </div>
@@ -380,9 +379,7 @@ function MainSlab({
           <span style={{ width: 6, height: 6, borderRadius: 99, background: "var(--flz-border-strong)" }} />
           <span style={{ width: 6, height: 6, borderRadius: 99, background: "var(--flz-border-strong)" }} />
         </div>
-        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ font: `500 var(--flz-fs-label)/1 var(--flz-font-mono)`, letterSpacing: "var(--flz-ls-label)", textTransform: "uppercase", color: "var(--flz-text-muted)" }}>Now building · Skybound ch.3</span>
-        </div>
+
       </div>
     </div>
   );
@@ -431,11 +428,6 @@ export default function PortfolioHubPage() {
           />
         </div>
       </div>
-
-      {/* Hint strip */}
-      <p style={{ marginTop: 22, font: `12.5px/1.6 var(--flz-font-sans), sans-serif`, color: "rgba(244,242,239,.5)", maxWidth: 860, textAlign: "center" }}>
-        Try next: &ldquo;drop a real room photo behind the glass&rdquo; &middot; &ldquo;make the 6 lanes bigger, drop the right column&rdquo; &middot; &ldquo;warmer / brighter room&rdquo; &middot; &ldquo;open the 3D Characters lane as its own page&rdquo;
-      </p>
     </div>
   );
 }
