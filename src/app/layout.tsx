@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono, Cormorant_Garamond, Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono, Cormorant_Garamond, Space_Grotesk, IBM_Plex_Mono, Archivo } from "next/font/google";
 import "./globals.css";
 import { getLocale } from "@/lib/i18n-server";
 
@@ -35,6 +35,14 @@ const ibmPlexMono = IBM_Plex_Mono({
   display: "swap",
 });
 
+// Lucid design system display + UI typeface.
+const archivo = Archivo({
+  variable: "--font-archivo",
+  subsets: ["latin"],
+  weight: ["400", "600", "700", "800"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "FLZ | Portfolio",
   description: "Portfolio and private AutoPiac intranet by FLZ.",
@@ -51,7 +59,7 @@ export default async function RootLayout({
     <html
       lang={locale}
       suppressHydrationWarning
-      className={`${inter.variable} ${jetbrainsMono.variable} ${cormorantGaramond.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${jetbrainsMono.variable} ${cormorantGaramond.variable} ${spaceGrotesk.variable} ${ibmPlexMono.variable} ${archivo.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col text-slate-950">
         <script

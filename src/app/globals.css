@@ -77,6 +77,366 @@ html {
   --font-serif: var(--font-serif);
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   LUCID GLASS DESIGN SYSTEM — Token Layer
+   Warm-neutral liquid-glass system. All Lucid components use these.
+   Source: Lucid_design/tokens/* — do not edit values here directly.
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Warm neutral ramp ── */
+  --lucid-ink-1000: #0C0B09;
+  --lucid-ink-900: #14120F;
+  --lucid-ink-800: #1F1D19;
+  --lucid-ink-700: #2C2925;
+  --lucid-ink-600: #413C36;
+  --lucid-stone-500: #6B6158;
+  --lucid-stone-400: #8C8177;
+  --lucid-stone-300: #A99E92;
+  --lucid-sand-200: #C9BFB3;
+  --lucid-sand-100: #DED6CA;
+  --lucid-cream-50: #F1EBE2;
+  --lucid-cream-25: #FAF6F0;
+  --lucid-white: #FFFFFF;
+
+  /* ── Accents ── */
+  --lucid-accent-warm: oklch(0.82 0.055 74);
+  --lucid-accent-cool: oklch(0.82 0.055 232);
+  --lucid-accent-warm-deep: oklch(0.62 0.055 74);
+  --lucid-accent-cool-deep: oklch(0.62 0.055 232);
+
+  /* ── Semantic text ── */
+  --lucid-text-primary: var(--lucid-ink-900);
+  --lucid-text-secondary: color-mix(in oklab, var(--lucid-ink-900) 62%, transparent);
+  --lucid-text-muted: color-mix(in oklab, var(--lucid-ink-900) 42%, transparent);
+  --lucid-text-on-dark: var(--lucid-cream-25);
+  --lucid-text-on-dark-muted: color-mix(in oklab, var(--lucid-cream-25) 58%, transparent);
+
+  /* ── Surfaces ── */
+  --lucid-surface-page: var(--lucid-cream-50);
+  --lucid-surface-solid: var(--lucid-white);
+  --lucid-surface-inverse: var(--lucid-ink-900);
+  --lucid-surface-sunken: color-mix(in oklab, var(--lucid-ink-900) 6%, transparent);
+
+  /* ── Borders ── */
+  --lucid-border-hairline: color-mix(in oklab, var(--lucid-ink-900) 12%, transparent);
+  --lucid-border-on-dark: color-mix(in oklab, var(--lucid-white) 16%, transparent);
+
+  /* ── Status ── */
+  --lucid-status-positive: oklch(0.68 0.09 148);
+  --lucid-status-caution: oklch(0.75 0.11 78);
+  --lucid-status-critical: oklch(0.6 0.13 25);
+
+  /* ── Backdrops ── */
+  --lucid-backdrop-dusk:
+    radial-gradient(120% 90% at 18% 8%, #6E7C8C 0%, transparent 58%),
+    radial-gradient(90% 70% at 82% 6%, #C9A98A 0%, transparent 55%),
+    radial-gradient(120% 100% at 50% 100%, #2A211A 0%, transparent 60%),
+    linear-gradient(180deg, #46464C 0%, #7A6353 44%, #3A2E25 100%);
+  --lucid-backdrop-interior:
+    radial-gradient(80% 60% at 70% 20%, #C8B49C 0%, transparent 60%),
+    radial-gradient(90% 80% at 10% 90%, #2B2621 0%, transparent 55%),
+    linear-gradient(160deg, #4A423A 0%, #7C6E60 50%, #342E28 100%);
+  --lucid-backdrop-studio:
+    radial-gradient(70% 60% at 50% 25%, #FFFFFF 0%, transparent 70%),
+    linear-gradient(180deg, #EFEAE3 0%, #D8CFC4 100%);
+
+  /* ── Glass tints ── */
+  --lucid-glass-light: color-mix(in srgb, #FFFFFF 46%, transparent);
+  --lucid-glass-light-strong: color-mix(in srgb, #FFFFFF 68%, transparent);
+  --lucid-glass-mid: color-mix(in srgb, #F3EDE4 22%, transparent);
+  --lucid-glass-dark: color-mix(in srgb, #191713 42%, transparent);
+  --lucid-glass-dark-strong: color-mix(in srgb, #14120F 66%, transparent);
+
+  /* ── Glass blur + saturation ── */
+  --lucid-blur-sm: blur(8px) saturate(150%);
+  --lucid-blur-md: blur(18px) saturate(165%);
+  --lucid-blur-lg: blur(32px) saturate(180%);
+  --lucid-blur-xl: blur(54px) saturate(190%);
+
+  /* ── Glass edges ── */
+  --lucid-edge-light: 1px solid color-mix(in srgb, #FFFFFF 55%, transparent);
+  --lucid-edge-mid: 1px solid color-mix(in srgb, #FFFFFF 30%, transparent);
+  --lucid-edge-dark: 1px solid color-mix(in srgb, #FFFFFF 12%, transparent);
+
+  /* ── Glass inner glow + specular ── */
+  --lucid-inner-light:
+    inset 0 1px 0 color-mix(in srgb, #FFFFFF 80%, transparent),
+    inset 0 -1px 1px color-mix(in srgb, #FFFFFF 28%, transparent),
+    inset 0 0 24px color-mix(in srgb, #FFFFFF 18%, transparent);
+  --lucid-inner-dark:
+    inset 0 1px 0 color-mix(in srgb, #FFFFFF 22%, transparent),
+    inset 0 -1px 1px color-mix(in srgb, #FFFFFF 8%, transparent),
+    inset 0 0 32px color-mix(in srgb, #000000 22%, transparent);
+  --lucid-specular: linear-gradient(
+    180deg,
+    color-mix(in srgb, #FFFFFF 42%, transparent) 0%,
+    color-mix(in srgb, #FFFFFF 6%, transparent) 26%,
+    transparent 52%,
+    color-mix(in srgb, #FFFFFF 12%, transparent) 100%);
+
+  /* ── Cast shadows ── */
+  --lucid-shadow-sm: 0 2px 8px -2px color-mix(in srgb, #14120F 28%, transparent);
+  --lucid-shadow-md: 0 12px 28px -10px color-mix(in srgb, #14120F 38%, transparent);
+  --lucid-shadow-lg: 0 28px 64px -20px color-mix(in srgb, #14120F 48%, transparent);
+  --lucid-shadow-float: 0 40px 90px -28px color-mix(in srgb, #14120F 55%, transparent);
+  --lucid-shadow-press: inset 0 2px 6px color-mix(in srgb, #14120F 22%, transparent);
+
+  /* ── Typography ── */
+  --lucid-font-display: var(--font-archivo, "Archivo", "Helvetica Neue", Helvetica, sans-serif);
+  --lucid-font-ui: var(--font-archivo, "Archivo", "Helvetica Neue", Helvetica, sans-serif);
+  --lucid-font-mono: var(--font-ibm-plex-mono, "IBM Plex Mono", ui-monospace, Menlo, monospace);
+
+  --lucid-type-display-xl: 700 76px/0.92 var(--lucid-font-display);
+  --lucid-type-display-lg: 700 56px/0.94 var(--lucid-font-display);
+  --lucid-type-display-md: 700 40px/0.98 var(--lucid-font-display);
+  --lucid-type-numeric-xl: 600 52px/1 var(--lucid-font-display);
+  --lucid-type-title: 600 24px/1.15 var(--lucid-font-ui);
+  --lucid-type-subtitle: 600 17px/1.25 var(--lucid-font-ui);
+  --lucid-type-body: 400 15px/1.5 var(--lucid-font-ui);
+  --lucid-type-body-sm: 400 13px/1.45 var(--lucid-font-ui);
+  --lucid-type-button: 600 14px/1 var(--lucid-font-ui);
+  --lucid-type-label: 600 10px/1.2 var(--lucid-font-mono);
+  --lucid-type-meta: 400 11px/1.4 var(--lucid-font-mono);
+  --lucid-type-caption: 500 9px/1.2 var(--lucid-font-mono);
+
+  --lucid-tracking-display: -0.03em;
+  --lucid-tracking-tight: -0.01em;
+  --lucid-tracking-label: 0.14em;
+  --lucid-tracking-caption: 0.18em;
+
+  /* ── Spacing + radii ── */
+  --lucid-radius-pill: 999px;
+  --lucid-radius-xl: 32px;
+  --lucid-radius-lg: 24px;
+  --lucid-radius-md: 16px;
+  --lucid-radius-sm: 10px;
+  --lucid-radius-xs: 6px;
+
+  --lucid-control-h-lg: 48px;
+  --lucid-control-h-md: 38px;
+  --lucid-control-h-sm: 30px;
+
+  /* ── Motion ── */
+  --lucid-ease-glass: cubic-bezier(0.22, 1, 0.36, 1);
+  --lucid-ease-inout: cubic-bezier(0.4, 0, 0.2, 1);
+  --lucid-dur-fast: 140ms;
+  --lucid-dur-med: 260ms;
+  --lucid-dur-slow: 420ms;
+  --lucid-transition: background var(--lucid-dur-fast) var(--lucid-ease-inout),
+    box-shadow var(--lucid-dur-med) var(--lucid-ease-glass),
+    transform var(--lucid-dur-fast) var(--lucid-ease-glass),
+    color var(--lucid-dur-fast) var(--lucid-ease-inout);
+}
+
+/* ── Lucid Utility Classes ── */
+
+/* Full-screen dusk backdrop */
+.lucid-backdrop-dusk {
+  background: var(--lucid-backdrop-dusk);
+  background-attachment: fixed;
+}
+
+/* Floating light glass panel — the primary surface */
+.lucid-panel-light {
+  position: relative;
+  overflow: hidden;
+  background: var(--lucid-glass-light);
+  border: var(--lucid-edge-light);
+  border-radius: var(--lucid-radius-lg);
+  backdrop-filter: var(--lucid-blur-lg);
+  -webkit-backdrop-filter: var(--lucid-blur-lg);
+  box-shadow: var(--lucid-shadow-float), var(--lucid-inner-light);
+  color: var(--lucid-text-primary);
+}
+
+.lucid-panel-light::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--lucid-specular);
+  opacity: 0.9;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.lucid-panel-light > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Nested clear-glass panel (one level deeper) */
+.lucid-panel-clear {
+  position: relative;
+  overflow: hidden;
+  background: var(--lucid-glass-mid);
+  border: var(--lucid-edge-mid);
+  border-radius: var(--lucid-radius-md);
+  backdrop-filter: var(--lucid-blur-sm);
+  -webkit-backdrop-filter: var(--lucid-blur-sm);
+  box-shadow: var(--lucid-shadow-sm), var(--lucid-inner-light);
+  color: var(--lucid-text-primary);
+}
+
+.lucid-panel-clear > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Dark glass panel */
+.lucid-panel-dark {
+  position: relative;
+  overflow: hidden;
+  background: var(--lucid-glass-dark);
+  border: var(--lucid-edge-dark);
+  border-radius: var(--lucid-radius-lg);
+  backdrop-filter: var(--lucid-blur-lg);
+  -webkit-backdrop-filter: var(--lucid-blur-lg);
+  box-shadow: var(--lucid-shadow-float), var(--lucid-inner-dark);
+  color: var(--lucid-text-on-dark);
+}
+
+.lucid-panel-dark > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Pill button — ink (primary CTA) */
+.lucid-pill-ink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: var(--lucid-control-h-md);
+  padding: 0 20px;
+  border-radius: var(--lucid-radius-pill);
+  background: var(--lucid-surface-inverse);
+  color: var(--lucid-text-on-dark);
+  border: 1px solid transparent;
+  font: var(--lucid-type-button);
+  letter-spacing: var(--lucid-tracking-tight);
+  box-shadow: var(--lucid-shadow-md);
+  cursor: pointer;
+  transition: var(--lucid-transition);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.lucid-pill-ink:hover {
+  background: var(--lucid-ink-700);
+  transform: translateY(-1px);
+  box-shadow: var(--lucid-shadow-lg);
+}
+
+.lucid-pill-ink:active {
+  transform: scale(0.975);
+  box-shadow: var(--lucid-shadow-press);
+}
+
+/* Pill button — cream (secondary) */
+.lucid-pill-cream {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: var(--lucid-control-h-md);
+  padding: 0 20px;
+  border-radius: var(--lucid-radius-pill);
+  background: var(--lucid-surface-solid);
+  color: var(--lucid-text-primary);
+  border: 1px solid var(--lucid-border-hairline);
+  font: var(--lucid-type-button);
+  letter-spacing: var(--lucid-tracking-tight);
+  box-shadow: var(--lucid-shadow-sm);
+  cursor: pointer;
+  transition: var(--lucid-transition);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.lucid-pill-cream:hover {
+  background: var(--lucid-cream-25);
+  transform: translateY(-1px);
+}
+
+.lucid-pill-cream:active {
+  transform: scale(0.975);
+  box-shadow: var(--lucid-shadow-press);
+}
+
+/* Pill button — glass (tertiary) */
+.lucid-pill-glass {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: var(--lucid-control-h-md);
+  padding: 0 20px;
+  border-radius: var(--lucid-radius-pill);
+  background: var(--lucid-glass-light);
+  color: var(--lucid-text-primary);
+  border: var(--lucid-edge-light);
+  font: var(--lucid-type-button);
+  letter-spacing: var(--lucid-tracking-tight);
+  box-shadow: var(--lucid-shadow-sm), var(--lucid-inner-light);
+  backdrop-filter: var(--lucid-blur-md);
+  -webkit-backdrop-filter: var(--lucid-blur-md);
+  cursor: pointer;
+  transition: var(--lucid-transition);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.lucid-pill-glass:hover {
+  background: var(--lucid-glass-light-strong);
+}
+
+.lucid-pill-glass:active {
+  transform: scale(0.975);
+  box-shadow: var(--lucid-shadow-press);
+}
+
+/* Small pill — sm size variant */
+.lucid-pill-sm {
+  height: var(--lucid-control-h-sm);
+  padding: 0 14px;
+  font: var(--lucid-type-label);
+  letter-spacing: var(--lucid-tracking-label);
+  text-transform: uppercase;
+}
+
+/* Badge */
+.lucid-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: var(--lucid-radius-pill);
+  background: var(--lucid-surface-inverse);
+  color: var(--lucid-text-on-dark);
+  font: var(--lucid-type-caption);
+  letter-spacing: var(--lucid-tracking-caption);
+  text-transform: uppercase;
+}
+
+/* Skill chip — small label pill */
+.lucid-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--lucid-radius-pill);
+  background: var(--lucid-glass-mid);
+  border: var(--lucid-edge-mid);
+  font: var(--lucid-type-caption);
+  letter-spacing: var(--lucid-tracking-caption);
+  text-transform: uppercase;
+  color: var(--lucid-text-secondary);
+  backdrop-filter: var(--lucid-blur-sm);
+  -webkit-backdrop-filter: var(--lucid-blur-sm);
+}
+
 body {
   min-height: 100vh;
   background: #ffffff;
