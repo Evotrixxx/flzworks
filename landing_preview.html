@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FLZ · Lucid Landing Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --lucid-font-display: 'Archivo', 'Inter', sans-serif;
+    --lucid-font-ui: 'Inter', 'Archivo', sans-serif;
+    --lucid-font-mono: 'IBM Plex Mono', monospace;
+
+    --lucid-backdrop-dusk:
+      radial-gradient(120% 90% at 18% 8%, #6E7C8C 0%, transparent 58%),
+      radial-gradient(90% 70% at 82% 6%, #C9A98A 0%, transparent 55%),
+      radial-gradient(120% 100% at 50% 100%, #2A211A 0%, transparent 60%),
+      linear-gradient(180deg, #46464C 0%, #7A6353 44%, #3A2E25 100%);
+  }
+
+  body {
+    min-height: 100vh;
+    background: var(--lucid-backdrop-dusk);
+    background-attachment: fixed;
+    font-family: var(--lucid-font-ui);
+    color: #FAF6F0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  @keyframes lucid-shell-in {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes lucid-fade-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes lucid-pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.35; transform: scale(0.85); }
+  }
+
+  .lucid-shell {
+    position: relative;
+    width: 100%;
+    max-width: 1040px;
+    border-radius: 24px;
+    background: rgba(28,24,20,0.55);
+    border: 1px solid rgba(255,255,255,0.13);
+    backdrop-filter: blur(40px) saturate(175%);
+    -webkit-backdrop-filter: blur(40px) saturate(175%);
+    box-shadow: 0 48px 120px -32px rgba(10,8,6,0.75), inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(255,255,255,0.05);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: lucid-shell-in 0.6s cubic-bezier(0.22,1,0.36,1) both;
+  }
+
+  .lucid-shell-specular {
+    position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.11) 0%, rgba(255,255,255,0.03) 20%, transparent 55%);
+  }
+
+  /* Nav */
+  .lucid-nav {
+    position: relative; z-index: 2;
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .lucid-brand {
+    font-family: var(--lucid-font-display); font-weight: 800; font-size: 17px;
+    letter-spacing: -0.03em; color: #FAF6F0; user-select: none; flex-shrink: 0;
+  }
+  .lucid-nav-pills {
+    display: flex; gap: 2px; padding: 3px;
+    background: rgba(0,0,0,0.28);
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 999px;
+  }
+  .lucid-nav-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 28px; padding: 0 14px; border-radius: 999px;
+    font-size: 12px; font-family: var(--lucid-font-mono);
+    letter-spacing: 0.13em; text-transform: uppercase;
+    cursor: pointer; border: none; background: transparent;
+    color: rgba(250,246,240,0.68);
+    transition: background 130ms ease, color 130ms ease;
+  }
+  .lucid-nav-btn.active {
+    background: rgba(250,246,240,0.92); color: #14120F;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.2);
+  }
+
+  /* Body grid */
+  .lucid-body-grid {
+    position: relative; z-index: 1;
+    display: grid; grid-template-columns: 230px 1fr;
+    flex: 1; min-width: 0;
+  }
+  .lucid-body-grid > * { min-width: 0; }
+
+  /* Sidebar */
+  .lucid-sidebar {
+    border-right: 1px solid rgba(255,255,255,0.08);
+    display: flex; flex-direction: column;
+    animation: lucid-fade-up 0.5s 0.1s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  .lucid-sidebar-identity {
+    padding: 20px 18px 16px; border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .lucid-wordmark {
+    font-family: var(--lucid-font-display); font-weight: 800;
+    font-size: 52px; line-height: 0.88; letter-spacing: -0.04em; color: #FAF6F0;
+  }
+  .lucid-mono-label {
+    font-family: var(--lucid-font-mono); font-size: 12px;
+    letter-spacing: 0.13em; text-transform: uppercase;
+    color: rgba(250,246,240,0.62); display: block; margin: 0;
+  }
+
+  .lucid-stat-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px 10px; margin-top: 16px;
+  }
+  .lucid-stat-num {
+    font-family: var(--lucid-font-display); font-weight: 700; font-size: 30px;
+    line-height: 1; letter-spacing: -0.03em; color: #FAF6F0;
+  }
+  .lucid-stat-unit {
+    font-family: var(--lucid-font-mono); font-size: 11px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: rgba(250,246,240,0.64); margin-left: 2px;
+  }
+  .lucid-stat-caption {
+    font-family: var(--lucid-font-mono); font-size: 11px; letter-spacing: 0.13em;
+    text-transform: uppercase; color: rgba(250,246,240,0.64); display: block; margin-top: 2px;
+  }
+
+  /* Cards */
+  .dark-card {
+    background: rgba(20,18,15,0.52);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+  .light-card {
+    background: rgba(250,246,240,0.92);
+    border: 1px solid rgba(20,18,15,0.08);
+    border-radius: 12px;
+    color: #14120F;
+  }
+
+  .lucid-skill-row {
+    display: flex; align-items: flex-start; gap: 10px; padding: 9px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: background 120ms ease;
+  }
+  .lucid-skill-row:hover { background: rgba(255,255,255,0.04); }
+  .lucid-skill-row:last-child { border-bottom: none; }
+
+  /* Main Area */
+  .lucid-main {
+    display: flex; flex-direction: column;
+    animation: lucid-fade-up 0.5s 0.2s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  .lucid-hero-grid {
+    flex: 1; padding: 24px 28px;
+    display: grid; grid-template-columns: 1fr 170px; grid-template-rows: auto 1fr auto;
+    gap: 14px; min-width: 0;
+  }
+  .lucid-hero-grid > * { min-width: 0; }
+  .lucid-hero-headline { grid-column: 1 / -1; }
+  .lucid-hero-side { grid-column: 2 / 3; grid-row: 2 / 4; }
+  .lucid-hero-archive { grid-column: 1 / 2; align-self: end; }
+
+  .lucid-headline {
+    font-family: var(--lucid-font-display); font-weight: 700;
+    font-size: 36px; line-height: 1.0; letter-spacing: -0.035em; color: #FAF6F0;
+  }
+
+  /* Action Strip */
+  .lucid-action-strip {
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding: 12px 24px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    animation: lucid-fade-up 0.5s 0.3s cubic-bezier(0.22,1,0.36,1) both;
+  }
+
+  .lucid-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    height: 30px; padding: 0 13px; border-radius: 999px;
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.11);
+    color: rgba(250,246,240,0.68); font-size: 12px; font-family: var(--lucid-font-mono);
+    letter-spacing: 0.12em; text-transform: uppercase; text-decoration: none;
+    transition: all 120ms ease; cursor: pointer;
+  }
+  .lucid-chip:hover {
+    background: rgba(255,255,255,0.14); color: #FAF6F0; border-color: rgba(255,255,255,0.22);
+    transform: translateY(-1px);
+  }
+
+  .lucid-btn-primary {
+    display: inline-flex; align-items: center; gap: 7px;
+    height: 32px; padding: 0 16px; border-radius: 999px;
+    background: #FAF6F0; color: #14120F; border: none;
+    font-size: 12px; font-family: var(--lucid-font-mono);
+    letter-spacing: 0.13em; text-transform: uppercase; font-weight: 600;
+    cursor: pointer; text-decoration: none;
+    box-shadow: 0 4px 14px -4px rgba(20,18,15,0.35); transition: all 120ms ease;
+  }
+  .lucid-btn-primary:hover { background: #FFFFFF; transform: translateY(-1px); }
+
+  .lucid-btn-dark {
+    display: inline-flex; align-items: center; gap: 7px;
+    height: 32px; padding: 0 16px; border-radius: 999px;
+    background: #14120F; color: #FAF6F0; border: 1px solid rgba(255,255,255,0.1);
+    font-size: 12px; font-family: var(--lucid-font-mono);
+    letter-spacing: 0.13em; text-transform: uppercase; font-weight: 600;
+    cursor: pointer; text-decoration: none; transition: all 120ms ease;
+  }
+  .lucid-btn-dark:hover { background: #2C2925; transform: translateY(-1px); }
+
+  @media (max-width: 860px) {
+    .lucid-body-grid { grid-template-columns: 1fr; }
+    .lucid-hero-grid { grid-template-columns: 1fr; grid-template-rows: auto; }
+    .lucid-hero-headline, .lucid-hero-side, .lucid-hero-archive {
+      grid-column: 1 / -1; grid-row: auto;
+    }
+  }
+
+  @media (pointer: coarse) {
+    .lucid-nav-btn { height: 44px; padding: 0 18px; }
+    .lucid-btn-primary, .lucid-btn-dark { height: 44px; padding: 0 20px; }
+    .lucid-chip { height: 40px; padding: 0 16px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="lucid-shell">
+    <div class="lucid-shell-specular"></div>
+
+    <!-- ── NAV BAR ── -->
+    <div class="lucid-nav">
+      <span class="lucid-brand">FLZ</span>
+      <div style="width:1px; height:16px; background:rgba(255,255,255,0.12); margin:0 4px;"></div>
+      <div class="lucid-nav-pills">
+        <button class="lucid-nav-btn active" onclick="scrollToSection('home')">Home</button>
+        <button class="lucid-nav-btn" onclick="scrollToSection('projects')">Projects</button>
+        <button class="lucid-nav-btn" onclick="scrollToSection('contact')">Contact</button>
+      </div>
+
+      <div style="flex:1;"></div>
+
+      <div style="display:flex; align-items:center; gap:6px; margin-right:6px;">
+        <div style="width:6px; height:6px; border-radius:50%; background:#8ce6a0; animation:lucid-pulse-dot 2s infinite;"></div>
+        <span class="lucid-mono-label" style="font-size:11px;">Available</span>
+      </div>
+
+      <a href="https://github.com/Flzvision" target="_blank" class="lucid-chip" style="height:28px; width:28px; padding:0; justify-content:center;">GH</a>
+      <a href="https://linkedin.com/in/bence-flosz-56134535a" target="_blank" class="lucid-chip" style="height:28px; width:28px; padding:0; justify-content:center;">IN</a>
+    </div>
+
+    <!-- ── BODY ── -->
+    <div class="lucid-body-grid">
+
+      <!-- Sidebar -->
+      <div class="lucid-sidebar">
+        <div id="home" class="lucid-sidebar-identity">
+          <span class="lucid-mono-label" style="margin-bottom:6px;">Identity</span>
+          <h1 class="lucid-wordmark">FLZ</h1>
+          <p style="margin:6px 0 0; font-family:var(--lucid-font-mono); font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:rgba(250,246,240,0.62);">
+            Bence Flosz
+          </p>
+          <span class="lucid-mono-label" style="margin-top:6px; line-height:1.5;">Indie Game Dev<br/>3D Artist · Backend Eng</span>
+
+          <div class="lucid-stat-grid">
+            <div>
+              <div><span class="lucid-stat-num">6</span></div>
+              <span class="lucid-stat-caption">Portfolio items</span>
+            </div>
+            <div>
+              <div><span class="lucid-stat-num">B2</span></div>
+              <span class="lucid-stat-caption">English</span>
+            </div>
+            <div>
+              <div><span class="lucid-stat-num">3+</span><span class="lucid-stat-unit">yr</span></div>
+              <span class="lucid-stat-caption">Experience</span>
+            </div>
+            <div>
+              <div><span class="lucid-stat-num">4</span><span class="lucid-stat-unit">plr</span></div>
+              <span class="lucid-stat-caption">Co-op target</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active build card -->
+        <div style="padding:12px 14px; border-bottom:1px solid rgba(255,255,255,0.07);">
+          <div class="dark-card" style="padding:12px 14px;">
+            <span class="lucid-mono-label" style="font-size:11px; color:#8ce6a0; margin-bottom:4px;">● Active Build</span>
+            <div style="font-family:var(--lucid-font-display); font-weight:700; font-size:13.5px; color:#FAF6F0;">4-Player Co-op Game</div>
+            <span class="lucid-mono-label" style="font-size:11px; margin-top:2px;">Liminal · Dreamcore · Godot C#</span>
+          </div>
+        </div>
+
+        <!-- Skills list -->
+        <div style="flex:1; border-bottom:1px solid rgba(255,255,255,0.07);">
+          <div style="padding:10px 16px 4px;"><h2 class="lucid-mono-label">Skills</h2></div>
+
+          <div class="lucid-skill-row">
+            <span style="font-size:13px;">🎮</span>
+            <div>
+              <span class="lucid-mono-label" style="color:rgba(250,246,240,0.78); margin-bottom:3px; font-size:12px;">Game Dev</span>
+              <div style="display:flex; flex-wrap:wrap; gap:3px;">
+                <span style="font-family:var(--lucid-font-mono); font-size:11px; padding:2px 6px; border-radius:999px; background:rgba(255,255,255,0.07); color:rgba(250,246,240,0.66);">Godot</span>
+                <span style="font-family:var(--lucid-font-mono); font-size:11px; padding:2px 6px; border-radius:999px; background:rgba(255,255,255,0.07); color:rgba(250,246,240,0.66);">C#</span>
+                <span style="font-family:var(--lucid-font-mono); font-size:11px; padding:2px 6px; border-radius:999px; background:rgba(255,255,255,0.07); color:rgba(250,246,240,0.66);">Multiplayer</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="lucid-skill-row">
+            <span style="font-size:13px;">🎨</span>
+            <div>
+              <span class="lucid-mono-label" style="color:rgba(250,246,240,0.78); margin-bottom:3px; font-size:12px;">3D · Visual</span>
+              <div style="display:flex; flex-wrap:wrap; gap:3px;">
+                <span style="font-family:var(--lucid-font-mono); font-size:11px; padding:2px 6px; border-radius:999px; background:rgba(255,255,255,0.07); color:rgba(250,246,240,0.66);">Blender</span>
+                <span style="font-family:var(--lucid-font-mono); font-size:11px; padding:2px 6px; border-radius:999px; background:rgba(255,255,255,0.07); color:rgba(250,246,240,0.66);">Photoshop</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="lucid-skill-row">
+            <span style="font-size:13px;">💻</span>
+            <div>
+              <span class="lucid-mono-label" style="color:rgba(250,246,240,0.78); margin-bottom:3px; font-size:12px;">Web · Backend</span>
+              <div style="display:flex; flex-wrap:wrap; gap:3px;">
+                <span style="font-family:var(--lucid-font-mono); font-size:11px; padding:2px 6px; border-radius:999px; background:rgba(255,255,255,0.07); color:rgba(250,246,240,0.66);">Next.js</span>
+                <span style="font-family:var(--lucid-font-mono); font-size:11px; padding:2px 6px; border-radius:999px; background:rgba(255,255,255,0.07); color:rgba(250,246,240,0.66);">PHP</span>
+                <span style="font-family:var(--lucid-font-mono); font-size:11px; padding:2px 6px; border-radius:999px; background:rgba(255,255,255,0.07); color:rgba(250,246,240,0.66);">SQL</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="lucid-skill-row">
+            <span style="font-size:13px;">🤖</span>
+            <div>
+              <span class="lucid-mono-label" style="color:rgba(250,246,240,0.78); margin-bottom:3px; font-size:12px;">AI · Tools</span>
+              <div style="display:flex; flex-wrap:wrap; gap:3px;">
+                <span style="font-family:var(--lucid-font-mono); font-size:11px; padding:2px 6px; border-radius:999px; background:rgba(255,255,255,0.07); color:rgba(250,246,240,0.66);">Ollama</span>
+                <span style="font-family:var(--lucid-font-mono); font-size:11px; padding:2px 6px; border-radius:999px; background:rgba(255,255,255,0.07); color:rgba(250,246,240,0.66);">PowerShell</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Education -->
+        <div style="padding:12px 16px;">
+          <h2 class="lucid-mono-label" style="font-size:11px;">Education</h2>
+          <div style="font-family:var(--lucid-font-display); font-weight:600; font-size:12px; color:rgba(250,246,240,0.65); margin-top:2px;">BGE</div>
+          <span class="lucid-mono-label" style="font-size:11px; margin-top:2px;">Business Informatics BSc</span>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="lucid-main">
+        <div id="projects" class="lucid-hero-grid">
+
+          <div class="lucid-hero-headline" style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <span class="lucid-mono-label" style="margin-bottom:8px;">Portfolio · Budapest · 2026</span>
+              <h2 class="lucid-headline">Building worlds.<br/><span style="color:rgba(250,246,240,0.45);">Shipping products.</span></h2>
+            </div>
+          </div>
+
+          <!-- Bio Card -->
+          <div class="light-card" style="padding:18px 20px; align-self:start;">
+            <h2 style="margin:0 0 10px; font-family:var(--lucid-font-mono); font-size:11px; letter-spacing:0.13em; text-transform:uppercase; color:rgba(20,18,15,0.62);">About</h2>
+            <p style="margin:0 0 14px; font-size:14.5px; line-height:1.65; color:rgba(20,18,15,0.78);">
+              Business Informatics student at BGE and indie game studio founder. I build 4-player co-op games with a liminal/dreamcore aesthetic using Godot + Blender, and full-stack web platforms. Goal: release commercially on Steam.
+            </p>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <div style="padding:7px 11px; background:rgba(20,18,15,0.06); border:1px solid rgba(20,18,15,0.09); border-radius:999px;">
+                <div style="font-family:var(--lucid-font-display); font-weight:700; font-size:11px; color:#14120F;">Boredo Systems</div>
+                <div class="lucid-mono-label" style="font-size:11px; color:rgba(20,18,15,0.62); margin-top:1px;">Backend Dev · 2024–25</div>
+              </div>
+              <div style="padding:7px 11px; background:rgba(20,18,15,0.06); border:1px solid rgba(20,18,15,0.09); border-radius:999px;">
+                <div style="font-family:var(--lucid-font-display); font-weight:700; font-size:11px; color:#14120F;">Freelance</div>
+                <div class="lucid-mono-label" style="font-size:11px; color:rgba(20,18,15,0.62); margin-top:1px;">Marketing · 2023–24</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right column mini cards -->
+          <div class="lucid-hero-side" style="display:flex; flex-direction:column; gap:10px;">
+            <div class="light-card" style="padding:14px;">
+              <span class="lucid-mono-label" style="color:rgba(20,18,15,0.6); font-size:11px; margin-bottom:4px;">Target</span>
+              <div style="font-family:var(--lucid-font-display); font-weight:700; font-size:13.5px; color:#14120F;">Steam</div>
+              <span class="lucid-mono-label" style="color:rgba(20,18,15,0.6); font-size:11px; margin-top:2px;">Commercial release</span>
+            </div>
+
+            <div class="dark-card" style="padding:14px;">
+              <span class="lucid-mono-label" style="font-size:11px; margin-bottom:4px;">Also</span>
+              <div style="font-family:var(--lucid-font-display); font-weight:700; font-size:13px; color:#FAF6F0;">Roblox Studio</div>
+              <span class="lucid-mono-label" style="font-size:11px; margin-top:2px;">Early game dev roots</span>
+            </div>
+          </div>
+
+          <!-- Archive Link -->
+          <div class="lucid-hero-archive">
+            <a href="/autosalon" class="lucid-chip">
+              <span>View portfolio archive</span>
+              <span style="opacity:0.4;">· 6 items</span>
+              ↗
+            </a>
+          </div>
+
+        </div>
+
+        <!-- Action Strip -->
+        <div id="contact" class="lucid-action-strip">
+          <button class="lucid-btn-primary" onclick="alert('vCard downloaded!')">vCard ↗</button>
+          <div style="width:1px; height:16px; background:rgba(255,255,255,0.1); margin:0 2px;"></div>
+          <a href="mailto:floszbeni@gmail.com" class="lucid-chip">floszbeni@gmail.com</a>
+          <a href="https://github.com/Flzvision" target="_blank" class="lucid-chip">Flzvision</a>
+          <a href="https://linkedin.com/in/bence-flosz-56134535a" target="_blank" class="lucid-chip">LinkedIn</a>
+          <div style="flex:1;"></div>
+          <a href="/autosalon" class="lucid-btn-dark">Autopiac ↗</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function scrollToSection(id) {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>

@@ -73,8 +73,8 @@ const CSS_KEYFRAMES = `
   border-radius: 999px;
   background: rgba(255,255,255,0.07);
   border: 1px solid rgba(255,255,255,0.11);
-  color: rgba(250,246,240,0.55);
-  font-size: 9px; font-family: var(--lucid-font-mono);
+  color: rgba(250,246,240,0.68);
+  font-size: 12px; font-family: var(--lucid-font-mono);
   letter-spacing: 0.12em; text-transform: uppercase;
   text-decoration: none;
   transition: background 120ms ease, color 120ms ease, border-color 120ms ease, transform 120ms ease;
@@ -83,7 +83,7 @@ const CSS_KEYFRAMES = `
 .lucid-link-chip:hover {
   background: rgba(255,255,255,0.13);
   border-color: rgba(255,255,255,0.2);
-  color: rgba(250,246,240,0.9);
+  color: rgba(250,246,240,0.95);
   transform: translateY(-1px);
 }
 .lucid-skill-row {
@@ -109,7 +109,7 @@ const CSS_KEYFRAMES = `
   display: inline-flex; align-items: center; justify-content: center;
   height: 30px; padding: 0 14px;
   border-radius: 999px;
-  font-size: 9px; font-family: var(--lucid-font-mono);
+  font-size: 12px; font-family: var(--lucid-font-mono);
   letter-spacing: 0.13em; text-transform: uppercase;
   cursor: pointer; border: none;
   transition: background 130ms ease, color 130ms ease, box-shadow 130ms ease;
@@ -120,7 +120,7 @@ const CSS_KEYFRAMES = `
   display: inline-flex; align-items: center; justify-content: center;
   border: 1px solid rgba(255,255,255,0.12);
   background: rgba(255,255,255,0.06);
-  color: rgba(250,246,240,0.55);
+  color: rgba(250,246,240,0.68);
   cursor: pointer; text-decoration: none;
   transition: background 120ms ease, color 120ms ease, transform 120ms ease;
   flex-shrink: 0;
@@ -133,7 +133,7 @@ const CSS_KEYFRAMES = `
   background: #FAF6F0;
   color: #14120F;
   border: none;
-  font-size: 9px; font-family: var(--lucid-font-mono);
+  font-size: 12px; font-family: var(--lucid-font-mono);
   letter-spacing: 0.13em; text-transform: uppercase;
   font-weight: 600;
   cursor: pointer; text-decoration: none;
@@ -149,7 +149,7 @@ const CSS_KEYFRAMES = `
   background: #14120F;
   color: #FAF6F0;
   border: 1px solid rgba(255,255,255,0.1);
-  font-size: 9px; font-family: var(--lucid-font-mono);
+  font-size: 12px; font-family: var(--lucid-font-mono);
   letter-spacing: 0.13em; text-transform: uppercase;
   font-weight: 600;
   cursor: pointer; text-decoration: none;
@@ -158,6 +158,62 @@ const CSS_KEYFRAMES = `
   white-space: nowrap;
 }
 .lucid-cta-dark:hover { background: #2C2925; transform: translateY(-1px); box-shadow: 0 8px 24px -6px rgba(20,18,15,0.6); }
+
+.lucid-body-grid {
+  display: grid;
+  grid-template-columns: 236px 1fr;
+  min-width: 0;
+}
+.lucid-body-grid > * { min-width: 0; }
+
+.lucid-hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 176px;
+  grid-template-rows: auto 1fr auto;
+  gap: 14px;
+  min-width: 0;
+}
+.lucid-hero-grid > * { min-width: 0; }
+
+.lucid-hero-headline { grid-column: 1 / -1; }
+.lucid-hero-side { grid-column: 2 / 3; grid-row: 2 / 4; }
+.lucid-hero-archive { grid-column: 1 / 2; align-self: end; }
+
+@media (max-width: 860px) {
+  .lucid-body-grid {
+    grid-template-columns: 1fr;
+  }
+  .lucid-hero-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+  .lucid-hero-headline,
+  .lucid-hero-side,
+  .lucid-hero-archive {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+}
+
+@media (pointer: coarse) {
+  .lucid-icon-btn {
+    width: 44px;
+    height: 44px;
+  }
+  .lucid-nav-pill {
+    height: 44px;
+    padding: 0 18px;
+  }
+  .lucid-cta-primary,
+  .lucid-cta-dark {
+    height: 44px;
+    padding: 0 20px;
+  }
+  .lucid-link-chip {
+    height: 40px;
+    padding: 0 16px;
+  }
+}
 `;
 
 function StyleInjector() {
@@ -205,32 +261,43 @@ function L({ children, style, r = 12 }: { children: React.ReactNode; style?: Rea
 }
 
 /** Mono uppercase label */
-function Label({ children, dim = false, style }: { children: React.ReactNode; dim?: boolean; style?: React.CSSProperties }) {
+function Label({
+  children,
+  dim = false,
+  style,
+  as: Tag = "span",
+}: {
+  children: React.ReactNode;
+  dim?: boolean;
+  style?: React.CSSProperties;
+  as?: "span" | "h2" | "h3";
+}) {
   return (
-    <span style={{
+    <Tag style={{
       display: "block",
       fontFamily: "var(--lucid-font-mono)",
-      fontSize: 9, letterSpacing: "0.13em",
+      fontSize: 12, letterSpacing: "0.13em",
       textTransform: "uppercase",
-      color: dim ? "rgba(250,246,240,0.32)" : "rgba(250,246,240,0.52)",
+      color: dim ? "rgba(250,246,240,0.62)" : "rgba(250,246,240,0.68)",
+      margin: 0,
       ...style,
     }}>
       {children}
-    </span>
+    </Tag>
   );
 }
 
 /** Large display numeral stat */
 function Stat({ val, unit, label, light }: { val: string; unit?: string; label: string; light?: boolean }) {
   const base = light ? "#14120F" : "#FAF6F0";
-  const muted = light ? "rgba(20,18,15,0.42)" : "rgba(250,246,240,0.38)";
+  const muted = light ? "rgba(20,18,15,0.62)" : "rgba(250,246,240,0.64)";
   return (
     <div>
       <div style={{ display: "flex", alignItems: "baseline", gap: 3 }}>
         <span style={{ fontFamily: "var(--lucid-font-display)", fontWeight: 700, fontSize: 34, lineHeight: 1, letterSpacing: "-0.03em", color: base }}>{val}</span>
-        {unit && <span style={{ fontFamily: "var(--lucid-font-mono)", fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase", color: muted, marginBottom: 2 }}>{unit}</span>}
+        {unit && <span style={{ fontFamily: "var(--lucid-font-mono)", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: muted, marginBottom: 2 }}>{unit}</span>}
       </div>
-      <span style={{ fontFamily: "var(--lucid-font-mono)", fontSize: 8, letterSpacing: "0.14em", textTransform: "uppercase", color: muted, display: "block", marginTop: 2 }}>{label}</span>
+      <span style={{ fontFamily: "var(--lucid-font-mono)", fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: muted, display: "block", marginTop: 2 }}>{label}</span>
     </div>
   );
 }
@@ -252,6 +319,42 @@ const SKILLS = [
 export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
   const [vcardDone, setVcardDone] = useState(false);
   const [activeNav, setActiveNav] = useState<"home" | "projects" | "contact">("home");
+
+  const homeRef = useRef<HTMLDivElement>(null);
+  const projectsRef = useRef<HTMLDivElement>(null);
+  const contactRef = useRef<HTMLDivElement>(null);
+
+  const sectionRefs = useRef({ home: homeRef, projects: projectsRef, contact: contactRef }).current;
+
+  const scrollToSection = useCallback((id: "home" | "projects" | "contact") => {
+    setActiveNav(id);
+    const target = sectionRefs[id].current;
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [sectionRefs]);
+
+  useEffect(() => {
+    const entries = (["home", "projects", "contact"] as const)
+      .map((id) => ({ id, el: sectionRefs[id].current }))
+      .filter((e): e is { id: typeof e.id; el: HTMLDivElement } => e.el !== null);
+
+    const observer = new IntersectionObserver(
+      (observed) => {
+        const visible = observed
+          .filter((o) => o.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible) {
+          const match = entries.find((e) => e.el === visible.target);
+          if (match) setActiveNav(match.id);
+        }
+      },
+      { threshold: [0.2, 0.5] }
+    );
+
+    entries.forEach((e) => observer.observe(e.el));
+    return () => observer.disconnect();
+  }, [sectionRefs]);
 
   const downloadVCard = useCallback(() => {
     const vcard = [
@@ -338,10 +441,10 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
                 <button
                   key={id}
                   className="lucid-nav-pill"
-                  onClick={() => setActiveNav(id)}
+                  onClick={() => scrollToSection(id)}
                   style={{
                     background: activeNav === id ? "rgba(250,246,240,0.92)" : "transparent",
-                    color: activeNav === id ? "#14120F" : "rgba(250,246,240,0.45)",
+                    color: activeNav === id ? "#14120F" : "rgba(250,246,240,0.68)",
                     boxShadow: activeNav === id ? "0 1px 6px rgba(0,0,0,0.2)" : "none",
                   }}
                 >
@@ -360,7 +463,7 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
                 background: "rgba(140,230,160,0.85)",
                 animation: "lucid-pulse-dot 2s ease-in-out infinite",
               }} />
-              <Label dim style={{ fontSize: 8 }}>Available</Label>
+              <Label dim style={{ fontSize: 11 }}>Available</Label>
             </div>
 
             {/* Icon buttons */}
@@ -378,10 +481,8 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
           </div>
 
           {/* ── BODY ────────────────────────────────────────────────────── */}
-          <div style={{
+          <div className="lucid-body-grid" style={{
             position: "relative", zIndex: 1,
-            display: "grid",
-            gridTemplateColumns: "236px 1fr",
             flex: 1,
           }}>
 
@@ -393,7 +494,7 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
             }}>
 
               {/* Identity section */}
-              <div style={{ padding: "22px 18px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+              <div ref={homeRef} style={{ padding: "22px 18px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
                 <Label dim style={{ marginBottom: 10 }}>Identity</Label>
                 <h1 style={{
                   margin: 0,
@@ -404,10 +505,18 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
                   FLZ
                 </h1>
                 <p style={{
-                  margin: "10px 0 0",
-                  fontFamily: "var(--lucid-font-mono)", fontSize: 8.5,
+                  margin: "6px 0 0",
+                  fontFamily: "var(--lucid-font-mono)", fontSize: 11,
+                  letterSpacing: "0.1em", textTransform: "uppercase",
+                  color: "rgba(250,246,240,0.62)",
+                }}>
+                  Bence Flosz
+                </p>
+                <p style={{
+                  margin: "6px 0 0",
+                  fontFamily: "var(--lucid-font-mono)", fontSize: 11,
                   letterSpacing: "0.13em", textTransform: "uppercase",
-                  color: "rgba(250,246,240,0.4)", lineHeight: 1.55,
+                  color: "rgba(250,246,240,0.62)", lineHeight: 1.55,
                 }}>
                   Indie Game Dev<br />3D Artist · Backend Eng
                 </p>
@@ -430,7 +539,7 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
                       background: "rgba(140,230,160,0.85)",
                       animation: "lucid-pulse-dot 2s 0.4s ease-in-out infinite",
                     }} />
-                    <Label dim style={{ fontSize: 8 }}>Active Build</Label>
+                    <Label dim style={{ fontSize: 11 }}>Active Build</Label>
                   </div>
                   <p style={{
                     margin: "0 0 4px",
@@ -446,7 +555,7 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
               {/* Skills */}
               <div style={{ flex: 1, borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
                 <div style={{ padding: "10px 18px 4px" }}>
-                  <Label dim>Skills</Label>
+                  <Label dim as="h2">Skills</Label>
                 </div>
                 {SKILLS.map((s) => (
                   <div key={s.label} className="lucid-skill-row">
@@ -454,21 +563,21 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
                     <div style={{ minWidth: 0 }}>
                       <span style={{
                         display: "block",
-                        fontFamily: "var(--lucid-font-mono)", fontSize: 9,
+                        fontFamily: "var(--lucid-font-mono)", fontSize: 12,
                         letterSpacing: "0.12em", textTransform: "uppercase",
-                        color: "rgba(250,246,240,0.7)", marginBottom: 4,
+                        color: "rgba(250,246,240,0.78)", marginBottom: 4,
                       }}>
                         {s.label}
                       </span>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
                         {s.tags.map((t) => (
                           <span key={t} style={{
-                            fontFamily: "var(--lucid-font-mono)", fontSize: 8,
+                            fontFamily: "var(--lucid-font-mono)", fontSize: 11,
                             letterSpacing: "0.1em", textTransform: "uppercase",
                             padding: "2px 7px", borderRadius: 999,
                             background: "rgba(255,255,255,0.07)",
                             border: "1px solid rgba(255,255,255,0.1)",
-                            color: "rgba(250,246,240,0.42)",
+                            color: "rgba(250,246,240,0.66)",
                           }}>
                             {t}
                           </span>
@@ -481,7 +590,7 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
 
               {/* Education footer */}
               <div style={{ padding: "12px 18px" }}>
-                <Label dim style={{ fontSize: 8 }}>Education</Label>
+                <Label dim as="h2" style={{ fontSize: 11 }}>Education</Label>
                 <p style={{
                   margin: "4px 0 0",
                   fontFamily: "var(--lucid-font-display)", fontWeight: 600,
@@ -489,7 +598,7 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
                 }}>
                   BGE
                 </p>
-                <Label dim style={{ fontSize: 8, marginTop: 2 }}>Business Informatics BSc</Label>
+                <Label dim style={{ fontSize: 11, marginTop: 2 }}>Business Informatics BSc</Label>
               </div>
             </div>
 
@@ -500,17 +609,12 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
             }}>
 
               {/* Hero area */}
-              <div style={{
+              <div ref={projectsRef} className="lucid-hero-grid" style={{
                 flex: 1, padding: "clamp(18px,2.5vw,32px)",
-                display: "grid",
-                gridTemplateColumns: "1fr 176px",
-                gridTemplateRows: "auto 1fr auto",
-                gap: 14,
-                overflow: "hidden",
               }}>
 
                 {/* ── Headline row ── */}
-                <div style={{ gridColumn: "1 / -1", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 20 }}>
+                <div className="lucid-hero-headline" style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-start", justifyContent: "space-between", gap: 20 }}>
                   <div>
                     <Label dim style={{ marginBottom: 10 }}>Portfolio · Budapest · 2026</Label>
                     <h2 style={{
@@ -534,17 +638,18 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
 
                 {/* ── Bio card (main left) ── */}
                 <L style={{ padding: "18px 20px", alignSelf: "start" }}>
-                  <div style={{
-                    fontFamily: "var(--lucid-font-mono)", fontSize: 8.5,
+                  <h2 style={{
+                    margin: "0 0 10px",
+                    fontFamily: "var(--lucid-font-mono)", fontSize: 11,
                     letterSpacing: "0.13em", textTransform: "uppercase",
-                    color: "rgba(20,18,15,0.38)", marginBottom: 10,
+                    color: "rgba(20,18,15,0.62)",
                   }}>
                     About
-                  </div>
+                  </h2>
                   <p style={{
                     margin: "0 0 14px",
-                    fontFamily: "var(--lucid-font-ui)", fontSize: 13.5, lineHeight: 1.65,
-                    color: "rgba(20,18,15,0.68)",
+                    fontFamily: "var(--lucid-font-ui)", fontSize: 14.5, lineHeight: 1.65,
+                    color: "rgba(20,18,15,0.78)",
                   }}>
                     Business Informatics student at BGE and indie game studio founder. I build 4-player co-op games with a liminal/dreamcore aesthetic using Godot&nbsp;+&nbsp;Blender, and full-stack web platforms. Goal: release commercially on Steam.
                   </p>
@@ -568,9 +673,9 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
                           {e.name}
                         </div>
                         <div style={{
-                          fontFamily: "var(--lucid-font-mono)", fontSize: 8,
+                          fontFamily: "var(--lucid-font-mono)", fontSize: 11,
                           letterSpacing: "0.11em", textTransform: "uppercase",
-                          color: "rgba(20,18,15,0.38)", marginTop: 2,
+                          color: "rgba(20,18,15,0.62)", marginTop: 2,
                         }}>
                           {e.role}
                         </div>
@@ -580,16 +685,15 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
                 </L>
 
                 {/* ── Right mini-cards column ── */}
-                <div style={{
-                  gridColumn: "2 / 3", gridRow: "2 / 4",
+                <div className="lucid-hero-side" style={{
                   display: "flex", flexDirection: "column", gap: 10,
                 }}>
                   {/* Steam target */}
                   <L style={{ padding: "14px" }} r={10}>
                     <div style={{
-                      fontFamily: "var(--lucid-font-mono)", fontSize: 8,
+                      fontFamily: "var(--lucid-font-mono)", fontSize: 11,
                       letterSpacing: "0.13em", textTransform: "uppercase",
-                      color: "rgba(20,18,15,0.35)", marginBottom: 5,
+                      color: "rgba(20,18,15,0.6)", marginBottom: 5,
                     }}>
                       Target
                     </div>
@@ -597,9 +701,9 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
                       Steam
                     </div>
                     <div style={{
-                      fontFamily: "var(--lucid-font-mono)", fontSize: 8,
+                      fontFamily: "var(--lucid-font-mono)", fontSize: 11,
                       letterSpacing: "0.1em", textTransform: "uppercase",
-                      color: "rgba(20,18,15,0.35)", marginTop: 2,
+                      color: "rgba(20,18,15,0.6)", marginTop: 2,
                     }}>
                       Commercial release
                     </div>
@@ -611,7 +715,7 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
                     <div style={{ fontFamily: "var(--lucid-font-display)", fontWeight: 700, fontSize: 13, color: "#FAF6F0" }}>
                       Roblox Studio
                     </div>
-                    <Label dim style={{ marginTop: 2, fontSize: 8 }}>Early game dev roots</Label>
+                    <Label dim style={{ marginTop: 2, fontSize: 11 }}>Early game dev roots</Label>
                   </D>
 
                   {/* Instagram */}
@@ -636,7 +740,7 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
 
                 {/* ── Portfolio archive ── */}
                 {articles.length > 0 && (
-                  <div style={{ gridColumn: "1 / 2", alignSelf: "end" }}>
+                  <div className="lucid-hero-archive">
                     <Link href="/autosalon" className="lucid-link-chip" style={{ gap: 8 }}>
                       <span>View portfolio archive</span>
                       <span style={{ opacity: 0.4 }}>· {articles.length} items</span>
@@ -647,7 +751,7 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
               </div>
 
               {/* ── ACTION STRIP ───────────────────────────────────────── */}
-              <div style={{
+              <div ref={contactRef} style={{
                 borderTop: "1px solid rgba(255,255,255,0.08)",
                 padding: "13px 24px",
                 display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap",
@@ -700,3 +804,4 @@ export function LucidLanding({ instagramMedia, articles }: LucidLandingProps) {
     </>
   );
 }
+
