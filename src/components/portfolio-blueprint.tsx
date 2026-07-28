@@ -16,7 +16,7 @@ type SectionId = "featured" | "automotive" | "social" | "contact";
 
 const NAV_ITEMS: { key: string; label: string; id: SectionId }[] = [
   { key: "F", label: "FEATURED", id: "featured" },
-  { key: "A", label: "AUTOMOTIVE", id: "automotive" },
+  { key: "A", label: "3D & ENVIRONMENTS", id: "automotive" },
   { key: "S", label: "SOCIAL", id: "social" },
   { key: "C", label: "CONTACT", id: "contact" },
 ];
@@ -181,7 +181,7 @@ export function PortfolioBlueprint({ articles, transmissions }: PortfolioBluepri
         <div className="bp-titleblock">
           <div className="bp-titleblock-cell">
             <div className="bp-titleblock-label">DRAWN BY</div>
-            <div className="bp-titleblock-value">B. FLOSZ</div>
+            <div className="bp-titleblock-value">BENCE FLOSZ</div>
           </div>
           <div className="bp-titleblock-cell">
             <div className="bp-titleblock-label">STUDIO</div>

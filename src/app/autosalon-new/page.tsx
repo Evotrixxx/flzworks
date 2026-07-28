@@ -8,7 +8,11 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "FLZ | Portfolio (Draft)",
-  description: "FLZ portfolio for game development, 3D modeling, automotive design, web development, and digital art.",
+  description: "FLZ portfolio for game development, 3D environment & world building, web development, and digital art.",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function AutosalonNewPage() {

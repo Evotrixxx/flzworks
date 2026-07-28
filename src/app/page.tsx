@@ -8,11 +8,11 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "FLZ — Bence Flosz",
   description:
-    "Indie Game Developer, 3D Artist & Backend Engineer based in Budapest. Building a 4-player co-op liminal/dreamcore game with Godot + Blender.",
+    "Gazdaságinformatikus (BGE), Indie Game Developer & Studio Founder, Backend Developer based in Budapest. Building a 4-player co-op liminal game with Godot + Blender.",
   openGraph: {
     title: "FLZ — Bence Flosz",
     description:
-      "Indie Game Developer, 3D Artist & Backend Engineer. Building liminal dreamcore games.",
+      "Gazdaságinformatikus (BGE), Indie Game Developer & Studio Founder, Backend Developer.",
     url: "https://flz.works",
     siteName: "FLZ Works",
     type: "website",
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary",
     title: "FLZ — Bence Flosz",
-    description: "Indie Game Developer · 3D Artist · Backend Engineer · Budapest",
+    description: "Gazdaságinformatikus (BGE) · Indie Game Developer & Studio Founder · Backend Developer",
   },
 };
 

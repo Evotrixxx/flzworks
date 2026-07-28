@@ -251,7 +251,7 @@ async function sendWithBrevo(email: BuiltAccessRequestEmail) {
 
 export async function sendContactEmail(request: { name?: string; email?: string; message: string }) {
   const fromEmail = process.env.BREVO_FROM?.trim() || process.env.GMAIL_SMTP_USER?.trim() || process.env.RESEND_FROM?.trim() || "noreply@flz.works";
-  const toEmail = "7bfloszb@gmail.com";
+  const toEmail = "floszbeni@gmail.com";
 
   const built = {
     from: fromEmail,

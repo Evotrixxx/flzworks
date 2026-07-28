@@ -7,7 +7,7 @@ import type { PortfolioArticleWithImages } from "@/lib/portfolio-sync";
 import { Image as ImageIcon, X } from "lucide-react";
 
 const CATEGORY_LABELS: Record<string, string> = {
-  CAR_DESIGN: "Automotive",
+  CAR_DESIGN: "3D & Environments",
   BRICKWORKS: "Brickworks",
   GAMES: "Games",
   MEDIA: "Media",
@@ -87,12 +87,15 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
     const vcard = [
       "BEGIN:VCARD",
       "VERSION:3.0",
-      "N:Flosz;Bence;;;",
+      "N:Flosz;Bence;Norbert;;",
       "FN:Bence Flosz",
       "ORG:FLZ Works",
-      "TITLE:3D Artist / Designer / Game Dev",
-      "EMAIL;TYPE=PREF,INTERNET:7bfloszb@gmail.com",
+      "TITLE:Gazdaságinformatikus (BGE) | Indie Game Developer & Studio Founder | Backend Developer",
+      "TEL;TYPE=CELL:+36206282353",
+      "EMAIL;TYPE=PREF,INTERNET:floszbeni@gmail.com",
       "URL:https://flz.works",
+      "X-SOCIALPROFILE;type=linkedin:https://www.linkedin.com/in/bence-flosz-56134535a/",
+      "X-SOCIALPROFILE;type=github:https://github.com/Flzvision",
       "END:VCARD"
     ].join("\n");
 
@@ -294,7 +297,7 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
                 className={`px-2 py-0.5 border border-[#dce7f5]/20 hover:border-[#dce7f5]/50 transition-colors ${selectedCategory === "AUTOMOTIVE" ? "text-[#ffd166] border-[#ffd166]" : "text-[#dce7f5]/60"
                   }`}
               >
-                [AUTOMOTIVE]
+                [3D & ENVIRONMENTS]
               </button>
             </div>
           </div>
@@ -427,7 +430,7 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
                 <span className="text-2xl font-bold tracking-wider text-[#ffd166]">LI</span>
                 <span className="text-[8px] opacity-40 mt-1">LINKEDIN PROFILE</span>
               </div>
-              <div className="bp-sheet-caption">LINKEDIN — B. FLOSZ</div>
+              <div className="bp-sheet-caption">LINKEDIN — BENCE FLOSZ</div>
             </a>
           </div>
 
@@ -532,10 +535,10 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
           <div className="bp-titleblock-value">FLZ STUDIO</div>
         </div>
         <div className="bp-titleblock-cell">
-          <div className="bp-titleblock-label">SUBMISSION</div>
+          <div className="bp-titleblock-label">GITHUB</div>
           <div className="bp-titleblock-value bp-accent">
-            <a className="bp-titleblock-link" href="https://instagram.com/flzworks" target="_blank" rel="noopener noreferrer">
-              VIA INSTAGRAM ↗
+            <a className="bp-titleblock-link" href="https://github.com/Flzvision" target="_blank" rel="noopener noreferrer">
+              GITHUB PROFILE ↗
             </a>
           </div>
         </div>
@@ -629,7 +632,7 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
                     BENCE FLOSZ
                   </h3>
                   <div className="text-[8px] font-mono tracking-wider text-[#ffd166] uppercase mb-4">
-                    3D Artist / Designer / Game Dev
+                    Gazdaságinformatikus (BGE) | Indie Game Developer & Studio Founder | Backend Developer
                   </div>
 
                   <div className="space-y-1.5 font-mono text-[8px] text-[#dce7f5]/70">

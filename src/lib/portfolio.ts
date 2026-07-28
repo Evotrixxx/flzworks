@@ -80,27 +80,27 @@ export const portfolioFocuses = [
   },
   {
     id: "automotive",
-    label: "3D Automotive Design",
-    eyebrow: "Form, stance, detail",
+    label: "3D Environment & World Building",
+    eyebrow: "Liminal spaces, dreamcore, architecture",
     icon: Wrench,
     summary:
-      "Automotive concepts with attention to stance, surfacing, wheels, lighting signatures, and believable design proportions.",
-    metrics: ["concepts", "surfacing", "visualization"],
+      "3D environments and liminal space assets built in Blender with atmospheric lighting, controlled topology, and dreamcore aesthetic.",
+    metrics: ["environments", "liminal spaces", "world building"],
     works: [
       {
         year: "2023",
-        title: "Silhouette Research",
-        description: "Profile and massing explorations for strong first-read vehicle forms.",
+        title: "Spatial Studies",
+        description: "Explorations of interior volumes, lighting signatures, and architectural massing.",
       },
       {
         year: "2025",
-        title: "Detail Language",
-        description: "Lighting, grille, aero, and wheel treatments for concept identity.",
+        title: "Liminal Assets",
+        description: "Modular environment props and level geometry designed for atmospheric games.",
       },
       {
         year: "2026",
-        title: "Automotive Scenes",
-        description: "Presentation setups that frame vehicles as design objects, not stock renders.",
+        title: "Dreamcore Scenes",
+        description: "Immersive 3D environments framing surreal and liminal game spaces.",
       },
     ],
   },
@@ -111,7 +111,7 @@ export const portfolioFocuses = [
     icon: Code2,
     summary:
       "Full-stack interfaces, dashboards, marketplaces, forms, data flows, and polished frontends with practical product behavior.",
-    metrics: ["Next.js", "Prisma", "UX systems"],
+    metrics: ["PHP", "JavaScript", "SQL"],
     works: [
       {
         year: "2024",

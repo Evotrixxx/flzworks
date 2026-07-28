@@ -108,8 +108,8 @@ const THEMES: Theme[] = [
       "--ds-blur": "16px",
       "--ds-saturate": "140%",
       "--ds-shadow": "0 16px 40px rgba(0,0,0,0.7)",
-      "--ds-font": "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
-      "--ds-font-display": "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
+      "--ds-font": "var(--font-sans), -apple-system, BlinkMacSystemFont, sans-serif",
+      "--ds-font-display": "var(--font-sans), -apple-system, BlinkMacSystemFont, sans-serif",
       "--ds-ease": "cubic-bezier(0.34, 1.56, 0.64, 1)",
     },
   },
@@ -139,8 +139,8 @@ const THEMES: Theme[] = [
       "--ds-blur": "32px",
       "--ds-saturate": "180%",
       "--ds-shadow": "0 16px 44px rgba(0,0,0,0.4)",
-      "--ds-font": "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
-      "--ds-font-display": "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
+      "--ds-font": "var(--font-sans), -apple-system, BlinkMacSystemFont, sans-serif",
+      "--ds-font-display": "var(--font-sans), -apple-system, BlinkMacSystemFont, sans-serif",
       "--ds-ease": "cubic-bezier(0.32, 0.72, 0, 1)",
     },
   },
@@ -170,8 +170,8 @@ const THEMES: Theme[] = [
       "--ds-blur": "26px",
       "--ds-saturate": "150%",
       "--ds-shadow": "0 18px 46px rgba(0,0,0,0.4)",
-      "--ds-font": "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
-      "--ds-font-display": "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
+      "--ds-font": "var(--font-sans), -apple-system, BlinkMacSystemFont, sans-serif",
+      "--ds-font-display": "var(--font-sans), -apple-system, BlinkMacSystemFont, sans-serif",
       "--ds-ease": "cubic-bezier(0.32, 0.72, 0, 1)",
     },
   },
@@ -372,7 +372,7 @@ export default function UiDesignBoard() {
       <div className="ds-hint"><span>&larr; &rarr;</span> compare styles</div>
 
       <style>{`
-        .ds-root { position: relative; width: 100%; min-height: calc(100vh - 56px); display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; background: #04040a; font-family: 'Inter', system-ui, sans-serif; }
+        .ds-root { position: relative; width: 100%; min-height: calc(100vh - 56px); display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; background: #04040a; font-family: var(--font-sans), system-ui, sans-serif; }
         .ds-ambient { position: absolute; inset: 0; z-index: 0; pointer-events: none; transition: background 0.7s ease; }
         .ds-stage { position: relative; z-index: 5; width: 100%; overflow: hidden; }
         .ds-track { display: flex; width: 100%; transition: transform 0.6s cubic-bezier(0.65, 0, 0.2, 1); will-change: transform; }
