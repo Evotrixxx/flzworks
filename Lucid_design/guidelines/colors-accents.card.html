@@ -1,0 +1,19 @@
+<!-- @dsCard group="Colors" viewport="700x160" name="Accents" subtitle="Two oklch accents, same chroma + lightness, 158° of hue apart" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; font: var(--type-body); }
+  .card { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .lbl { font: var(--type-caption); letter-spacing: var(--tracking-caption); text-transform: uppercase; color: var(--text-muted); }
+  .mono { font: var(--type-meta); color: var(--text-secondary); }
+  .sw { width: 78px; display: flex; flex-direction: column; gap: 6px; }
+  .chip { height: 54px; border-radius: var(--radius-sm); box-shadow: inset 0 0 0 1px var(--border-hairline); }
+  .stage { border-radius: var(--radius-lg); padding: 22px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .dusk { background: var(--backdrop-dusk); }
+  .interior { background: var(--backdrop-interior); }
+  
+</style></head><body>
+<div class="card"><div class="row">
+<div class="sw" style="width:150px"><div class="chip" style="background:var(--accent-warm)"></div><span class="lbl">accent-warm</span><span class="mono" style="font-size:9px">oklch(0.82 0.055 74)</span></div><div class="sw" style="width:150px"><div class="chip" style="background:var(--accent-cool)"></div><span class="lbl">accent-cool</span><span class="mono" style="font-size:9px">oklch(0.82 0.055 232)</span></div><div class="sw" style="width:150px"><div class="chip" style="background:var(--accent-warm-deep)"></div><span class="lbl">accent-warm-deep</span><span class="mono" style="font-size:9px">oklch(0.62 0.055 74)</span></div><div class="sw" style="width:150px"><div class="chip" style="background:var(--accent-cool-deep)"></div><span class="lbl">accent-cool-deep</span><span class="mono" style="font-size:9px">oklch(0.62 0.055 232)</span></div>
+</div><span class="mono">Accents appear as focus rings, ring charts and avatar fills only — never as surface fills.</span></div></body></html>

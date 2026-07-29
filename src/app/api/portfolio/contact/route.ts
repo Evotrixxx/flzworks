@@ -30,10 +30,10 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ success: true, sent: result.sent });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Failed to send contact email:", error);
     return NextResponse.json(
-      { error: error?.message || "Internal server error" },
+      { error: error instanceof Error ? error.message : "Internal server error" },
       { status: 500 }
     );
   }

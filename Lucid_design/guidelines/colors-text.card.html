@@ -1,0 +1,25 @@
+<!-- @dsCard group="Colors" viewport="700x170" name="Text on light / on dark" subtitle="Text colours are colour-mixed alphas of ink and cream, not separate greys" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; font: var(--type-body); }
+  .card { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .lbl { font: var(--type-caption); letter-spacing: var(--tracking-caption); text-transform: uppercase; color: var(--text-muted); }
+  .mono { font: var(--type-meta); color: var(--text-secondary); }
+  .sw { width: 78px; display: flex; flex-direction: column; gap: 6px; }
+  .chip { height: 54px; border-radius: var(--radius-sm); box-shadow: inset 0 0 0 1px var(--border-hairline); }
+  .stage { border-radius: var(--radius-lg); padding: 22px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .dusk { background: var(--backdrop-dusk); }
+  .interior { background: var(--backdrop-interior); }
+  
+</style></head><body>
+<div class="card" style="flex-direction:row;gap:12px">
+<div style="flex:1;background:var(--surface-page);border-radius:var(--radius-md);padding:16px;display:flex;flex-direction:column;gap:6px">
+<span style="font:var(--type-subtitle)">Primary — ink 900</span>
+<span style="color:var(--text-secondary)">Secondary — 62% ink</span>
+<span style="color:var(--text-muted)">Muted — 42% ink</span></div>
+<div style="flex:1;background:var(--surface-inverse);border-radius:var(--radius-md);padding:16px;display:flex;flex-direction:column;gap:6px">
+<span style="font:var(--type-subtitle);color:var(--text-on-dark)">On dark — cream 25</span>
+<span style="color:var(--text-on-dark-muted)">On dark muted — 58% cream</span></div>
+</div></body></html>

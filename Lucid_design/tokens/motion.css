@@ -1,0 +1,11 @@
+:root {
+  --ease-glass: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-inout: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast: 140ms;
+  --dur-med: 260ms;
+  --dur-slow: 420ms;
+  --transition-control: background var(--dur-fast) var(--ease-inout),
+    box-shadow var(--dur-med) var(--ease-glass),
+    transform var(--dur-fast) var(--ease-glass),
+    color var(--dur-fast) var(--ease-inout);
+}

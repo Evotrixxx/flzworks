@@ -585,10 +585,13 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
               style={{ backgroundColor: "#ffffff" }}
               className="p-3 flex flex-col items-center justify-center shrink-0 w-full md:w-auto bp-namecard-qr-aside"
             >
-              <img
+              <Image
                 src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://flz.works"
                 alt="QR Code flz.works"
+                width={300}
+                height={300}
                 className="w-full h-auto md:h-full md:w-auto object-contain max-w-full"
+                unoptimized
               />
             </div>
 
@@ -610,7 +613,7 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
 
               {/* Blueprint Header */}
               <div className="border-b pb-4 mb-4 font-mono text-[9px] tracking-widest text-[#ffd166] flex justify-between bp-namecard-header">
-                <span>FLZ WORKS // IDENTITY CARD</span>
+                <span>{"FLZ WORKS // IDENTITY CARD"}</span>
               </div>
 
               {/* Card Body */}

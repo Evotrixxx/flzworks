@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     return htmlResponse("Approval unavailable", "This approval link is expired, invalid, or already used.", 410);
   }
 
-  if (!ALLOWED_INTRANET_MODULES.includes(accessRequest.module as any)) {
+  if (!ALLOWED_INTRANET_MODULES.includes(accessRequest.module as IntranetModule)) {
     return htmlResponse("Approval unavailable", "This approval link targets an unsupported intranet module.", 400);
   }
 

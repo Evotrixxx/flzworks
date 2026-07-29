@@ -1,0 +1,3 @@
+/* Webfonts are loaded from Google Fonts. Archivo = display + UI; IBM Plex Mono = labels/meta.
+   If you need self-hosted binaries, drop them in assets/fonts/ and replace the src urls below. */
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap");

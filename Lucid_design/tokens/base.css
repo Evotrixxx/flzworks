@@ -1,0 +1,14 @@
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  font: var(--type-body);
+  letter-spacing: var(--tracking-tight);
+  color: var(--text-primary);
+  background: var(--surface-page);
+  -webkit-font-smoothing: antialiased;
+  text-wrap: pretty;
+}
+a { color: var(--ink-900); text-decoration: none; border-bottom: 1px solid var(--border-hairline); }
+a:hover { color: var(--accent-warm-deep); border-bottom-color: currentColor; }
+button { font: inherit; }
+::selection { background: var(--accent-warm); color: var(--ink-900); }

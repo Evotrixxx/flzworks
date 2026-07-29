@@ -60,3 +60,8 @@ build*.log
 build_out.log
 
 .claude/launch.json
+
+# Local scratch backups
+local_changes_backup/
+.agents/teamwork_preview_*
+.agents/victory_auditor_gen2/

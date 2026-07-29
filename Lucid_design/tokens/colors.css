@@ -1,0 +1,55 @@
+:root {
+  /* ---- Warm neutral ramp (the whole system lives here) ---- */
+  --ink-1000: #0C0B09;
+  --ink-900: #14120F;
+  --ink-800: #1F1D19;
+  --ink-700: #2C2925;
+  --ink-600: #413C36;
+  --stone-500: #6B6158;
+  --stone-400: #8C8177;
+  --stone-300: #A99E92;
+  --sand-200: #C9BFB3;
+  --sand-100: #DED6CA;
+  --cream-50: #F1EBE2;
+  --cream-25: #FAF6F0;
+  --white: #FFFFFF;
+
+  /* ---- Accents: identical chroma + lightness, hue apart ---- */
+  --accent-warm: oklch(0.82 0.055 74);   /* low sun / ivory glow */
+  --accent-cool: oklch(0.82 0.055 232);  /* sky through glass */
+  --accent-warm-deep: oklch(0.62 0.055 74);
+  --accent-cool-deep: oklch(0.62 0.055 232);
+
+  /* ---- Semantic aliases ---- */
+  --text-primary: var(--ink-900);
+  --text-secondary: color-mix(in oklab, var(--ink-900) 62%, transparent);
+  --text-muted: color-mix(in oklab, var(--ink-900) 42%, transparent);
+  --text-on-dark: var(--cream-25);
+  --text-on-dark-muted: color-mix(in oklab, var(--cream-25) 58%, transparent);
+
+  --surface-page: var(--cream-50);
+  --surface-solid: var(--white);
+  --surface-inverse: var(--ink-900);
+  --surface-sunken: color-mix(in oklab, var(--ink-900) 6%, transparent);
+
+  --border-hairline: color-mix(in oklab, var(--ink-900) 12%, transparent);
+  --border-on-dark: color-mix(in oklab, var(--white) 16%, transparent);
+
+  --status-positive: oklch(0.68 0.09 148);
+  --status-caution: oklch(0.75 0.11 78);
+  --status-critical: oklch(0.6 0.13 25);
+
+  /* ---- Backdrops. Glass needs something to refract; these stand in for photography. ---- */
+  --backdrop-dusk:
+    radial-gradient(120% 90% at 18% 8%, #6E7C8C 0%, transparent 58%),
+    radial-gradient(90% 70% at 82% 6%, #C9A98A 0%, transparent 55%),
+    radial-gradient(120% 100% at 50% 100%, #2A211A 0%, transparent 60%),
+    linear-gradient(180deg, #46464C 0%, #7A6353 44%, #3A2E25 100%);
+  --backdrop-interior:
+    radial-gradient(80% 60% at 70% 20%, #C8B49C 0%, transparent 60%),
+    radial-gradient(90% 80% at 10% 90%, #2B2621 0%, transparent 55%),
+    linear-gradient(160deg, #4A423A 0%, #7C6E60 50%, #342E28 100%);
+  --backdrop-studio:
+    radial-gradient(70% 60% at 50% 25%, #FFFFFF 0%, transparent 70%),
+    linear-gradient(180deg, #EFEAE3 0%, #D8CFC4 100%);
+}

@@ -1,0 +1,43 @@
+:root {
+  /* ---- Tints: what the glass is made of ---- */
+  --glass-light: color-mix(in srgb, #FFFFFF 46%, transparent);
+  --glass-light-strong: color-mix(in srgb, #FFFFFF 68%, transparent);
+  --glass-mid: color-mix(in srgb, #F3EDE4 22%, transparent);
+  --glass-dark: color-mix(in srgb, #191713 42%, transparent);
+  --glass-dark-strong: color-mix(in srgb, #14120F 66%, transparent);
+
+  /* ---- Blur + saturation. Saturation is what stops glass looking grey. ---- */
+  --glass-blur-sm: blur(8px) saturate(150%);
+  --glass-blur-md: blur(18px) saturate(165%);
+  --glass-blur-lg: blur(32px) saturate(180%);
+  --glass-blur-xl: blur(54px) saturate(190%);
+
+  /* ---- Edges ---- */
+  --glass-edge-light: 1px solid color-mix(in srgb, #FFFFFF 55%, transparent);
+  --glass-edge-mid: 1px solid color-mix(in srgb, #FFFFFF 30%, transparent);
+  --glass-edge-dark: 1px solid color-mix(in srgb, #FFFFFF 12%, transparent);
+
+  /* ---- Inner glow + specular: the two shadows that make it read as thick glass ---- */
+  --glass-inner-light:
+    inset 0 1px 0 color-mix(in srgb, #FFFFFF 80%, transparent),
+    inset 0 -1px 1px color-mix(in srgb, #FFFFFF 28%, transparent),
+    inset 0 0 24px color-mix(in srgb, #FFFFFF 18%, transparent);
+  --glass-inner-dark:
+    inset 0 1px 0 color-mix(in srgb, #FFFFFF 22%, transparent),
+    inset 0 -1px 1px color-mix(in srgb, #FFFFFF 8%, transparent),
+    inset 0 0 32px color-mix(in srgb, #000000 22%, transparent);
+
+  --glass-specular: linear-gradient(
+    180deg,
+    color-mix(in srgb, #FFFFFF 42%, transparent) 0%,
+    color-mix(in srgb, #FFFFFF 6%, transparent) 26%,
+    transparent 52%,
+    color-mix(in srgb, #FFFFFF 12%, transparent) 100%);
+
+  /* ---- Cast shadows: long, soft, warm-black. Never neutral grey. ---- */
+  --shadow-sm: 0 2px 8px -2px color-mix(in srgb, #14120F 28%, transparent);
+  --shadow-md: 0 12px 28px -10px color-mix(in srgb, #14120F 38%, transparent);
+  --shadow-lg: 0 28px 64px -20px color-mix(in srgb, #14120F 48%, transparent);
+  --shadow-float: 0 40px 90px -28px color-mix(in srgb, #14120F 55%, transparent);
+  --shadow-inset-press: inset 0 2px 6px color-mix(in srgb, #14120F 22%, transparent);
+}

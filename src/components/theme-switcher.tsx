@@ -18,7 +18,7 @@ export function ThemeSwitcher() {
     try {
       const saved = localStorage.getItem("autopiac.palette");
       if (saved) setCurrentPalette(saved);
-    } catch (e) {}
+    } catch {}
   }, []);
 
   const changePalette = (id: string) => {
@@ -26,7 +26,7 @@ export function ThemeSwitcher() {
     document.documentElement.dataset.themePalette = id;
     try {
       localStorage.setItem("autopiac.palette", id);
-    } catch (e) {}
+    } catch {}
     setIsOpen(false);
   };
 

@@ -35,7 +35,13 @@ export function MagazineAdmin({ initialArticles, locale }: MagazineAdminProps) {
     visible: boolean;
     category: string;
   }>>(() => {
-    const initialValues: Record<string, any> = {};
+    const initialValues: Record<string, {
+      title: string;
+      date: string;
+      description: string;
+      visible: boolean;
+      category: string;
+    }> = {};
     initialArticles.forEach((article) => {
       initialValues[article.id] = {
         title: article.title,
@@ -48,7 +54,7 @@ export function MagazineAdmin({ initialArticles, locale }: MagazineAdminProps) {
     return initialValues;
   });
 
-  const handleInputChange = (id: string, field: string, value: any) => {
+  const handleInputChange = (id: string, field: string, value: string | boolean) => {
     setFormValues((prev) => ({
       ...prev,
       [id]: {

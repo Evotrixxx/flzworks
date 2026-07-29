@@ -1,0 +1,20 @@
+:root {
+  --space-1: 2px;  --space-2: 4px;  --space-3: 6px;  --space-4: 8px;
+  --space-5: 12px; --space-6: 16px; --space-7: 20px; --space-8: 24px;
+  --space-9: 32px; --space-10: 40px; --space-11: 56px; --space-12: 72px;
+
+  /* Radii: glass is always generously rounded. Pill is the default for controls. */
+  --radius-pill: 999px;
+  --radius-xl: 32px;
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --radius-sm: 10px;
+  --radius-xs: 6px;
+
+  --control-h-lg: 48px;
+  --control-h-md: 38px;
+  --control-h-sm: 30px;
+
+  --panel-pad: 24px;
+  --panel-gap: 16px;
+}

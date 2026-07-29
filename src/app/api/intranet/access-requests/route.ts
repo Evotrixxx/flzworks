@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getClientIpFromHeaders } from "@/lib/intranet";
 import { createOpaqueToken, hashOpaqueToken } from "@/lib/intranet-token";
 import { sendAccessRequestEmail } from "@/lib/mailer";
-import { AUTOPIAC_INTRANET_MODULE, ALLOWED_INTRANET_MODULES } from "@/lib/routes";
+import { AUTOPIAC_INTRANET_MODULE, ALLOWED_INTRANET_MODULES, type IntranetModule } from "@/lib/routes";
 import { intranetAccessRequestSchema } from "@/lib/validation";
 
 const REQUEST_TTL_MS = 1000 * 60 * 60 * 24;
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
   }
 
   const requestModule = parsed.data.module || AUTOPIAC_INTRANET_MODULE;
-  if (!ALLOWED_INTRANET_MODULES.includes(requestModule as any)) {
+  if (!ALLOWED_INTRANET_MODULES.includes(requestModule as IntranetModule)) {
     return NextResponse.json({ error: "Invalid module specified." }, { status: 400 });
   }
 

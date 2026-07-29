@@ -1,0 +1,27 @@
+<!-- @dsCard group="Motion" viewport="700x170" name="Easing & duration" subtitle="One expressive ease-out for glass; press is scale, never colour" -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; font: var(--type-body); }
+  .card { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .lbl { font: var(--type-caption); letter-spacing: var(--tracking-caption); text-transform: uppercase; color: var(--text-muted); }
+  .mono { font: var(--type-meta); color: var(--text-secondary); }
+  .sw { width: 78px; display: flex; flex-direction: column; gap: 6px; }
+  .chip { height: 54px; border-radius: var(--radius-sm); box-shadow: inset 0 0 0 1px var(--border-hairline); }
+  .stage { border-radius: var(--radius-lg); padding: 22px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .dusk { background: var(--backdrop-dusk); }
+  .interior { background: var(--backdrop-interior); }
+  
+@keyframes drift { 0%,12% { transform: translateX(0) } 60%,88% { transform: translateX(150px) } 100% { transform: translateX(0) } }
+.dot { width:34px;height:34px;border-radius:999px;background:var(--ink-900);animation:drift 3.4s var(--ease-glass) infinite }
+.dot.b { background:var(--stone-400);animation-timing-function:var(--ease-inout) }
+
+</style></head><body>
+<div class="card">
+<div style="display:flex;flex-direction:column;gap:10px">
+<span class="lbl">--ease-glass · cubic-bezier(.22,1,.36,1)</span><div class="dot"></div>
+<span class="lbl">--ease-inout · cubic-bezier(.4,0,.2,1)</span><div class="dot b"></div>
+</div>
+<span class="mono">140ms hover · 260ms surface · 420ms reveal</span>
+</div></body></html>

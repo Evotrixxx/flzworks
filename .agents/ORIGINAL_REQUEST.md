@@ -1,40 +1,36 @@
 # Original User Request
 
-## Initial Request — 2026-06-29T10:57:56Z
+## 2026-07-28T15:16:57Z
 
-Redesign the live portfolio website to be a 1:1 implementation of the approved design mockup draft (redesign-mockup.html).
+Execute a comprehensive design, alignment, and profile-fidelity audit over the FLZ portfolio surface of the Next.js codebase based on AUDIT_PLAN.md and C:\Ai_source\FLZ_profil\PROFILE.md.
 
-Working directory: c:\Users\7bflo\OneDrive\Dokumentumok\used car marketplace
+Working directory: g:/Saját meghajtó/used car marketplace
 Integrity mode: development
 
 ## Requirements
 
-### R1. 1:1 Visual Alignment & Layout
-Implement all remaining design elements from [redesign-mockup.html](file:///C:/Users/7bflo/.gemini/antigravity/brain/a7266465-1f24-4c87-b940-f8080640ee04/redesign-mockup.html) that are not yet fully implemented on the live site.
-- Switch the primary sans-serif font from `Geist` to `Inter` (import via `next/font/google` in `layout.tsx` to match the mockup 1:1).
-- Remove all legacy cyan/purple/neon background blobs, glow effects, and colorful gradients. Make the page 100% cold monochrome slate/black/white.
-- Add the animated film grain noise effect globally across the entire site (applied to all pages, including admin/dashboard views).
-- Maintain the 3D parallax background functionality exactly as it is, ensuring it remains fully operational.
+### R1. Portfolio Surface Audit & PROFILE.md Alignment
+Inspect and update the portfolio surface (src/components/lucid-landing.tsx, src/app/page.tsx, src/app/layout.tsx, src/app/globals.css, /studio, /id, /autosalon) so all personal details, timeline dates, education, contact info, and tech stack match PROFILE.md with 100% fidelity. Do NOT touch the intranet/autopiac used-car marketplace.
 
-### R2. Core Theme Styling
-Ensure all components (buttons, links, borders, cards, and text) strictly adhere to the cold monochrome palette (pure black backgrounds, ice white typography, slate borders).
+### R2. Design & Liquid-Glass System Tightening
+Eliminate FOUC by moving runtime <style> injection (CSS_KEYFRAMES / StyleInjector) into globals.css. Consolidate token layers, normalise glass panel border-radii (12px / 16px / 24px), verify WCAG AA contrast (≥ 4.5:1), letter-spacing (0.12-0.13em), font-feature-settings for stats, and prefers-reduced-motion media query wrapping.
 
-## Verification Plan
+### R3. Cross-Route Consistency & Metadata
+Ensure /, /studio, /id, /autosalon, and /autosalon-new share uniform fonts, headers, footers, and metadata descriptions. Split personal portfolio metadata from AutoPiac intranet copy. Fix <noscript> fallbacks and ensure correct indexability (robots/sitemap).
 
-### Automated Tests
-- Run `npm run typecheck` to verify TypeScript compilation.
-- Run `npm run build` to verify the production build succeeds.
-
-### Manual Verification
-- Verify that `globals.css` contains the global film grain noise effect (`body::after` with keyframes).
-- Verify that `layout.tsx` imports `Inter` and uses its variable.
-- Verify that all background blobs or inline color styles have been removed from `portfolio-onepager.tsx`.
+### R4. Audit Deliverables
+Generate AUDIT_FINDINGS.md at the repository root summarizing issues found, severity (P0/P1/P2), and resolution status.
 
 ## Acceptance Criteria
 
-### Visual Fidelity
-- [ ] Animated film grain noise is active globally across all pages.
-- [ ] The font family for all sans-serif text is `Inter`.
-- [ ] No cyan, purple, or other color accents/glows remain in the CSS or on the rendered pages.
-- [ ] Visual margins, padding, and layout spacing match the mockup precisely.
-- [ ] The 3D parallax background remains fully functional.
+### Content & Profile Fidelity
+- [ ] Name Flosz Bence Norbert (or Bence Flosz), roles, BGE studies, and experience timeline match PROFILE.md.
+- [ ] Contact links (Email, LinkedIn, GitHub) are verified and present across portfolio routes.
+- [ ] No intranet/autopiac copy in portfolio <noscript> or site metadata.
+
+### Design System & Accessibility
+- [ ] StyleInjector removed; CSS_KEYFRAMES integrated cleanly in CSS stylesheet layer.
+- [ ] No horizontal scroll at 320px, 375px, 768px, 1024px, 1280px, 1440px, or 1920px viewports.
+- [ ] Keyframe animations respect prefers-reduced-motion.
+- [ ] Text contrast ratios satisfy WCAG 2.1 AA (≥ 4.5:1 for normal text).
+- [ ] AUDIT_FINDINGS.md created at repo root listing all P0 and P1 audit items.

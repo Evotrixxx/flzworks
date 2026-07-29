@@ -13,7 +13,7 @@ const DS_TOKENS = `
 
     --flz-text-primary: #F4F2EF;
     --flz-text-secondary: rgba(244,242,239,0.62);
-    --flz-text-muted: rgba(244,242,239,0.42);
+    --flz-text-muted: rgba(244,242,239,0.55);
 
     --flz-glass-fill: rgba(255,255,255,0.08);
     --flz-glass-fill-raised: rgba(255,255,255,0.14);
@@ -43,6 +43,9 @@ const DS_TOKENS = `
     --flz-fw-medium: 500;
     --flz-fw-semibold: 600;
 
+    --flz-radius-sm: 12px;
+    --flz-radius-md: 20px;
+    --flz-radius-lg: 28px;
     --flz-radius-pill: 999px;
     --flz-ease-glass: cubic-bezier(.22,1,.36,1);
     --flz-ease-std: cubic-bezier(.4,0,.2,1);
@@ -65,8 +68,51 @@ const DS_TOKENS = `
     50%  { transform: translate3d(60px,-70px,0) scale(1.2); }
     100% { transform: translate3d(0,0,0) scale(.96); }
   }
+  /* ── Entrance / transition motion ──────────────────────────────────────── */
+  @keyframes flz-rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+  }
+  @keyframes flz-tile-in {
+    from { opacity: 0; transform: translateY(10px) scale(.985); }
+    to   { opacity: 1; transform: none; }
+  }
+  @keyframes flz-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes flz-modal-in {
+    from { opacity: 0; transform: translateY(10px) scale(.97); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* Staggered section reveal on mount */
+  .flz-enter {
+    animation: flz-rise .52s var(--flz-ease-glass) both;
+    animation-delay: var(--flz-delay, 0ms);
+  }
+  /* Routing-well swap between work / search */
+  .flz-view {
+    animation: flz-rise .34s var(--flz-ease-glass) both;
+  }
+  /* Grid tiles — re-staggers when the filter changes */
+  .flz-tile-in {
+    animation: flz-tile-in .46s var(--flz-ease-glass) both;
+    animation-delay: var(--flz-delay, 0ms);
+  }
+  .flz-backdrop { animation: flz-fade-in .2s var(--flz-ease-std) both; }
+  .flz-modal    { animation: flz-modal-in .28s var(--flz-ease-glass) both; }
+
   @media (prefers-reduced-motion: reduce) {
     .flz-orb { animation-duration: 1ms !important; animation-iteration-count: 1 !important; }
+    .flz-enter, .flz-view, .flz-tile-in, .flz-backdrop, .flz-modal {
+      animation-duration: 1ms !important;
+      animation-delay: 0ms !important;
+    }
+    .flz-tile, .flz-tile-arr, .flz-railbtn, .flz-chip, .flz-iconbtn, .flz-btn-solid {
+      transition-duration: 1ms !important;
+    }
+    .flz-tile:hover, .flz-railbtn:hover, .flz-tile:hover .flz-tile-arr { transform: none; }
   }
 
   .flz-tile { cursor: pointer; transition: transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s cubic-bezier(.22,1,.36,1); }
@@ -117,9 +163,15 @@ const DS_TOKENS = `
 
   .flz-stat-tile {
     display: flex; flex-direction: column; justify-content: space-between;
-    padding: 12px 14px; border-radius: 16px;
-    background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.18);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.22);
+    padding: 12px 14px; border-radius: var(--flz-radius-md);
+    background: #1c1a17; border: 1px solid rgba(255,255,255,.10);
+  }
+
+  .flz-iconbtn:focus-visible,
+  .flz-chip:focus-visible,
+  .flz-btn-solid:focus-visible {
+    outline: 2px solid rgba(255,255,255,.6);
+    outline-offset: 2px;
   }
 
   .flz-badge {
@@ -132,6 +184,110 @@ const DS_TOKENS = `
   }
   .flz-badge-dot {
     width: 6px; height: 6px; border-radius: 50%; background: #4ade80; flex-shrink: 0;
+  }
+
+  /* ── Mobile layout ─────────────────────────────────────────────────────── */
+  @media (max-width: 640px) {
+    /* Root: allow scroll on mobile */
+    .flz-hub-root { overflow: visible !important; }
+    /* Content wrapper: stack vertically, tight padding, room for bottom bar */
+    .flz-content {
+      flex-direction: column !important;
+      padding: 24px 16px 88px !important;
+      gap: 16px !important;
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+    /* IconRail → fixed bottom bar */
+    .flz-rail {
+      position: fixed !important;
+      bottom: 0; left: 0; right: 0;
+      z-index: 40;
+      width: auto !important;
+      flex-direction: row !important;
+      align-self: stretch !important;
+      border-radius: 0 !important;
+      padding: 10px 0 max(10px, env(safe-area-inset-bottom)) !important;
+      justify-content: center;
+      gap: 20px !important;
+    }
+    /* MainSlab: full-bleed, tighter padding */
+    .flz-slab {
+      border-radius: 20px !important;
+      padding: 20px !important;
+      gap: 18px !important;
+      min-height: 0 !important;
+      overflow: visible !important;
+    }
+    /* Hero row: stack headline + stats */
+    .flz-hero {
+      flex-direction: column !important;
+      gap: 18px !important;
+      align-items: flex-start !important;
+    }
+    /* Don't let the headline stretch */
+    .flz-hero > *:first-child {
+      flex: none !important;
+    }
+    /* Stat tiles: equal-width row */
+    .flz-stats {
+      width: 100%;
+      flex-shrink: 1 !important;
+      gap: 8px !important;
+    }
+    .flz-stat-tile {
+      width: 0 !important;
+      height: auto !important;
+      min-width: 0 !important;
+      padding: 10px 10px !important;
+      flex: 1 1 0% !important;
+      aspect-ratio: 1;
+    }
+    /* Filter chips: horizontal scroll */
+    .flz-filters {
+      flex-wrap: nowrap !important;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .flz-filters::-webkit-scrollbar { display: none; }
+    /* Main content area: stack grid + right column */
+    .flz-main-area {
+      flex-direction: column !important;
+      gap: 18px !important;
+      min-height: auto !important;
+      flex: none !important;
+      overflow: visible !important;
+    }
+    .flz-main-area > div:first-child {
+      overflow: visible !important;
+      min-height: auto !important;
+      flex: none !important;
+    }
+    /* Project grid: 2 columns, auto rows */
+    .flz-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+      grid-template-rows: auto auto auto !important;
+      gap: 10px !important;
+    }
+    /* Right column: full width, stack */
+    .flz-sidebar {
+      width: 100% !important;
+      flex-direction: column !important;
+      height: auto !important;
+    }
+    /* Featured card: minimum height for the image */
+    .flz-featured { min-height: 220px !important; flex: none !important; }
+    /* Contact modal: near-full-width */
+    .flz-modal { width: calc(100vw - 32px) !important; max-width: 560px !important; }
+    /* Contact modal close button: keep inside viewport */
+    .flz-modal-close { top: -10px !important; right: -4px !important; }
+    /* Pager row header: wrap */
+    .flz-pager-row { flex-wrap: wrap; gap: 10px !important; }
+    .flz-pager-row .flz-iconbtn.glass { width: 28px !important; height: 28px !important; }
+    /* ContactCard internals: stack on mobile */
+    .flz-contact-inner { flex-direction: column !important; }
+    .flz-contact-qr { width: 100% !important; flex-direction: row !important; padding: 10px 14px !important; border-radius: 12px !important; }
   }
 `;
 
@@ -176,11 +332,16 @@ const IconNE = () => (
   </svg>
 );
 
+type ActiveView = "work" | "search";
+
 // ── Sub-components ────────────────────────────────────────────────────────────
-function IconRail() {
+function IconRail({ activeView, setActiveView, contactOpen, setContactOpen }: {
+  activeView: ActiveView; setActiveView: (v: ActiveView) => void;
+  contactOpen: boolean; setContactOpen: (v: boolean) => void;
+}) {
   const railStyle: React.CSSProperties = {
-    position: "relative", flexShrink: 0, width: 64, alignSelf: "center",
-    padding: 8, display: "flex", flexDirection: "column", gap: 12, alignItems: "center",
+    position: "relative", flexShrink: 0, width: 48, alignSelf: "center",
+    padding: 8, display: "flex", flexDirection: "column", gap: 8, alignItems: "center",
     borderRadius: 999,
     background: "var(--flz-glass-fill-raised)",
     border: "var(--flz-glass-border)",
@@ -189,22 +350,124 @@ function IconRail() {
     WebkitBackdropFilter: `blur(var(--flz-blur-xl)) saturate(var(--flz-saturate)) brightness(1.06)`,
   };
   return (
-    <div style={railStyle}>
+    <div className="flz-rail" style={railStyle}>
       <div style={{ position: "absolute", inset: 0, borderRadius: "inherit", pointerEvents: "none", background: "linear-gradient(180deg,rgba(255,255,255,.24) 0%,rgba(255,255,255,0) 14%),linear-gradient(0deg,rgba(255,255,255,.14) 0%,rgba(255,255,255,0) 12%)" }} />
-      <span className="flz-railbtn"><button className="flz-iconbtn solid" aria-label="Work"><IconGrid /></button></span>
-      <span className="flz-railbtn"><button className="flz-iconbtn ghost" aria-label="Search"><IconSearch /></button></span>
-      <span className="flz-railbtn"><button className="flz-iconbtn ghost" aria-label="Messages"><IconMail /></button></span>
+      <span className="flz-railbtn"><button className={`flz-iconbtn ${activeView === "work" ? "solid" : "ghost"}`} aria-label="Work" onClick={() => setActiveView("work")}><IconGrid /></button></span>
+      <span className="flz-railbtn"><button className={`flz-iconbtn ${activeView === "search" ? "solid" : "ghost"}`} aria-label="Search" onClick={() => setActiveView("search")}><IconSearch /></button></span>
+      <span className="flz-railbtn"><button className={`flz-iconbtn ${contactOpen ? "solid" : "ghost"}`} aria-label="Messages" onClick={() => setContactOpen(!contactOpen)}><IconMail /></button></span>
+    </div>
+  );
+}
+
+function SearchView({ allProjects }: { allProjects: typeof PROJECTS }) {
+  const [query, setQuery] = useState("");
+  const visible = query.trim()
+    ? allProjects.filter(p =>
+        p.title.toLowerCase().includes(query.toLowerCase()) ||
+        p.tools.toLowerCase().includes(query.toLowerCase()) ||
+        p.cat.toLowerCase().includes(query.toLowerCase())
+      )
+    : allProjects;
+
+  const tiles = [...visible];
+  while (tiles.length < 6) tiles.push({ id: -tiles.length, tools: "", title: "", cat: "", age: "", grad: "none" });
+
+  return (
+    <div className="flz-view" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 14, overflow: "hidden" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 20, background: "#1c1a17", border: "1px solid rgba(255,255,255,.10)" }}>
+        <IconSearch />
+        <input
+          autoFocus
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          placeholder="Search projects, tools, categories…"
+          style={{ flex: 1, background: "none", border: "none", outline: "none", font: `400 15px/1 var(--flz-font-sans)`, color: "var(--flz-text-primary)", caretColor: "var(--flz-text-primary)" }}
+        />
+        {query && (
+          <button onClick={() => setQuery("")} aria-label="Clear search" style={{ background: "none", border: "none", cursor: "pointer", color: "var(--flz-text-muted)", lineHeight: 1, width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "50%" }}>✕</button>
+        )}
+      </div>
+      <div className="flz-grid" style={{ flex: 1, minHeight: 0, display: "grid", gridTemplateColumns: "repeat(3,1fr)", gridTemplateRows: "1fr 1fr", gap: 12 }}>
+        {tiles.slice(0, 6).map((p, i) => (
+          <div
+            key={p.title ? p.id : `empty${i}`}
+            className="flz-tile-in"
+            style={{ "--flz-delay": `${i * 45}ms`, display: "flex", minWidth: 0, minHeight: 0 } as React.CSSProperties}
+          >
+            {p.title
+              ? <ProjectTile project={p as typeof PROJECTS[number]} />
+              : <div style={{ flex: 1, borderRadius: 28, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)" }} />}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ContactCard() {
+  const downloadVCard = () => {
+    const vcard = [
+      "BEGIN:VCARD", "VERSION:3.0",
+      "FN:Bence Flosz", "N:Flosz;Bence;;;",
+      "ORG:FLZ Works",
+      "TITLE:3D Artist & Game Developer",
+      "EMAIL:hi@flz.works",
+      "URL:https://flz.works",
+      "END:VCARD",
+    ].join("\n");
+    const blob = new Blob([vcard], { type: "text/vcard" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = "flz.vcf"; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 14, overflow: "hidden" }}>
+      <div style={{ font: `500 9.5px/1 var(--flz-font-mono)`, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--flz-text-muted)" }}>Contact</div>
+      <div className="flz-contact-inner" style={{ display: "flex", gap: 14, flex: 1, minHeight: 0 }}>
+        {/* ID Card */}
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 0, padding: "18px 20px", borderRadius: 20, background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.14)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.18)" }}>
+          <div style={{ font: `500 9px/1 var(--flz-font-mono)`, letterSpacing: ".1em", textTransform: "uppercase", color: "rgba(255,196,88,.8)", borderBottom: "1px solid rgba(255,255,255,.1)", paddingBottom: 12, marginBottom: 16 }}>FLZ WORKS // IDENTITY CARD</div>
+          <div style={{ display: "flex", gap: 16, alignItems: "flex-start", flex: 1 }}>
+            <div style={{ width: 72, height: 88, borderRadius: 12, background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.12)", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--flz-text-muted)", font: `400 10px/1 var(--flz-font-mono)` }}>PHOTO</div>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
+              {[
+                ["NAME", "Bence Flosz"],
+                ["HANDLE", "@flz"],
+                ["ROLE", "3D Artist & Game Dev"],
+                ["EMAIL", "hi@flz.works"],
+                ["WEB", "flz.works"],
+              ].map(([label, value]) => (
+                <div key={label}>
+                  <div style={{ font: `500 8.5px/1 var(--flz-font-mono)`, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--flz-text-muted)", marginBottom: 2 }}>{label}</div>
+                  <div style={{ font: `500 13px/1 var(--flz-font-display)`, color: "var(--flz-text-primary)" }}>{value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <button onClick={downloadVCard} style={{ marginTop: 18, width: "100%", padding: "10px 0", background: "rgba(255,196,88,.15)", border: "1px solid rgba(255,196,88,.3)", borderRadius: 12, cursor: "pointer", font: `700 9px/1 var(--flz-font-mono)`, letterSpacing: ".1em", textTransform: "uppercase", color: "rgba(255,196,88,.9)", transition: "background .14s" }}
+            onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,196,88,.25)")}
+            onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,196,88,.15)")}
+          >[ Download vCard ]</button>
+        </div>
+        {/* QR */}
+        <div className="flz-contact-qr" style={{ flexShrink: 0, width: 120, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, padding: 12, borderRadius: 20, background: "#fff" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://flz.works" alt="QR" width={96} height={96} style={{ display: "block" }} />
+          <div style={{ font: `700 8px/1 var(--flz-font-mono)`, letterSpacing: ".08em", color: "#333", textTransform: "uppercase" }}>flz.works</div>
+        </div>
+      </div>
     </div>
   );
 }
 
 function StatTile({ label, value, unit }: { label: string; value: string; unit?: string }) {
   return (
-    <div className="flz-stat-tile" style={{ minWidth: unit ? 112 : 132 }}>
+    <div className="flz-stat-tile" style={{ width: 100, height: 100 }}>
       <div style={{ font: `500 9.5px/1 var(--flz-font-mono)`, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--flz-text-muted)", marginBottom: 6 }}>{label}</div>
       <div style={{ display: "flex", alignItems: "flex-end", gap: 3 }}>
-        <span style={{ font: `500 28px/1 var(--flz-font-display)`, letterSpacing: "-.02em", color: "var(--flz-text-primary)" }}>{value}</span>
-        {unit && <span style={{ font: `500 13px/1 var(--flz-font-sans)`, color: "var(--flz-text-secondary)", marginBottom: 2 }}>{unit}</span>}
+        <span style={{ font: `500 24px/1 var(--flz-font-display)`, letterSpacing: "-.02em", color: "var(--flz-text-primary)" }}>{value}</span>
+        {unit && <span style={{ font: `500 12px/1 var(--flz-font-sans)`, color: "var(--flz-text-secondary)", marginBottom: 2 }}>{unit}</span>}
       </div>
     </div>
   );
@@ -213,11 +476,11 @@ function StatTile({ label, value, unit }: { label: string; value: string; unit?:
 function ProjectTile({ project }: { project: typeof PROJECTS[number] }) {
   const tileStyle: React.CSSProperties = {
     position: "relative", overflow: "hidden",
+    flex: 1, minWidth: 0, minHeight: 0,
     display: "flex", flexDirection: "column", justifyContent: "space-between",
-    padding: 15, borderRadius: 22,
-    background: "var(--flz-accent-soft)",
-    border: "1px solid var(--flz-border-glass)",
-    boxShadow: "inset 0 1px 0 rgba(255,255,255,.34),inset 0 -1px 0 rgba(255,255,255,.12),inset 0 0 20px rgba(255,255,255,.05)",
+    padding: 15, borderRadius: 28,
+    background: "#1c1a17",
+    border: "1px solid rgba(255,255,255,.10)",
     textDecoration: "none", color: "inherit",
   };
   return (
@@ -240,32 +503,23 @@ function MainSlab({
   activeFilter,
   setActiveFilter,
   visibleProjects,
+  activeView,
 }: {
   daysBuilding: string;
   activeFilter: string;
   setActiveFilter: (f: string) => void;
   visibleProjects: typeof PROJECTS;
+  activeView: ActiveView;
 }) {
   const slabStyle: React.CSSProperties = {
     position: "relative", flex: 1, minWidth: 0,
-    display: "flex", flexDirection: "column", gap: 16,
-    padding: "26px 28px", boxSizing: "border-box",
-    borderRadius: 36,
-    background: "var(--flz-glass-fill-raised)",
-    border: "var(--flz-glass-border)",
-    boxShadow: "inset 0 1px 0 rgba(255,255,255,.55),inset 0 -1px 0 rgba(255,255,255,.24),inset 1px 0 0 rgba(255,255,255,.16),inset -1px 0 0 rgba(255,255,255,.16),var(--flz-glass-inner-glow),var(--flz-shadow-xl)",
-    backdropFilter: `blur(var(--flz-blur-xl)) saturate(var(--flz-saturate)) brightness(1.06)`,
-    WebkitBackdropFilter: `blur(var(--flz-blur-xl)) saturate(var(--flz-saturate)) brightness(1.06)`,
+    display: "flex", flexDirection: "column", gap: 22,
+    padding: 28, boxSizing: "border-box",
+    borderRadius: 28, overflow: "hidden",
   };
 
   const wellStyle: React.CSSProperties = {
-    flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 14,
-    padding: 18, borderRadius: 28,
-    background: "var(--flz-glass-fill-sunken)",
-    border: "1px solid var(--flz-border-hairline)",
-    boxShadow: "var(--flz-glass-specular)",
-    backdropFilter: `blur(var(--flz-blur-sm)) saturate(var(--flz-saturate))`,
-    WebkitBackdropFilter: `blur(var(--flz-blur-sm)) saturate(var(--flz-saturate))`,
+    flex: 1, minWidth: 0, minHeight: 0, overflow: "hidden", display: "flex", flexDirection: "column", gap: 14,
   };
 
   // Pad to 6 tiles (show empty placeholders)
@@ -273,70 +527,79 @@ function MainSlab({
   while (tiles.length < 6) tiles.push({ id: -tiles.length, tools: "", title: "", cat: "", age: "", grad: "none" });
 
   return (
-    <div style={slabStyle}>
-      {/* Glass optics overlays */}
-      <div style={{ position: "absolute", inset: 0, borderRadius: "inherit", pointerEvents: "none", zIndex: 3, background: "linear-gradient(180deg,rgba(255,255,255,.22) 0%,rgba(255,255,255,.05) 7%,rgba(255,255,255,0) 22%),linear-gradient(0deg,rgba(255,255,255,.13) 0%,rgba(255,255,255,0) 10%),linear-gradient(105deg,rgba(255,255,255,.1) 0%,rgba(255,255,255,0) 26%)" }} />
-      <div style={{ position: "absolute", top: -16, left: "6%", width: 190, height: 52, borderRadius: "50%", background: "radial-gradient(closest-side,rgba(255,255,255,.6),rgba(255,255,255,0))", filter: "blur(11px)", pointerEvents: "none", zIndex: 3 }} />
-      <div style={{ position: "absolute", bottom: -14, right: "9%", width: 230, height: 46, borderRadius: "50%", background: "radial-gradient(closest-side,rgba(255,255,255,.42),rgba(255,255,255,0))", filter: "blur(13px)", pointerEvents: "none", zIndex: 3 }} />
+    <div className="flz-slab" style={slabStyle}>
+      {/* Glass sheen overlay */}
+      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 3, background: "linear-gradient(180deg,rgba(255,255,255,.14) 0%,rgba(255,255,255,.03) 7%,rgba(255,255,255,0) 22%),linear-gradient(0deg,rgba(255,255,255,.08) 0%,rgba(255,255,255,0) 10%),linear-gradient(105deg,rgba(255,255,255,.06) 0%,rgba(255,255,255,0) 26%)" }} />
+      <div style={{ position: "absolute", top: -16, left: "6%", width: 190, height: 52, borderRadius: "50%", background: "radial-gradient(closest-side,rgba(255,255,255,.5),rgba(255,255,255,0))", filter: "blur(11px)", pointerEvents: "none", zIndex: 3 }} />
+      <div style={{ position: "absolute", bottom: -14, right: "9%", width: 230, height: 46, borderRadius: "50%", background: "radial-gradient(closest-side,rgba(255,255,255,.32),rgba(255,255,255,0))", filter: "blur(13px)", pointerEvents: "none", zIndex: 3 }} />
 
       {/* Nav row */}
-      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+      <div className="flz-enter" style={{ display: "flex", alignItems: "center", gap: 20 }}>
         <span style={{ font: `500 22px/1 var(--flz-font-display)`, letterSpacing: "-.04em", color: "var(--flz-text-primary)" }}>
           Flz<span style={{ color: "var(--flz-text-muted)" }}>.</span>works
         </span>
       </div>
 
       {/* Hero row */}
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 26 }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <h1 style={{ margin: "12px 0 0", font: `500 46px/0.96 var(--flz-font-display)`, letterSpacing: "-.032em", color: "var(--flz-text-primary)" }}>
+      <div className="flz-enter flz-hero" style={{ "--flz-delay": "70ms", display: "flex", alignItems: "center", gap: 32, flexWrap: "wrap" } as React.CSSProperties}>
+        <div style={{ flex: "1 1 340px", minWidth: 0 }}>
+          <h1 style={{ margin: 0, font: `500 clamp(2rem,1.4rem + 2.4vw,2.9rem)/0.98 var(--flz-font-display)`, letterSpacing: "-.032em", color: "var(--flz-text-primary)" }}>
             Games and 3D,<br />built in public.
           </h1>
         </div>
-        <div style={{ flexShrink: 0, display: "flex", gap: 12 }}>
-          <StatTile label="Building since 2023.09.01" value={daysBuilding} unit="days" />
-          <StatTile label="Followers" value="1.2" unit="k" />
-          <StatTile label="Wishlists" value="9.4" unit="k" />
+        <div className="flz-stats" style={{ flexShrink: 0, display: "flex", gap: 12 }}>
+          <StatTile label="Building since" value={daysBuilding} unit="days" />
+          <StatTile label="Followers" value="soon" />
+          <StatTile label="Wishlists" value="soon" />
         </div>
       </div>
 
       {/* Filter chips */}
-      <div style={{ display: "flex", gap: 9, alignItems: "center", flexWrap: "wrap" }}>
+      <div className="flz-enter flz-filters" style={{ "--flz-delay": "140ms", display: "flex", gap: 9, alignItems: "center", flexWrap: "wrap" } as React.CSSProperties}>
         {FILTERS.map(f => (
           <button key={f} className={`flz-chip${activeFilter === f ? " active" : ""}`} onClick={() => setActiveFilter(f)}>{f}</button>
         ))}
       </div>
 
       {/* Main content: routing well + right column */}
-      <div style={{ flex: 1, minHeight: 0, display: "flex", gap: 18 }}>
+      <div className="flz-enter flz-main-area" style={{ "--flz-delay": "200ms", flex: 1, minHeight: 0, display: "flex", gap: 18 } as React.CSSProperties}>
 
         {/* Routing well (sunken glass) */}
         <div style={wellStyle}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <div style={{ flexShrink: 0, whiteSpace: "nowrap", font: `500 var(--flz-fs-label)/1 var(--flz-font-mono)`, letterSpacing: "var(--flz-ls-label)", textTransform: "uppercase", color: "var(--flz-text-muted)" }}>Recent projects</div>
-            <span style={{ flexShrink: 0, whiteSpace: "nowrap", font: `400 var(--flz-fs-body-sm)/1 var(--flz-font-sans)`, color: "var(--flz-text-secondary)" }}>Page 1 of 4</span>
-            <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-              <button className="flz-iconbtn glass" aria-label="Previous"><IconArrow size={15} rotate /></button>
-              <button className="flz-iconbtn glass" aria-label="Next"><IconArrow size={15} /></button>
-              <button className="flz-iconbtn glass" aria-label="Grid view"><IconGrid /></button>
+          {activeView === "work" && (
+            <div className="flz-view" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 14 }}>
+              <div className="flz-pager-row" style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                <div style={{ flexShrink: 0, whiteSpace: "nowrap", font: `500 var(--flz-fs-label)/1 var(--flz-font-mono)`, letterSpacing: "var(--flz-ls-label)", textTransform: "uppercase", color: "var(--flz-text-muted)" }}>Recent projects</div>
+                <span style={{ flexShrink: 0, whiteSpace: "nowrap", font: `400 var(--flz-fs-body-sm)/1 var(--flz-font-sans)`, color: "var(--flz-text-secondary)" }}>Page 1 of 4</span>
+                <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+                  <button className="flz-iconbtn glass" aria-label="Previous"><IconArrow size={15} rotate /></button>
+                  <button className="flz-iconbtn glass" aria-label="Next"><IconArrow size={15} /></button>
+                  <button className="flz-iconbtn glass" aria-label="Grid view"><IconGrid /></button>
+                </div>
+              </div>
+              <div className="flz-grid" style={{ flex: 1, minHeight: 0, display: "grid", gridTemplateColumns: "repeat(3,1fr)", gridTemplateRows: "1fr 1fr", gap: 12 }}>
+                {tiles.slice(0, 6).map((p, i) => (
+                  <div
+                    key={`${activeFilter}-${p.title ? p.id : `empty${i}`}`}
+                    className="flz-tile-in"
+                    style={{ "--flz-delay": `${i * 45}ms`, display: "flex", minWidth: 0, minHeight: 0 } as React.CSSProperties}
+                  >
+                    {p.title
+                      ? <ProjectTile project={p as typeof PROJECTS[number]} />
+                      : <div style={{ flex: 1, borderRadius: 28, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)" }} />}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-
-          {/* 3×2 tile grid */}
-          <div style={{ flex: 1, minHeight: 0, display: "grid", gridTemplateColumns: "repeat(3,1fr)", gridTemplateRows: "1fr 1fr", gap: 12 }}>
-            {tiles.slice(0, 6).map((p, i) =>
-              p.title
-                ? <ProjectTile key={p.id} project={p as typeof PROJECTS[number]} />
-                : <div key={i} style={{ borderRadius: 22, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)" }} />
-            )}
-          </div>
+          )}
+          {activeView === "search" && <SearchView allProjects={PROJECTS} />}
         </div>
 
         {/* Right column */}
-        <div style={{ flexShrink: 0, width: 322, display: "flex", flexDirection: "column", gap: 18, minHeight: 0, height: "100%" }}>
+        <div className="flz-sidebar" style={{ flexShrink: 0, width: 322, display: "flex", flexDirection: "column", gap: 18, minHeight: 0, height: "100%" }}>
 
           {/* Featured card */}
-          <a href="#" className="flz-tile" style={{ flex: "1.25", minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden", borderRadius: 28, background: "var(--flz-glass-fill-sunken)", border: "var(--flz-glass-border)", boxShadow: "var(--flz-glass-specular)", textDecoration: "none", color: "inherit" }}>
+          <a href="#" className="flz-tile flz-featured" style={{ flex: "1.25", minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden", borderRadius: 28, background: "#1c1a17", border: "1px solid rgba(255,255,255,.10)", textDecoration: "none", color: "inherit" }}>
             <div style={{ flex: 1, minHeight: 120, position: "relative", background: "radial-gradient(130% 130% at 28% 12%,#d8c3a6,#7a5f47 55%,#221910)" }}>
               <span style={{ position: "absolute", top: 12, left: 12 }}>
                 <span className="flz-badge"><span className="flz-badge-dot" />Featured · latest</span>
@@ -349,9 +612,9 @@ function MainSlab({
           </a>
 
           {/* Discord card */}
-          <div style={{ flexShrink: 0, padding: 18, borderRadius: 28, background: "var(--flz-glass-fill-sunken)", border: "var(--flz-glass-border)", boxShadow: "var(--flz-glass-specular)", display: "flex", flexDirection: "column", gap: 14 }}>
+          <div style={{ flexShrink: 0, padding: 18, borderRadius: 28, background: "#1c1a17", border: "1px solid rgba(255,255,255,.10)", display: "flex", flexDirection: "column", gap: 14 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
-              <span style={{ width: 38, height: 38, borderRadius: 11, background: "#5865F2", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <span style={{ width: 38, height: 38, borderRadius: 12, background: "#5865F2", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff">
                   <path d="M19.3 5.3A17 17 0 0 0 15 4l-.2.4a15 15 0 0 1 3.7 1.2 13 13 0 0 0-11-.1A14 14 0 0 1 11.3 4L11 3.6A17 17 0 0 0 6.7 5 18 18 0 0 0 3.6 17a17 17 0 0 0 5.2 2.6l.6-.9a11 11 0 0 1-1.8-.9l.4-.3a12 12 0 0 0 10 0l.5.3c-.6.4-1.2.7-1.9.9l.6 1a17 17 0 0 0 5.2-2.7A18 18 0 0 0 19.3 5.3ZM9.4 14.3c-.7 0-1.3-.7-1.3-1.5s.6-1.5 1.3-1.5 1.3.7 1.3 1.5-.6 1.5-1.3 1.5Zm5.2 0c-.7 0-1.3-.7-1.3-1.5s.6-1.5 1.3-1.5 1.3.7 1.3 1.5-.6 1.5-1.3 1.5Z"/>
                 </svg>
@@ -363,17 +626,15 @@ function MainSlab({
             </div>
             <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
               <span style={{ display: "inline-flex", alignItems: "flex-start", gap: 2 }}>
-                <span style={{ font: `500 40px/1 var(--flz-font-display)`, letterSpacing: "-.028em", color: "var(--flz-text-primary)" }}>840</span>
-                <span style={{ font: `500 var(--flz-fs-body)/1 var(--flz-font-display)`, color: "var(--flz-text-secondary)", marginTop: 4 }}>members</span>
+                <span style={{ font: `500 40px/1 var(--flz-font-display)`, letterSpacing: "-.028em", color: "var(--flz-text-primary)" }}>soon</span>
               </span>
-              <button className="flz-btn-solid">Join</button>
             </div>
           </div>
         </div>
       </div>
 
       {/* Footer: pager dots + build strip */}
-      <div style={{ display: "flex", alignItems: "center", gap: 14, paddingTop: 2 }}>
+      <div className="flz-enter" style={{ "--flz-delay": "270ms", display: "flex", alignItems: "center", gap: 14, paddingTop: 2 } as React.CSSProperties}>
         <div style={{ display: "flex", gap: 7, alignItems: "center" }}>
           <span style={{ width: 22, height: 6, borderRadius: 99, background: "var(--flz-text-primary)" }} />
           <span style={{ width: 6, height: 6, borderRadius: 99, background: "var(--flz-border-strong)" }} />
@@ -389,44 +650,66 @@ function MainSlab({
 export default function PortfolioHubPage() {
   const [daysBuilding, setDaysBuilding] = useState("—");
   const [activeFilter, setActiveFilter] = useState("All");
+  const [activeView, setActiveView] = useState<ActiveView>("work");
+  const [contactOpen, setContactOpen] = useState(false);
 
   useEffect(() => {
     const start = new Date("2023-09-01T00:00:00").getTime();
     setDaysBuilding(String(Math.floor((Date.now() - start) / 86400000)));
   }, []);
 
+  useEffect(() => {
+    if (!contactOpen) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setContactOpen(false); };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [contactOpen]);
+
   const visibleProjects =
     activeFilter === "All" ? PROJECTS : PROJECTS.filter(p => p.cat === activeFilter);
 
   return (
-    <div className="flz-hub-root" style={{ minHeight: "100vh", background: "#0d0b0a", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 20px" }}>
+    <div className="flz-hub-root" style={{
+      minHeight: "100vh",
+      position: "relative",
+      overflow: "hidden",
+      background: "#100e0c",
+      fontFamily: "var(--flz-font-sans), sans-serif",
+    }}>
       <style dangerouslySetInnerHTML={{ __html: DS_TOKENS }} />
 
-      {/* Hub canvas */}
-      <div style={{ width: 1360, height: 900, maxWidth: "100%", position: "relative", borderRadius: 44, overflow: "hidden", boxShadow: "0 50px 110px rgba(0,0,0,.6)", fontFamily: "var(--flz-font-sans), sans-serif" }}>
+      {/* Ambient orbs */}
+      <div className="flz-orb" style={{ position: "absolute", top: "2%", left: "14%", width: 420, height: 300, borderRadius: "50%", background: "radial-gradient(closest-side,rgba(232,214,189,.5),rgba(232,214,189,0))", filter: "blur(46px)", animation: "flz-drift1 34s ease-in-out infinite", willChange: "transform", pointerEvents: "none" }} />
+      <div className="flz-orb" style={{ position: "absolute", top: "34%", right: "6%", width: 460, height: 340, borderRadius: "50%", background: "radial-gradient(closest-side,rgba(176,140,102,.38),rgba(176,140,102,0))", filter: "blur(52px)", animation: "flz-drift2 44s ease-in-out infinite", willChange: "transform", pointerEvents: "none" }} />
+      <div className="flz-orb" style={{ position: "absolute", bottom: "10%", left: "38%", width: 520, height: 340, borderRadius: "50%", background: "radial-gradient(closest-side,rgba(120,132,150,.22),rgba(120,132,150,0))", filter: "blur(58px)", animation: "flz-drift3 52s ease-in-out infinite", willChange: "transform", pointerEvents: "none" }} />
 
-        {/* Warm ground gradients */}
-        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(44% 38% at 29% 12%,rgba(214,192,163,.34) 0%,rgba(214,192,163,0) 62%),radial-gradient(56% 52% at 88% 28%,rgba(150,124,95,.22) 0%,rgba(150,124,95,0) 64%),radial-gradient(48% 44% at 6% 94%,rgba(12,10,8,.92) 0%,rgba(12,10,8,0) 66%),linear-gradient(180deg,rgba(14,12,10,.62) 0%,rgba(14,12,10,.1) 26%),linear-gradient(158deg,#332c24 0%,#241f1a 48%,#141110 100%)" }} />
-
-        {/* Animated drift orbs */}
-        <div className="flz-orb" style={{ position: "absolute", top: "2%", left: "14%", width: 420, height: 300, borderRadius: "50%", background: "radial-gradient(closest-side,rgba(232,214,189,.5),rgba(232,214,189,0))", filter: "blur(46px)", animation: "flz-drift1 34s ease-in-out infinite", willChange: "transform" }} />
-        <div className="flz-orb" style={{ position: "absolute", top: "34%", right: "6%", width: 460, height: 340, borderRadius: "50%", background: "radial-gradient(closest-side,rgba(176,140,102,.38),rgba(176,140,102,0))", filter: "blur(52px)", animation: "flz-drift2 44s ease-in-out infinite", willChange: "transform" }} />
-        <div className="flz-orb" style={{ position: "absolute", bottom: "-8%", left: "38%", width: 520, height: 340, borderRadius: "50%", background: "radial-gradient(closest-side,rgba(120,132,150,.22),rgba(120,132,150,0))", filter: "blur(58px)", animation: "flz-drift3 52s ease-in-out infinite", willChange: "transform" }} />
-        <div style={{ position: "absolute", bottom: "-6%", right: "5%", width: 380, height: 300, borderRadius: 60, background: "#100d0b", filter: "blur(48px)", opacity: 0.7 }} />
-
-        {/* Dark scrim */}
-        <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: "linear-gradient(180deg,rgba(12,10,9,.5) 0%,rgba(12,10,9,.3) 45%,rgba(12,10,9,.58) 100%)" }} />
-
-        {/* UI layer */}
-        <div style={{ position: "absolute", inset: 0, display: "flex", gap: 24, padding: "40px 44px", boxSizing: "border-box", zIndex: 1 }}>
-          <IconRail />
-          <MainSlab
-            daysBuilding={daysBuilding}
-            activeFilter={activeFilter}
-            setActiveFilter={setActiveFilter}
-            visibleProjects={visibleProjects}
-          />
+      {/* Contact card floater */}
+      {contactOpen && (
+        <div className="flz-backdrop" style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,.4)", backdropFilter: "blur(6px)" }}
+          onClick={() => setContactOpen(false)}>
+          <div className="flz-modal" style={{ width: 560, position: "relative" }} onClick={e => e.stopPropagation()}>
+            <button
+              autoFocus
+              onClick={() => setContactOpen(false)}
+              aria-label="Close contact card"
+              className="flz-modal-close"
+              style={{ position: "absolute", top: -14, right: -14, zIndex: 10, width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,.18)", border: "1px solid rgba(255,255,255,.28)", color: "#F4F2EF", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", font: "500 18px/1 system-ui" }}
+            >×</button>
+            <ContactCard />
+          </div>
         </div>
+      )}
+
+      {/* Content */}
+      <div className="flz-content" style={{ position: "relative", zIndex: 1, display: "flex", gap: 24, padding: "40px 44px", minHeight: "100vh", boxSizing: "border-box" }}>
+        <IconRail activeView={activeView} setActiveView={setActiveView} contactOpen={contactOpen} setContactOpen={setContactOpen} />
+        <MainSlab
+          daysBuilding={daysBuilding}
+          activeFilter={activeFilter}
+          setActiveFilter={setActiveFilter}
+          visibleProjects={visibleProjects}
+          activeView={activeView}
+        />
       </div>
     </div>
   );

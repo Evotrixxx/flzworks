@@ -66,8 +66,8 @@ html {
   --border: rgba(255,255,255,0.07);
   --border-hover: rgba(255,255,255,0.18);
   --text-primary: rgba(255,255,255,0.95);
-  --text-secondary: rgba(255,255,255,0.45);
-  --text-tertiary: rgba(255,255,255,0.22);
+  --text-secondary: #8293ad;
+  --text-tertiary: #64748b;
   --accent: #ffffff;
   --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.15);
   --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
@@ -3326,25 +3326,6 @@ select[aria-invalid="true"] {
   color: var(--bp-accent);
 }
 
-/* ── Motion Accessibility (prefers-reduced-motion) ── */
-@media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-
-  .ticker-inner,
-  .depth-el-1,
-  .depth-el-2,
-  .depth-el-3,
-  .showroom-shapes span,
-  .lucid-pulse-dot {
-    animation: none !important;
-  }
-}
-
 /* ── Consolidated Lucid Landing & UI Design Showcase Styles ── */
 @keyframes lucid-shell-in {
   from { opacity: 0; transform: translateY(24px) scale(0.976); }
@@ -3494,6 +3475,15 @@ select[aria-invalid="true"] {
   .lucid-top-bar {
     flex-wrap: wrap;
     padding: 10px 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .lucid-top-bar {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    padding: 8px !important;
   }
 }
 
@@ -4177,5 +4167,25 @@ select[aria-invalid="true"] {
 @media (max-width: 640px) {
   .uib-board {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ── Motion Accessibility (prefers-reduced-motion) ── */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation: none !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .ticker-inner,
+  .depth-el-1,
+  .depth-el-2,
+  .depth-el-3,
+  .showroom-shapes span,
+  .lucid-pulse-dot {
+    animation: none !important;
   }
 }

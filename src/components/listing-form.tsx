@@ -755,7 +755,7 @@ function Field({
   defaultValue?: string | number | null;
   error?: string;
   required?: boolean;
-  [key: string]: any;
+  [key: string]: unknown;
 }) {
   return (
     <label className="grid gap-1 text-sm font-semibold text-slate-700">

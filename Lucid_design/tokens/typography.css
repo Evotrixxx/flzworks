@@ -1,0 +1,28 @@
+:root {
+  --font-display: "Archivo", "Helvetica Neue", Helvetica, sans-serif;
+  --font-ui: "Archivo", "Helvetica Neue", Helvetica, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+
+  /* Display — tight, near-black, optically negative tracking */
+  --type-display-xl: 700 76px/0.92 var(--font-display);
+  --type-display-lg: 700 56px/0.94 var(--font-display);
+  --type-display-md: 700 40px/0.98 var(--font-display);
+  --type-numeric-xl: 600 52px/1 var(--font-display);
+
+  /* Titles + body */
+  --type-title: 600 24px/1.15 var(--font-ui);
+  --type-subtitle: 600 17px/1.25 var(--font-ui);
+  --type-body: 400 15px/1.5 var(--font-ui);
+  --type-body-sm: 400 13px/1.45 var(--font-ui);
+  --type-button: 600 14px/1 var(--font-ui);
+
+  /* Mono meta — the system's signature texture */
+  --type-label: 600 10px/1.2 var(--font-mono);
+  --type-meta: 400 11px/1.4 var(--font-mono);
+  --type-caption: 500 9px/1.2 var(--font-mono);
+
+  --tracking-display: -0.03em;
+  --tracking-tight: -0.01em;
+  --tracking-label: 0.14em;
+  --tracking-caption: 0.18em;
+}
