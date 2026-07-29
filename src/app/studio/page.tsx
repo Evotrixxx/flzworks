@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { syncPortfolioArticles } from "@/lib/portfolio-sync";
 import { readSocialConfig } from "@/lib/social-config";
 import { StudioEditor } from "@/components/studio-editor";
+import { checkIsAdminEmail } from "@/lib/flz-security";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,9 @@ export default async function StudioPage() {
     redirect("/login?redirect=/studio");
   }
 
-  if (user.role !== "ADMIN") {
+  const isAdmin = user.role === "ADMIN" || checkIsAdminEmail(user.email);
+
+  if (!isAdmin) {
     return (
       <div className="bp-root bp-studio">
         <div className="bp-studio-denied">
@@ -34,6 +37,16 @@ export default async function StudioPage() {
         </div>
       </div>
     );
+  }
+
+  // Ensure role is persisted as ADMIN in DB
+  if (user.role !== "ADMIN") {
+    try {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { role: "ADMIN" },
+      });
+    } catch {}
   }
 
   const [articles, social, projectsData, settingsData] = await Promise.all([

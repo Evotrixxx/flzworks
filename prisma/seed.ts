@@ -206,6 +206,20 @@ async function main() {
     },
   });
 
+  await prisma.user.upsert({
+    where: { email: "floszbeni@gmail.com" },
+    update: {
+      name: "Bence Flosz",
+      role: "ADMIN",
+    },
+    create: {
+      email: "floszbeni@gmail.com",
+      name: "Bence Flosz",
+      passwordHash: sellerPasswordHash,
+      role: "ADMIN",
+    },
+  });
+
   const buyer = await prisma.user.upsert({
     where: { email: "buyer@autopiac.test" },
     update: {},
