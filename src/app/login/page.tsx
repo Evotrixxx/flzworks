@@ -1,10 +1,8 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
-import { dictionaries } from "@/lib/i18n";
 import { getLocale } from "@/lib/i18n-server";
 import type { SearchParamsInput } from "@/lib/listings";
-import { AuthForm } from "@/components/auth-form";
+import { GoogleSignInButton } from "@/components/auth-form";
 import { Header } from "@/components/header";
 import { checkIsAdminEmail } from "@/lib/flz-security";
 
@@ -19,19 +17,16 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
     redirect(`${target}?lang=${locale}`);
   }
 
-  const t = dictionaries[locale];
-
   return (
     <>
       <Header locale={locale} />
       <div className="mx-auto grid min-h-[calc(100vh-160px)] max-w-md content-center px-4 py-10 sm:px-6">
-        <div className="mb-5">
-          <h1 className="text-2xl font-black text-slate-950">{t.auth.loginTitle}</h1>
-          <Link href={`/register?lang=${locale}`} className="mt-2 inline-flex text-sm font-black text-cyan-800">
-            {t.nav.register}
-          </Link>
+        <div className="mb-5 text-center">
+          <h1 className="text-2xl font-black text-slate-950">Bejelentkezés</h1>
         </div>
-        <AuthForm mode="login" t={t} locale={locale} />
+        <div className="glass-panel flex justify-center rounded-lg p-6">
+          <GoogleSignInButton redirectTo="/studio" locale={locale} />
+        </div>
       </div>
     </>
   );
