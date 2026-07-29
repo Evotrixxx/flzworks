@@ -292,14 +292,7 @@ const DS_TOKENS = `
 `;
 
 // ── Static data ──────────────────────────────────────────────────────────────
-const PROJECTS = [
-  { id: 1, tools: "Blender · ZBrush",        title: "Ronin — swordsman",   cat: "Characters", age: "2 days ago",   grad: "radial-gradient(120% 130% at 24%  6%,rgba(216,195,166,.62),rgba(120,96, 72,.12) 55%,transparent 76%)" },
-  { id: 2, tools: "Blender · Substance",      title: "Kessler R-7 coupe",  cat: "Automotive", age: "1 week ago",   grad: "radial-gradient(120% 130% at 78%  6%,rgba(169,182,160,.58),rgba(95,107,82,.12) 55%,transparent 76%)" },
-  { id: 3, tools: "Unity · Godot",            title: "Dust Runner demo",   cat: "Gameplay",   age: "2 weeks ago",  grad: "radial-gradient(120% 130% at 30% 82%,rgba(176,166,192,.55),rgba(95, 86,112,.12) 55%,transparent 76%)" },
-  { id: 4, tools: "HLSL · Niagara",           title: "Impact VFX pack",    cat: "Assets",     age: "3 weeks ago",  grad: "radial-gradient(120% 130% at 72% 24%,rgba(199,169,160,.58),rgba(122,90, 80,.12) 55%,transparent 76%)" },
-  { id: 5, tools: "Unity · C#",               title: "Skybound ch.3 boss", cat: "Gameplay",   age: "last month",   grad: "radial-gradient(120% 130% at 20% 28%,rgba(201,183,154,.58),rgba(138,122,85,.12) 55%,transparent 76%)" },
-  { id: 6, tools: "Blender · Hard-surface",   title: "Modular crate kit",  cat: "Assets",     age: "last month",   grad: "radial-gradient(120% 130% at 62% 72%,rgba(159,180,184,.55),rgba(86, 108,112,.12) 55%,transparent 76%)" },
-];
+const PROJECTS: { id: number; tools: string; title: string; cat: string; age: string; grad: string }[] = [];
 
 const FILTERS = ["All", "Assets", "Characters", "Gameplay", "Automotive"];
 
@@ -429,7 +422,7 @@ function ContactCard() {
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 0, padding: "18px 20px", borderRadius: 20, background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.14)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.18)" }}>
           <div style={{ font: `500 9px/1 var(--flz-font-mono)`, letterSpacing: ".1em", textTransform: "uppercase", color: "rgba(255,196,88,.8)", borderBottom: "1px solid rgba(255,255,255,.1)", paddingBottom: 12, marginBottom: 16 }}>FLZ WORKS // IDENTITY CARD</div>
           <div style={{ display: "flex", gap: 16, alignItems: "flex-start", flex: 1 }}>
-            <div style={{ width: 72, height: 88, borderRadius: 12, background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.12)", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--flz-text-muted)", font: `400 10px/1 var(--flz-font-mono)` }}>PHOTO</div>
+            <div style={{ width: 72, height: 88, borderRadius: 12, background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.12)", overflow: "hidden", flexShrink: 0 }}><img src="/profile.jpg" alt="Bence Flosz" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /></div>
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
               {[
                 ["NAME", "Bence Flosz"],
@@ -453,8 +446,7 @@ function ContactCard() {
         {/* QR */}
         <div className="flz-contact-qr" style={{ flexShrink: 0, width: 120, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, padding: 12, borderRadius: 20, background: "#fff" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://flz.works" alt="QR" width={96} height={96} style={{ display: "block" }} />
-          <div style={{ font: `700 8px/1 var(--flz-font-mono)`, letterSpacing: ".08em", color: "#333", textTransform: "uppercase" }}>flz.works</div>
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://flz.works" alt="QR" style={{ display: "block", width: "100%", height: "auto" }} />
         </div>
       </div>
     </div>
@@ -544,7 +536,7 @@ function MainSlab({
       <div className="flz-enter flz-hero" style={{ "--flz-delay": "70ms", display: "flex", alignItems: "center", gap: 32, flexWrap: "wrap" } as React.CSSProperties}>
         <div style={{ flex: "1 1 340px", minWidth: 0 }}>
           <h1 style={{ margin: 0, font: `500 clamp(2rem,1.4rem + 2.4vw,2.9rem)/0.98 var(--flz-font-display)`, letterSpacing: "-.032em", color: "var(--flz-text-primary)" }}>
-            Games and 3D,<br />built in public.
+            Munca is now<br />in development.
           </h1>
         </div>
         <div className="flz-stats" style={{ flexShrink: 0, display: "flex", gap: 12 }}>
@@ -557,7 +549,9 @@ function MainSlab({
       {/* Filter chips */}
       <div className="flz-enter flz-filters" style={{ "--flz-delay": "140ms", display: "flex", gap: 9, alignItems: "center", flexWrap: "wrap" } as React.CSSProperties}>
         {FILTERS.map(f => (
-          <button key={f} className={`flz-chip${activeFilter === f ? " active" : ""}`} onClick={() => setActiveFilter(f)}>{f}</button>
+          f === "Automotive"
+            ? <a key={f} href="/" className="flz-chip" style={{ textDecoration: "none" }}>{f}</a>
+            : <button key={f} className={`flz-chip${activeFilter === f ? " active" : ""}`} onClick={() => setActiveFilter(f)}>{f}</button>
         ))}
       </div>
 
@@ -574,7 +568,6 @@ function MainSlab({
                 <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
                   <button className="flz-iconbtn glass" aria-label="Previous"><IconArrow size={15} rotate /></button>
                   <button className="flz-iconbtn glass" aria-label="Next"><IconArrow size={15} /></button>
-                  <button className="flz-iconbtn glass" aria-label="Grid view"><IconGrid /></button>
                 </div>
               </div>
               <div className="flz-grid" style={{ flex: 1, minHeight: 0, display: "grid", gridTemplateColumns: "repeat(3,1fr)", gridTemplateRows: "1fr 1fr", gap: 12 }}>
@@ -600,14 +593,15 @@ function MainSlab({
 
           {/* Featured card */}
           <a href="#" className="flz-tile flz-featured" style={{ flex: "1.25", minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden", borderRadius: 28, background: "#1c1a17", border: "1px solid rgba(255,255,255,.10)", textDecoration: "none", color: "inherit" }}>
-            <div style={{ flex: 1, minHeight: 120, position: "relative", background: "radial-gradient(130% 130% at 28% 12%,#d8c3a6,#7a5f47 55%,#221910)" }}>
-              <span style={{ position: "absolute", top: 12, left: 12 }}>
-                <span className="flz-badge"><span className="flz-badge-dot" />Featured · latest</span>
+            <div style={{ flex: 1, minHeight: 120, position: "relative", overflow: "hidden" }}>
+              <iframe src="https://sketchfab.com/models/cbb1b3572d0545f8a8fdbdb09836ebd6/embed?autostart=1&preload=1&transparent=1&ui_hint=0" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }} allow="autoplay; fullscreen; xr-spatial-tracking" />
+              <span style={{ position: "absolute", top: 12, left: 12, zIndex: 1 }}>
+                <span className="flz-badge">Featured · latest</span>
               </span>
             </div>
             <div style={{ padding: "15px 16px 16px" }}>
-              <div style={{ font: `500 var(--flz-fs-h3)/1.1 var(--flz-font-display)`, letterSpacing: "var(--flz-ls-h3)", color: "var(--flz-text-primary)" }}>Ronin — stylized swordsman</div>
-              <div style={{ font: `400 var(--flz-fs-body-sm)/1.45 var(--flz-font-sans)`, color: "var(--flz-text-secondary)", marginTop: 7 }}>Hand-painted, 24k tris, game-ready. Full breakdown, block-out to pose.</div>
+              <div style={{ font: `500 var(--flz-fs-h3)/1.1 var(--flz-font-display)`, letterSpacing: "var(--flz-ls-h3)", color: "var(--flz-text-primary)" }}>Pentagon Athaan 2026</div>
+              <div style={{ font: `400 var(--flz-fs-body-sm)/1.45 var(--flz-font-sans)`, color: "var(--flz-text-secondary)", marginTop: 7 }}>Preview the model</div>
             </div>
           </a>
 
@@ -621,7 +615,7 @@ function MainSlab({
               </span>
               <div style={{ lineHeight: 1.2 }}>
                 <div style={{ font: `500 var(--flz-fs-body)/1 var(--flz-font-display)`, color: "var(--flz-text-primary)" }}>The Discord</div>
-                <div style={{ font: `500 10px/1 var(--flz-font-mono)`, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--flz-text-muted)", marginTop: 4 }}>Daily WIPs · feedback</div>
+                <div style={{ font: `500 10px/1 var(--flz-font-mono)`, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--flz-text-muted)", marginTop: 4 }}>Feedback</div>
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
