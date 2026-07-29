@@ -6,7 +6,7 @@ import { getLocale } from "@/lib/i18n-server";
 import type { SearchParamsInput } from "@/lib/listings";
 import { AuthForm } from "@/components/auth-form";
 import { Header } from "@/components/header";
-import { autopiacPath } from "@/lib/routes";
+import { checkIsAdminEmail } from "@/lib/flz-security";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +15,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const [user, locale] = await Promise.all([getCurrentUser(), getLocale(params)]);
 
   if (user) {
-    redirect(`${autopiacPath("/dashboard")}?lang=${locale}`);
+    const target = user.role === "ADMIN" || checkIsAdminEmail(user.email) ? "/studio" : "/";
+    redirect(`${target}?lang=${locale}`);
   }
 
   const t = dictionaries[locale];

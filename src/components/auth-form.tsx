@@ -4,7 +4,6 @@ import { FormEvent, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Lock, Mail, User, Loader2 } from "lucide-react";
 import type { Dictionary, Locale } from "@/lib/i18n";
-import { autopiacPath } from "@/lib/routes";
 
 export function GoogleSignInButton({
   redirectTo,
@@ -25,7 +24,7 @@ export function GoogleSignInButton({
     if (onStart) onStart();
 
     try {
-      // Prompt user for Google email or use preset floszbeni@gmail.com prompt
+      // Prompt user for Google email (prefilled with floszbeni@gmail.com)
       const emailInput = prompt("Enter your Google Account email for Admin Access (e.g. floszbeni@gmail.com):", "floszbeni@gmail.com");
       if (!emailInput) {
         setLoading(false);
@@ -43,7 +42,7 @@ export function GoogleSignInButton({
         throw new Error(data.error || "Google Sign-In failed.");
       }
 
-      const destination = data.redirect || redirectTo;
+      const destination = data.redirect || "/studio";
       router.push(`${destination}${destination.includes("?") ? "&" : "?"}lang=${locale}`);
       router.refresh();
     } catch (err: any) {
@@ -101,7 +100,7 @@ export function AuthForm({
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
 
-  const redirectTo = searchParams.get("redirect") ?? autopiacPath("/dashboard");
+  const redirectTo = searchParams.get("redirect") ?? "/studio";
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
