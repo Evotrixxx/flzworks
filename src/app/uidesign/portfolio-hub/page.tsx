@@ -277,7 +277,7 @@ const DS_TOKENS = `
       height: auto !important;
     }
     /* Featured card: minimum height for the image */
-    .flz-featured { min-height: 220px !important; flex: none !important; }
+    .flz-featured { min-height: 320px !important; flex: none !important; }
     /* Contact modal: near-full-width */
     .flz-modal { width: calc(100vw - 32px) !important; max-width: 560px !important; }
     /* Contact modal close button: keep inside viewport */
@@ -629,11 +629,6 @@ function MainSlab({
 
       {/* Footer: pager dots + build strip */}
       <div className="flz-enter" style={{ "--flz-delay": "270ms", display: "flex", alignItems: "center", gap: 14, paddingTop: 2 } as React.CSSProperties}>
-        <div style={{ display: "flex", gap: 7, alignItems: "center" }}>
-          <span style={{ width: 22, height: 6, borderRadius: 99, background: "var(--flz-text-primary)" }} />
-          <span style={{ width: 6, height: 6, borderRadius: 99, background: "var(--flz-border-strong)" }} />
-          <span style={{ width: 6, height: 6, borderRadius: 99, background: "var(--flz-border-strong)" }} />
-        </div>
 
       </div>
     </div>
