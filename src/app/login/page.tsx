@@ -3,7 +3,6 @@ import { getCurrentUser } from "@/lib/auth";
 import { getLocale } from "@/lib/i18n-server";
 import type { SearchParamsInput } from "@/lib/listings";
 import { GoogleSignInButton } from "@/components/auth-form";
-import { Header } from "@/components/header";
 import { checkIsAdminEmail } from "@/lib/flz-security";
 
 export const dynamic = "force-dynamic";
@@ -18,16 +17,13 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   }
 
   return (
-    <>
-      <Header locale={locale} />
-      <div className="mx-auto grid min-h-[calc(100vh-160px)] max-w-md content-center px-4 py-10 sm:px-6">
-        <div className="mb-5 text-center">
-          <h1 className="text-2xl font-black text-slate-950">Bejelentkezés</h1>
-        </div>
+    <div className="flex min-h-screen items-center justify-center px-4">
+      <div className="w-full max-w-sm text-center">
+        <h1 className="mb-6 text-2xl font-black text-slate-950">Bejelentkezés</h1>
         <div className="glass-panel flex justify-center rounded-lg p-6">
           <GoogleSignInButton redirectTo="/studio" locale={locale} />
         </div>
       </div>
-    </>
+    </div>
   );
 }
