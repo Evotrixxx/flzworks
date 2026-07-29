@@ -3,6 +3,8 @@ import { getCurrentUser } from "@/lib/auth";
 import { checkIsAdminEmail } from "@/lib/flz-security";
 import { autopiacPath } from "@/lib/routes";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardRedirect() {
   const user = await getCurrentUser();
   if (user && (user.role === "ADMIN" || checkIsAdminEmail(user.email))) {

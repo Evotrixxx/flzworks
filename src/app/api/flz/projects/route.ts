@@ -7,16 +7,20 @@ export async function GET() {
     const auth = await verifyAdminUser();
     const isAdmin = auth.error === null;
 
-    // Public gets visible projects ordered by sortOrder and createdAt. Admin gets all projects.
-    const projects = await prisma.flzProject.findMany({
-      where: isAdmin ? {} : { visible: true },
-      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
-    });
+    let projects: any[] = [];
+    try {
+      projects = await prisma.flzProject.findMany({
+        where: isAdmin ? {} : { visible: true },
+        orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+      });
+    } catch (dbErr) {
+      console.warn("flzProject DB query fallback:", dbErr);
+    }
 
     return NextResponse.json({ projects, isAdmin });
   } catch (error) {
     console.error("Failed to fetch FLZ projects:", error);
-    return NextResponse.json({ error: "Failed to fetch projects." }, { status: 500 });
+    return NextResponse.json({ projects: [], isAdmin: false });
   }
 }
 

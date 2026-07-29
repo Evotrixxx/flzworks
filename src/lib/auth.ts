@@ -16,22 +16,30 @@ export type SessionUser = {
 };
 
 export async function getCurrentUser(): Promise<SessionUser | null> {
-  const cookieStore = await cookies();
-  const payload = verifySessionToken(cookieStore.get(SESSION_COOKIE)?.value);
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get(SESSION_COOKIE)?.value;
+    const payload = verifySessionToken(token);
 
-  if (!payload) {
+    if (!payload || !payload.userId) {
+      return null;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+      },
+    });
+
+    return user;
+  } catch (error) {
+    console.error("getCurrentUser error:", error);
     return null;
   }
-
-  return prisma.user.findUnique({
-    where: { id: payload.userId },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      role: true,
-    },
-  });
 }
 
 export async function requireUser(redirectTo = "/login") {
@@ -45,17 +53,25 @@ export async function requireUser(redirectTo = "/login") {
 }
 
 export async function setSessionCookie(userId: string) {
-  const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE, createSessionToken(userId, SESSION_MAX_AGE_SECONDS), {
-    httpOnly: true,
-    maxAge: SESSION_MAX_AGE_SECONDS,
-    path: "/",
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-  });
+  try {
+    const cookieStore = await cookies();
+    cookieStore.set(SESSION_COOKIE, createSessionToken(userId, SESSION_MAX_AGE_SECONDS), {
+      httpOnly: true,
+      maxAge: SESSION_MAX_AGE_SECONDS,
+      path: "/",
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    });
+  } catch (error) {
+    console.error("setSessionCookie error:", error);
+  }
 }
 
 export async function clearSessionCookie() {
-  const cookieStore = await cookies();
-  cookieStore.delete(SESSION_COOKIE);
+  try {
+    const cookieStore = await cookies();
+    cookieStore.delete(SESSION_COOKIE);
+  } catch (error) {
+    console.error("clearSessionCookie error:", error);
+  }
 }

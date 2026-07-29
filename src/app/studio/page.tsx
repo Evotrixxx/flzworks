@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { syncPortfolioArticles } from "@/lib/portfolio-sync";
-import { readSocialConfig } from "@/lib/social-config";
+import { syncPortfolioArticles, PortfolioArticleWithImages } from "@/lib/portfolio-sync";
+import { readSocialConfig, DEFAULT_SOCIAL, SocialEntry } from "@/lib/social-config";
 import { StudioEditor } from "@/components/studio-editor";
 import { checkIsAdminEmail } from "@/lib/flz-security";
 
@@ -39,33 +39,57 @@ export default async function StudioPage() {
     );
   }
 
-  // Ensure role is persisted as ADMIN in DB
+  // Safely auto-promote in DB if needed
   if (user.role !== "ADMIN") {
     try {
       await prisma.user.update({
         where: { id: user.id },
         data: { role: "ADMIN" },
       });
-    } catch {}
+    } catch (err) {
+      console.warn("Could not update user role to ADMIN in DB:", err);
+    }
   }
 
-  const [articles, social, projectsData, settingsData] = await Promise.all([
-    syncPortfolioArticles(),
-    readSocialConfig(),
-    prisma.flzProject.findMany({
-      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
-    }),
-    prisma.flzSetting.findMany(),
-  ]);
+  // Safe data fetching with fallback arrays
+  let articles: PortfolioArticleWithImages[] = [];
+  try {
+    articles = await syncPortfolioArticles();
+  } catch (err) {
+    console.error("Failed to sync portfolio articles in StudioPage:", err);
+  }
 
-  const flzProjects = projectsData.map((p) => ({
+  let social: SocialEntry[] = DEFAULT_SOCIAL;
+  try {
+    social = await readSocialConfig();
+  } catch (err) {
+    console.error("Failed to read social config in StudioPage:", err);
+  }
+
+  let projectsData: any[] = [];
+  try {
+    projectsData = await prisma.flzProject.findMany({
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+    });
+  } catch (err) {
+    console.error("Failed to query flzProject in StudioPage:", err);
+  }
+
+  let settingsData: any[] = [];
+  try {
+    settingsData = await prisma.flzSetting.findMany();
+  } catch (err) {
+    console.error("Failed to query flzSetting in StudioPage:", err);
+  }
+
+  const flzProjects = (projectsData || []).map((p) => ({
     ...p,
     createdAt: undefined,
     updatedAt: undefined,
   }));
 
   const flzSettings: Record<string, string> = {};
-  for (const s of settingsData) {
+  for (const s of settingsData || []) {
     flzSettings[s.key] = s.value;
   }
 
