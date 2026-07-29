@@ -40,31 +40,31 @@ export async function POST(request: NextRequest) {
 
     const email = payload.email.trim().toLowerCase();
     const name = payload.name || payload.given_name || "Google User";
-    const isAdmin = checkIsAdminEmail(email);
-    const targetRole = isAdmin ? "ADMIN" : "USER";
+
+    if (!checkIsAdminEmail(email)) {
+      return NextResponse.json(
+        { error: "NO_ADMIN", message: "You do not have admin privileges." },
+        { status: 403 },
+      );
+    }
 
     const user = await prisma.user.upsert({
       where: { email },
-      update: {
-        name,
-        role: isAdmin ? "ADMIN" : undefined,
-      },
+      update: { name, role: "ADMIN" },
       create: {
         email,
         name,
         passwordHash: "oauth_google_authenticated",
-        role: targetRole,
+        role: "ADMIN",
       },
     });
 
     await setSessionCookie(user.id);
 
-    const redirectPath = user.role === "ADMIN" || isAdmin ? "/studio" : "/dashboard";
-
     return NextResponse.json({
       success: true,
       message: `Signed in successfully as ${user.email}`,
-      redirect: redirectPath,
+      redirect: "/studio",
       user: {
         id: user.id,
         email: user.email,

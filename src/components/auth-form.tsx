@@ -21,6 +21,7 @@ export function GoogleSignInButton({
   const router = useRouter();
   const buttonRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
+  const [denied, setDenied] = useState(false);
   const initializedRef = useRef(false);
 
   const handleCredentialResponse = useCallback(
@@ -36,6 +37,17 @@ export function GoogleSignInButton({
         });
 
         const data = await res.json();
+
+        if (data.error === "NO_ADMIN") {
+          setLoading(false);
+          setDenied(true);
+          setTimeout(() => {
+            router.push("/");
+            router.refresh();
+          }, 3000);
+          return;
+        }
+
         if (!res.ok || !data.success) {
           throw new Error(data.error || "Google Sign-In failed.");
         }
@@ -87,6 +99,18 @@ export function GoogleSignInButton({
 
   if (!GOOGLE_CLIENT_ID) {
     return null;
+  }
+
+  if (denied) {
+    return (
+      <div className="flex flex-col items-center gap-3 text-center">
+        <div className="rounded-full bg-rose-100 p-3">
+          <Lock className="h-6 w-6 text-rose-600" />
+        </div>
+        <p className="text-lg font-bold text-slate-900">You do not have admin privileges.</p>
+        <p className="text-sm text-slate-500">You are signed out. Heading back to the homescreen...</p>
+      </div>
+    );
   }
 
   return (

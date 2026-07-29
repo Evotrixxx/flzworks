@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 export const ADMIN_EMAILS = [
   "floszbeni@gmail.com",
+  "7bfloszb@gmail.com",
 ];
 
 export function checkIsAdminEmail(email: string): boolean {
