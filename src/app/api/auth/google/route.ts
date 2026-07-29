@@ -1,73 +1,62 @@
 import { NextRequest, NextResponse } from "next/server";
+import { OAuth2Client } from "google-auth-library";
 import { prisma } from "@/lib/prisma";
 import { setSessionCookie } from "@/lib/auth";
 import { checkIsAdminEmail } from "@/lib/flz-security";
 
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+
+const client = GOOGLE_CLIENT_ID ? new OAuth2Client(GOOGLE_CLIENT_ID) : null;
+
 export async function POST(request: NextRequest) {
+  if (!client || !GOOGLE_CLIENT_ID) {
+    return NextResponse.json(
+      { error: "Google Sign-In is not configured on this server." },
+      { status: 503 },
+    );
+  }
+
   try {
     const body = await request.json().catch(() => null);
-    if (!body) {
-      return NextResponse.json({ error: "Invalid request payload." }, { status: 400 });
+    if (!body?.credential || typeof body.credential !== "string") {
+      return NextResponse.json(
+        { error: "A Google credential token is required." },
+        { status: 400 },
+      );
     }
 
-    const { credential, email: rawEmail, name: rawName } = body;
+    const ticket = await client.verifyIdToken({
+      idToken: body.credential,
+      audience: GOOGLE_CLIENT_ID,
+    });
 
-    let email = rawEmail;
-    let name = rawName || "Google User";
-
-    // If a Google Credential JWT token is provided, verify/extract claims from Google
-    if (credential && typeof credential === "string") {
-      try {
-        const googleRes = await fetch(
-          `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`
-        );
-
-        if (googleRes.ok) {
-          const googleData = await googleRes.json();
-          if (googleData?.email && googleData.email_verified !== "false") {
-            email = googleData.email;
-            name = googleData.name || googleData.given_name || name;
-          }
-        } else {
-          // If offline or local JWT decode fallback
-          const parts = credential.split(".");
-          if (parts.length === 3) {
-            const payload = JSON.parse(Buffer.from(parts[1], "base64").toString("utf-8"));
-            if (payload?.email) {
-              email = payload.email;
-              name = payload.name || name;
-            }
-          }
-        }
-      } catch (err) {
-        console.warn("Google token verification fallback:", err);
-      }
+    const payload = ticket.getPayload();
+    if (!payload?.email || !payload.email_verified) {
+      return NextResponse.json(
+        { error: "Google account email is not verified." },
+        { status: 401 },
+      );
     }
 
-    if (!email || typeof email !== "string" || !email.includes("@")) {
-      return NextResponse.json({ error: "A valid email address is required for Google Sign-In." }, { status: 400 });
-    }
-
-    const normalizedEmail = email.trim().toLowerCase();
-    const isAdmin = checkIsAdminEmail(normalizedEmail);
+    const email = payload.email.trim().toLowerCase();
+    const name = payload.name || payload.given_name || "Google User";
+    const isAdmin = checkIsAdminEmail(email);
     const targetRole = isAdmin ? "ADMIN" : "USER";
 
-    // Upsert User in Prisma
     const user = await prisma.user.upsert({
-      where: { email: normalizedEmail },
+      where: { email },
       update: {
         name,
-        role: isAdmin ? "ADMIN" : undefined, // Keep existing role unless admin email
+        role: isAdmin ? "ADMIN" : undefined,
       },
       create: {
-        email: normalizedEmail,
+        email,
         name,
         passwordHash: "oauth_google_authenticated",
         role: targetRole,
       },
     });
 
-    // Create session cookie
     await setSessionCookie(user.id);
 
     const redirectPath = user.role === "ADMIN" || isAdmin ? "/studio" : "/dashboard";
@@ -85,6 +74,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Google Auth API Error:", error);
-    return NextResponse.json({ error: "Failed to authenticate with Google." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Google token verification failed." },
+      { status: 401 },
+    );
   }
 }

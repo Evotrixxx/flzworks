@@ -15,7 +15,18 @@ export async function POST(request: Request) {
     where: { email: parsed.data.email },
   });
 
-  if (!user || !(await bcrypt.compare(parsed.data.password, user.passwordHash))) {
+  if (!user) {
+    return NextResponse.json({ error: "Invalid credentials." }, { status: 401 });
+  }
+
+  if (user.passwordHash === "oauth_google_authenticated") {
+    return NextResponse.json(
+      { error: "This account uses Google Sign-In. Please use the Google button instead." },
+      { status: 400 },
+    );
+  }
+
+  if (!(await bcrypt.compare(parsed.data.password, user.passwordHash))) {
     return NextResponse.json({ error: "Invalid credentials." }, { status: 401 });
   }
 

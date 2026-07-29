@@ -1,9 +1,11 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Lock, Mail, User, Loader2 } from "lucide-react";
 import type { Dictionary, Locale } from "@/lib/i18n";
+
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
 export function GoogleSignInButton({
   redirectTo,
@@ -17,72 +19,86 @@ export function GoogleSignInButton({
   onError?: (err: string) => void;
 }) {
   const router = useRouter();
+  const buttonRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
+  const initializedRef = useRef(false);
 
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
-    if (onStart) onStart();
+  const handleCredentialResponse = useCallback(
+    async (response: GoogleCredentialResponse) => {
+      setLoading(true);
+      if (onStart) onStart();
 
-    try {
-      // Prompt user for Google email (prefilled with floszbeni@gmail.com)
-      const emailInput = prompt("Enter your Google Account email for Admin Access (e.g. floszbeni@gmail.com):", "floszbeni@gmail.com");
-      if (!emailInput) {
+      try {
+        const res = await fetch("/api/auth/google", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ credential: response.credential }),
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || "Google Sign-In failed.");
+        }
+
+        const destination = data.redirect || "/studio";
+        router.push(`${destination}${destination.includes("?") ? "&" : "?"}lang=${locale}`);
+        router.refresh();
+      } catch (err: any) {
+        console.error(err);
+        if (onError) onError(err.message || "Google Sign-In failed.");
         setLoading(false);
-        return;
       }
+    },
+    [router, locale, onStart, onError],
+  );
 
-      const res = await fetch("/api/auth/google", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: emailInput, name: "Bence Flosz (Google)" }),
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID || !buttonRef.current || initializedRef.current) return;
+
+    function tryInit() {
+      if (typeof google === "undefined" || !google?.accounts?.id) return false;
+      if (initializedRef.current) return true;
+
+      google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID!,
+        callback: handleCredentialResponse,
       });
 
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || "Google Sign-In failed.");
-      }
+      google.accounts.id.renderButton(buttonRef.current!, {
+        type: "standard",
+        theme: "outline",
+        size: "large",
+        text: "signin_with",
+        shape: "pill",
+        width: 320,
+      });
 
-      const destination = data.redirect || "/studio";
-      router.push(`${destination}${destination.includes("?") ? "&" : "?"}lang=${locale}`);
-      router.refresh();
-    } catch (err: any) {
-      console.error(err);
-      if (onError) onError(err.message || "Google Sign-In failed.");
-      setLoading(false);
+      initializedRef.current = true;
+      return true;
     }
-  };
+
+    if (!tryInit()) {
+      const interval = setInterval(() => {
+        if (tryInit()) clearInterval(interval);
+      }, 200);
+      return () => clearInterval(interval);
+    }
+  }, [handleCredentialResponse]);
+
+  if (!GOOGLE_CLIENT_ID) {
+    return null;
+  }
 
   return (
-    <button
-      type="button"
-      onClick={handleGoogleSignIn}
-      disabled={loading}
-      className="w-full inline-flex h-11 items-center justify-center gap-3 rounded-full bg-white border border-slate-300 shadow-sm px-4 text-sm font-bold text-slate-800 hover:bg-slate-50 transition active:scale-[0.99] disabled:opacity-60"
-    >
-      {loading ? (
-        <Loader2 className="h-4 w-4 animate-spin text-slate-600" />
-      ) : (
-        <svg className="h-5 w-5" viewBox="0 0 24 24">
-          <path
-            fill="#4285F4"
-            d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
-          />
-          <path
-            fill="#34A853"
-            d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.27v3.15C3.25 21.3 7.31 24 12 24z"
-          />
-          <path
-            fill="#FBBC05"
-            d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.27C.46 8.2.005 10.04.005 12c0 1.96.455 3.8 1.265 5.42l4.01-3.15z"
-          />
-          <path
-            fill="#EA4335"
-            d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.7 1.27 6.58l4.01 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
-          />
-        </svg>
+    <div className="flex flex-col items-center gap-2">
+      <div ref={buttonRef} className="min-h-[44px]" />
+      {loading && (
+        <div className="flex items-center gap-2 text-sm text-slate-500">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Signing in...
+        </div>
       )}
-      Sign in with Google
-    </button>
+    </div>
   );
 }
 
@@ -115,7 +131,8 @@ export function AuthForm({
     });
 
     if (!response.ok) {
-      setError(t.forms.error);
+      const data = await response.json().catch(() => null);
+      setError(data?.error || t.forms.error);
       setPending(false);
       return;
     }
