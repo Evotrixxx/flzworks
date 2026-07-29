@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { syncPortfolioArticles } from "@/lib/portfolio-sync";
 import { readSocialConfig } from "@/lib/social-config";
 import { StudioEditor } from "@/components/studio-editor";
@@ -8,7 +9,7 @@ import { StudioEditor } from "@/components/studio-editor";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "FLZ | Studio Editor",
+  title: "FLZ | Studio Content Management Editor",
   robots: { index: false, follow: false },
 };
 
@@ -35,7 +36,33 @@ export default async function StudioPage() {
     );
   }
 
-  const [articles, social] = await Promise.all([syncPortfolioArticles(), readSocialConfig()]);
+  const [articles, social, projectsData, settingsData] = await Promise.all([
+    syncPortfolioArticles(),
+    readSocialConfig(),
+    prisma.flzProject.findMany({
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+    }),
+    prisma.flzSetting.findMany(),
+  ]);
 
-  return <StudioEditor articles={articles} social={social} userEmail={user.email} />;
+  const flzProjects = projectsData.map((p) => ({
+    ...p,
+    createdAt: undefined,
+    updatedAt: undefined,
+  }));
+
+  const flzSettings: Record<string, string> = {};
+  for (const s of settingsData) {
+    flzSettings[s.key] = s.value;
+  }
+
+  return (
+    <StudioEditor
+      articles={articles}
+      social={social}
+      flzProjects={flzProjects}
+      flzSettings={flzSettings}
+      userEmail={user.email}
+    />
+  );
 }

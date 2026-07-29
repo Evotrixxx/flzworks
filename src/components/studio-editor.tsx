@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import type { PortfolioArticleWithImages } from "@/lib/portfolio-sync";
 import type { SocialEntry } from "@/lib/social-config";
+import { FlzAdminDashboard, FlzProjectData } from "@/components/flz-admin-dashboard";
 
 type SaveState = "idle" | "saving" | "success" | "error";
 
@@ -18,10 +19,20 @@ interface LogForm {
 interface StudioEditorProps {
   articles: PortfolioArticleWithImages[];
   social: SocialEntry[];
+  flzProjects: FlzProjectData[];
+  flzSettings: Record<string, string>;
   userEmail: string;
 }
 
-export function StudioEditor({ articles, social, userEmail }: StudioEditorProps) {
+export function StudioEditor({
+  articles,
+  social,
+  flzProjects,
+  flzSettings,
+  userEmail,
+}: StudioEditorProps) {
+  const [activeTab, setActiveTab] = useState<"flz" | "logs" | "social">("flz");
+
   return (
     <div className="bp-root bp-studio">
       <header className="bp-topbar">
@@ -35,9 +46,83 @@ export function StudioEditor({ articles, social, userEmail }: StudioEditorProps)
         </div>
       </header>
 
+      {/* Mode Switcher Tabs */}
+      <div style={{ background: "#100e0c", borderBottom: "1px solid rgba(255,255,255,0.1)", padding: "12px 24px" }}>
+        <div style={{ maxWidth: "1280px", margin: "0 auto", display: "flex", gap: "10px" }}>
+          <button
+            type="button"
+            onClick={() => setActiveTab("flz")}
+            style={{
+              padding: "8px 18px",
+              borderRadius: "999px",
+              fontSize: "12px",
+              fontWeight: 700,
+              fontFamily: "monospace",
+              textTransform: "uppercase",
+              cursor: "pointer",
+              border: activeTab === "flz" ? "1px solid rgba(6, 182, 212, 0.5)" : "1px solid rgba(255,255,255,0.1)",
+              background: activeTab === "flz" ? "rgba(6, 182, 212, 0.2)" : "rgba(255,255,255,0.05)",
+              color: activeTab === "flz" ? "#38bdf8" : "rgba(255,255,255,0.7)",
+              transition: "all 0.2s",
+            }}
+          >
+            ⚡ FLZ Projects & Hero Settings
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("logs")}
+            style={{
+              padding: "8px 18px",
+              borderRadius: "999px",
+              fontSize: "12px",
+              fontWeight: 700,
+              fontFamily: "monospace",
+              textTransform: "uppercase",
+              cursor: "pointer",
+              border: activeTab === "logs" ? "1px solid rgba(255,255,255,0.4)" : "1px solid rgba(255,255,255,0.1)",
+              background: activeTab === "logs" ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.05)",
+              color: activeTab === "logs" ? "#fff" : "rgba(255,255,255,0.7)",
+              transition: "all 0.2s",
+            }}
+          >
+            📰 Portfolio Articles ({articles.length})
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("social")}
+            style={{
+              padding: "8px 18px",
+              borderRadius: "999px",
+              fontSize: "12px",
+              fontWeight: 700,
+              fontFamily: "monospace",
+              textTransform: "uppercase",
+              cursor: "pointer",
+              border: activeTab === "social" ? "1px solid rgba(245, 158, 11, 0.5)" : "1px solid rgba(255,255,255,0.1)",
+              background: activeTab === "social" ? "rgba(245, 158, 11, 0.2)" : "rgba(255,255,255,0.05)",
+              color: activeTab === "social" ? "#fbbf24" : "rgba(255,255,255,0.7)",
+              transition: "all 0.2s",
+            }}
+          >
+            📡 Transmissions & Social ({social.length})
+          </button>
+        </div>
+      </div>
+
       <main className="bp-studio-main">
-        <LogPostsPanel articles={articles} />
-        <TransmissionsPanel initial={social} />
+        {activeTab === "flz" && (
+          <FlzAdminDashboard
+            initialProjects={flzProjects}
+            initialSettings={flzSettings}
+            userEmail={userEmail}
+          />
+        )}
+
+        {activeTab === "logs" && <LogPostsPanel articles={articles} />}
+
+        {activeTab === "social" && <TransmissionsPanel initial={social} />}
       </main>
     </div>
   );
