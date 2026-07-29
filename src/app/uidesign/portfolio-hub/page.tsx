@@ -653,9 +653,52 @@ export default function PortfolioHubPage() {
   const [activeView, setActiveView] = useState<ActiveView>("work");
   const [contactOpen, setContactOpen] = useState(false);
 
+  // Dynamic projects & settings state from DB
+  const [projectsList, setProjectsList] = useState<typeof PROJECTS>(PROJECTS);
+  const [settings, setSettings] = useState<Record<string, string>>({});
+  const [isAdmin, setIsAdmin] = useState(false);
+
   useEffect(() => {
-    const start = new Date("2023-09-01T00:00:00").getTime();
-    setDaysBuilding(String(Math.floor((Date.now() - start) / 86400000)));
+    // Fetch live projects & admin status
+    fetch("/api/flz/projects")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.isAdmin) setIsAdmin(true);
+        if (data?.projects && Array.isArray(data.projects) && data.projects.length > 0) {
+          const mapped = data.projects.map((p: any) => ({
+            id: p.id,
+            tools: p.tools,
+            title: p.title,
+            cat: p.category,
+            age: p.age || "",
+            grad: p.gradient || "radial-gradient(120% 130% at 24% 6%,rgba(216,195,166,.62),rgba(120,96,72,.12) 55%,transparent 76%)",
+          }));
+          setProjectsList(mapped);
+        }
+      })
+      .catch(() => {});
+
+    // Fetch site settings
+    fetch("/api/flz/settings")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.settings) {
+          setSettings(data.settings);
+          if (data.settings.building_start_date) {
+            const start = new Date(data.settings.building_start_date).getTime();
+            if (!isNaN(start)) {
+              setDaysBuilding(String(Math.floor((Date.now() - start) / 86400000)));
+              return;
+            }
+          }
+        }
+        const defaultStart = new Date("2023-09-01T00:00:00").getTime();
+        setDaysBuilding(String(Math.floor((Date.now() - defaultStart) / 86400000)));
+      })
+      .catch(() => {
+        const defaultStart = new Date("2023-09-01T00:00:00").getTime();
+        setDaysBuilding(String(Math.floor((Date.now() - defaultStart) / 86400000)));
+      });
   }, []);
 
   useEffect(() => {
@@ -666,7 +709,7 @@ export default function PortfolioHubPage() {
   }, [contactOpen]);
 
   const visibleProjects =
-    activeFilter === "All" ? PROJECTS : PROJECTS.filter(p => p.cat === activeFilter);
+    activeFilter === "All" ? projectsList : projectsList.filter(p => p.cat === activeFilter);
 
   return (
     <div className="flz-hub-root" style={{
@@ -682,6 +725,37 @@ export default function PortfolioHubPage() {
       <div className="flz-orb" style={{ position: "absolute", top: "2%", left: "14%", width: 420, height: 300, borderRadius: "50%", background: "radial-gradient(closest-side,rgba(232,214,189,.5),rgba(232,214,189,0))", filter: "blur(46px)", animation: "flz-drift1 34s ease-in-out infinite", willChange: "transform", pointerEvents: "none" }} />
       <div className="flz-orb" style={{ position: "absolute", top: "34%", right: "6%", width: 460, height: 340, borderRadius: "50%", background: "radial-gradient(closest-side,rgba(176,140,102,.38),rgba(176,140,102,0))", filter: "blur(52px)", animation: "flz-drift2 44s ease-in-out infinite", willChange: "transform", pointerEvents: "none" }} />
       <div className="flz-orb" style={{ position: "absolute", bottom: "10%", left: "38%", width: 520, height: 340, borderRadius: "50%", background: "radial-gradient(closest-side,rgba(120,132,150,.22),rgba(120,132,150,0))", filter: "blur(58px)", animation: "flz-drift3 52s ease-in-out infinite", willChange: "transform", pointerEvents: "none" }} />
+
+      {/* Admin Quick Editor Badge (Only visible when logged in as Admin) */}
+      {isAdmin && (
+        <div style={{ position: "fixed", top: 20, right: 20, zIndex: 60 }}>
+          <a
+            href="/studio/admin"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "10px 18px",
+              borderRadius: 999,
+              background: "rgba(6, 182, 212, 0.22)",
+              border: "1px solid rgba(6, 182, 212, 0.45)",
+              color: "#38bdf8",
+              font: "600 12px/1 'JetBrains Mono', monospace",
+              textTransform: "uppercase",
+              letterSpacing: ".08em",
+              backdropFilter: "blur(16px)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+              textDecoration: "none",
+              transition: "transform .2s, background .2s",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.04)")}
+            onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1.0)")}
+          >
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#38bdf8" }} />
+            ⚡ Edit FLZ Works
+          </a>
+        </div>
+      )}
 
       {/* Contact card floater */}
       {contactOpen && (
