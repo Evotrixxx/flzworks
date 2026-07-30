@@ -292,7 +292,7 @@ const DS_TOKENS = `
 `;
 
 // ── Static data ──────────────────────────────────────────────────────────────
-const PROJECTS: { id: number; tools: string; title: string; cat: string; age: string; grad: string }[] = [];
+const PROJECTS: { id: number; tools: string; title: string; cat: string; age: string; grad: string; link: string }[] = [];
 
 const FILTERS = ["All", "Assets", "Characters", "Gameplay", "Automotive"];
 
@@ -363,7 +363,7 @@ function SearchView({ allProjects }: { allProjects: typeof PROJECTS }) {
     : allProjects;
 
   const tiles = [...visible];
-  while (tiles.length < 6) tiles.push({ id: -tiles.length, tools: "", title: "", cat: "", age: "", grad: "none" });
+  while (tiles.length < 6) tiles.push({ id: -tiles.length, tools: "", title: "", cat: "", age: "", grad: "none", link: "" });
 
   return (
     <div className="flz-view" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 14, overflow: "hidden" }}>
@@ -475,8 +475,16 @@ function ProjectTile({ project }: { project: typeof PROJECTS[number] }) {
     border: "1px solid rgba(255,255,255,.10)",
     textDecoration: "none", color: "inherit",
   };
+  // "Link" in the studio editor is what the tile opens; without one it stays inert.
+  const external = /^https?:\/\//i.test(project.link);
   return (
-    <a href="#" className="flz-tile" style={tileStyle}>
+    <a
+      href={project.link || "#"}
+      target={external ? "_blank" : undefined}
+      rel={external ? "noopener noreferrer" : undefined}
+      className="flz-tile"
+      style={tileStyle}
+    >
       <div style={{ position: "absolute", inset: 0, background: project.grad }} />
       <div style={{ position: "relative", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <span style={{ font: `500 9.5px/1 var(--flz-font-mono)`, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--flz-text-secondary)" }}>{project.tools}</span>
@@ -490,14 +498,55 @@ function ProjectTile({ project }: { project: typeof PROJECTS[number] }) {
   );
 }
 
+function DiscordCard({ url }: { url: string }) {
+  const cardStyle: React.CSSProperties = {
+    flexShrink: 0, padding: 18, borderRadius: 28,
+    background: "#1c1a17", border: "1px solid rgba(255,255,255,.10)",
+    display: "flex", flexDirection: "column", gap: 14,
+    textDecoration: "none", color: "inherit",
+  };
+
+  const inner = (
+    <>
+      <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+        <span style={{ width: 38, height: 38, borderRadius: 12, background: "#5865F2", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff">
+            <path d="M19.3 5.3A17 17 0 0 0 15 4l-.2.4a15 15 0 0 1 3.7 1.2 13 13 0 0 0-11-.1A14 14 0 0 1 11.3 4L11 3.6A17 17 0 0 0 6.7 5 18 18 0 0 0 3.6 17a17 17 0 0 0 5.2 2.6l.6-.9a11 11 0 0 1-1.8-.9l.4-.3a12 12 0 0 0 10 0l.5.3c-.6.4-1.2.7-1.9.9l.6 1a17 17 0 0 0 5.2-2.7A18 18 0 0 0 19.3 5.3ZM9.4 14.3c-.7 0-1.3-.7-1.3-1.5s.6-1.5 1.3-1.5 1.3.7 1.3 1.5-.6 1.5-1.3 1.5Zm5.2 0c-.7 0-1.3-.7-1.3-1.5s.6-1.5 1.3-1.5 1.3.7 1.3 1.5-.6 1.5-1.3 1.5Z"/>
+          </svg>
+        </span>
+        <div style={{ lineHeight: 1.2 }}>
+          <div style={{ font: `500 var(--flz-fs-body)/1 var(--flz-font-display)`, color: "var(--flz-text-primary)" }}>The Discord</div>
+          <div style={{ font: `500 10px/1 var(--flz-font-mono)`, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--flz-text-muted)", marginTop: 4 }}>Feedback</div>
+        </div>
+      </div>
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+        <span style={{ display: "inline-flex", alignItems: "flex-start", gap: 2 }}>
+          <span style={{ font: `500 40px/1 var(--flz-font-display)`, letterSpacing: "-.028em", color: "var(--flz-text-primary)" }}>soon</span>
+        </span>
+        {url && <span className="flz-tile-arr" style={{ color: "var(--flz-text-primary)" }}><IconNE /></span>}
+      </div>
+    </>
+  );
+
+  return url ? (
+    <a href={url} target="_blank" rel="noopener noreferrer" className="flz-tile" style={cardStyle}>
+      {inner}
+    </a>
+  ) : (
+    <div style={cardStyle}>{inner}</div>
+  );
+}
+
 function MainSlab({
   daysBuilding,
+  settings,
   activeFilter,
   setActiveFilter,
   visibleProjects,
   activeView,
 }: {
   daysBuilding: string;
+  settings: Record<string, string>;
   activeFilter: string;
   setActiveFilter: (f: string) => void;
   visibleProjects: typeof PROJECTS;
@@ -516,7 +565,7 @@ function MainSlab({
 
   // Pad to 6 tiles (show empty placeholders)
   const tiles = [...visibleProjects];
-  while (tiles.length < 6) tiles.push({ id: -tiles.length, tools: "", title: "", cat: "", age: "", grad: "none" });
+  while (tiles.length < 6) tiles.push({ id: -tiles.length, tools: "", title: "", cat: "", age: "", grad: "none", link: "" });
 
   return (
     <div className="flz-slab" style={slabStyle}>
@@ -535,14 +584,15 @@ function MainSlab({
       {/* Hero row */}
       <div className="flz-enter flz-hero" style={{ "--flz-delay": "70ms", display: "flex", alignItems: "center", gap: 32, flexWrap: "wrap" } as React.CSSProperties}>
         <div style={{ flex: "1 1 340px", minWidth: 0 }}>
-          <h1 style={{ margin: 0, font: `500 clamp(2rem,1.4rem + 2.4vw,2.9rem)/0.98 var(--flz-font-display)`, letterSpacing: "-.032em", color: "var(--flz-text-primary)" }}>
-            Munca is now<br />in development.
+          {/* Headline, counters and the Discord link below are edited in /studio. */}
+          <h1 style={{ margin: 0, font: `500 clamp(2rem,1.4rem + 2.4vw,2.9rem)/0.98 var(--flz-font-display)`, letterSpacing: "-.032em", color: "var(--flz-text-primary)", whiteSpace: "pre-line" }}>
+            {settings.hero_headline?.trim() || "Munca is now\nin development."}
           </h1>
         </div>
         <div className="flz-stats" style={{ flexShrink: 0, display: "flex", gap: 12 }}>
           <StatTile label="Building since" value={daysBuilding} unit="days" />
-          <StatTile label="Followers" value="soon" />
-          <StatTile label="Wishlists" value="soon" />
+          <StatTile label="Followers" value={settings.followers_count?.trim() || "soon"} />
+          <StatTile label="Wishlists" value={settings.wishlists_count?.trim() || "soon"} />
         </div>
       </div>
 
@@ -605,25 +655,8 @@ function MainSlab({
             </div>
           </a>
 
-          {/* Discord card */}
-          <div style={{ flexShrink: 0, padding: 18, borderRadius: 28, background: "#1c1a17", border: "1px solid rgba(255,255,255,.10)", display: "flex", flexDirection: "column", gap: 14 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
-              <span style={{ width: 38, height: 38, borderRadius: 12, background: "#5865F2", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff">
-                  <path d="M19.3 5.3A17 17 0 0 0 15 4l-.2.4a15 15 0 0 1 3.7 1.2 13 13 0 0 0-11-.1A14 14 0 0 1 11.3 4L11 3.6A17 17 0 0 0 6.7 5 18 18 0 0 0 3.6 17a17 17 0 0 0 5.2 2.6l.6-.9a11 11 0 0 1-1.8-.9l.4-.3a12 12 0 0 0 10 0l.5.3c-.6.4-1.2.7-1.9.9l.6 1a17 17 0 0 0 5.2-2.7A18 18 0 0 0 19.3 5.3ZM9.4 14.3c-.7 0-1.3-.7-1.3-1.5s.6-1.5 1.3-1.5 1.3.7 1.3 1.5-.6 1.5-1.3 1.5Zm5.2 0c-.7 0-1.3-.7-1.3-1.5s.6-1.5 1.3-1.5 1.3.7 1.3 1.5-.6 1.5-1.3 1.5Z"/>
-                </svg>
-              </span>
-              <div style={{ lineHeight: 1.2 }}>
-                <div style={{ font: `500 var(--flz-fs-body)/1 var(--flz-font-display)`, color: "var(--flz-text-primary)" }}>The Discord</div>
-                <div style={{ font: `500 10px/1 var(--flz-font-mono)`, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--flz-text-muted)", marginTop: 4 }}>Feedback</div>
-              </div>
-            </div>
-            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
-              <span style={{ display: "inline-flex", alignItems: "flex-start", gap: 2 }}>
-                <span style={{ font: `500 40px/1 var(--flz-font-display)`, letterSpacing: "-.028em", color: "var(--flz-text-primary)" }}>soon</span>
-              </span>
-            </div>
-          </div>
+          {/* Discord card — the invite comes from the studio's site settings */}
+          <DiscordCard url={settings.discord_url?.trim() || ""} />
         </div>
       </div>
 
@@ -661,6 +694,7 @@ export default function PortfolioHubPage() {
             cat: p.category,
             age: p.age || "",
             grad: p.gradient || "radial-gradient(120% 130% at 24% 6%,rgba(216,195,166,.62),rgba(120,96,72,.12) 55%,transparent 76%)",
+            link: p.linkUrl || "",
           }));
           setProjectsList(mapped);
         }
@@ -768,6 +802,7 @@ export default function PortfolioHubPage() {
         <IconRail activeView={activeView} setActiveView={setActiveView} contactOpen={contactOpen} setContactOpen={setContactOpen} />
         <MainSlab
           daysBuilding={daysBuilding}
+          settings={settings}
           activeFilter={activeFilter}
           setActiveFilter={setActiveFilter}
           visibleProjects={visibleProjects}

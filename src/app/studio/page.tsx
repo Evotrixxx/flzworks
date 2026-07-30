@@ -1,16 +1,20 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ShieldAlert } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { syncPortfolioArticles, PortfolioArticleWithImages } from "@/lib/portfolio-sync";
 import { readSocialConfig, DEFAULT_SOCIAL, SocialEntry } from "@/lib/social-config";
 import { StudioEditor } from "@/components/studio-editor";
+import type { FlzProjectData } from "@/components/studio/types";
 import { checkIsAdminEmail } from "@/lib/flz-security";
+import s from "@/components/studio/studio.module.css";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "FLZ | Studio Content Management Editor",
+  title: "FLZ | Studio",
   robots: { index: false, follow: false },
 };
 
@@ -25,15 +29,22 @@ export default async function StudioPage() {
 
   if (!isAdmin) {
     return (
-      <div className="bp-root bp-studio">
-        <div className="bp-studio-denied">
-          <div className="bp-studio-denied-tag bp-accent">■ ACCESS RESTRICTED</div>
-          <h1 className="bp-studio-denied-title">ADMIN CLEARANCE REQUIRED</h1>
-          <p className="bp-studio-denied-body">
-            The studio editor is limited to administrator accounts. You are signed in as{" "}
-            <strong>{user.email}</strong>.
-          </p>
-          <a href="/" className="bp-btn">← BACK TO SITE</a>
+      <div className={s.root}>
+        <div className={s.orbA} />
+        <div className={s.denied}>
+          <div className={s.deniedCard}>
+            <span className={s.deniedIcon}>
+              <ShieldAlert size={22} />
+            </span>
+            <h1 className={s.deniedTitle}>Admin access only</h1>
+            <p className={s.deniedBody}>
+              The studio editor is limited to administrator accounts. You are signed in as{" "}
+              <span className={s.deniedMail}>{user.email}</span>.
+            </p>
+            <Link href="/" className={s.btn}>
+              Back to flz.works
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -66,7 +77,7 @@ export default async function StudioPage() {
     console.error("Failed to read social config in StudioPage:", err);
   }
 
-  let projectsData: any[] = [];
+  let projectsData: Awaited<ReturnType<typeof prisma.flzProject.findMany>> = [];
   try {
     projectsData = await prisma.flzProject.findMany({
       orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
@@ -75,22 +86,32 @@ export default async function StudioPage() {
     console.error("Failed to query flzProject in StudioPage:", err);
   }
 
-  let settingsData: any[] = [];
+  let settingsData: Awaited<ReturnType<typeof prisma.flzSetting.findMany>> = [];
   try {
     settingsData = await prisma.flzSetting.findMany();
   } catch (err) {
     console.error("Failed to query flzSetting in StudioPage:", err);
   }
 
-  const flzProjects = (projectsData || []).map((p) => ({
-    ...p,
-    createdAt: undefined,
-    updatedAt: undefined,
+  // Only hand the client the fields the editor works with — timestamps stay server-side.
+  const flzProjects: FlzProjectData[] = projectsData.map((p) => ({
+    id: p.id,
+    title: p.title,
+    tools: p.tools,
+    category: p.category,
+    age: p.age,
+    gradient: p.gradient,
+    description: p.description,
+    featured: p.featured,
+    visible: p.visible,
+    sortOrder: p.sortOrder,
+    linkUrl: p.linkUrl,
+    imageUrl: p.imageUrl,
   }));
 
   const flzSettings: Record<string, string> = {};
-  for (const s of settingsData || []) {
-    flzSettings[s.key] = s.value;
+  for (const setting of settingsData) {
+    flzSettings[setting.key] = setting.value;
   }
 
   return (

@@ -65,3 +65,6 @@ build_out.log
 local_changes_backup/
 .agents/teamwork_preview_*
 .agents/victory_auditor_gen2/
+
+# Temporary repro files
+.tmp-repro/
