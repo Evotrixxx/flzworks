@@ -4,9 +4,10 @@ export interface FlzProjectData {
   title: string;
   tools: string;
   category: string;
-  age?: string | null;
+  /** ISO string; the server strips Date objects before handing rows to the studio. */
+  publishedAt?: string | null;
   gradient?: string | null;
-  description?: string | null;
+  body?: string | null;
   featured: boolean;
   visible: boolean;
   sortOrder: number;

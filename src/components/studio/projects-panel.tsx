@@ -1,17 +1,19 @@
 "use client";
 
-import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
+import { useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import {
   ArrowDown,
   ArrowUp,
   Check,
   ExternalLink,
+  ImagePlus,
   Layers,
   Pencil,
   Plus,
   Save,
   Star,
   Trash2,
+  X,
 } from "lucide-react";
 import {
   EmptyState,
@@ -25,6 +27,7 @@ import {
   type Notify,
 } from "./ui";
 import { CATEGORIES, GRADIENT_PRESETS, type FlzProjectData } from "./types";
+import { relativeAge, toDateInputValue } from "@/lib/flz-date";
 import s from "./studio.module.css";
 
 type StatusFilter = "all" | "live" | "hidden" | "featured";
@@ -41,9 +44,10 @@ function blankProject(sortOrder: number): Partial<FlzProjectData> {
     title: "",
     tools: "Blender · Unity",
     category: "Characters",
-    age: "Just added",
+    publishedAt: toDateInputValue(new Date()),
     gradient: GRADIENT_PRESETS[0].value,
-    description: "",
+    body: "",
+    imageUrl: "",
     linkUrl: "",
     featured: false,
     visible: true,
@@ -85,7 +89,7 @@ export function ProjectsPanel({
         p.title.toLowerCase().includes(q) ||
         p.tools.toLowerCase().includes(q) ||
         p.category.toLowerCase().includes(q) ||
-        (p.description ?? "").toLowerCase().includes(q);
+        (p.body ?? "").toLowerCase().includes(q);
       const matchesCategory = category === "All" || p.category === category;
       const matchesStatus =
         status === "all" ||
@@ -281,6 +285,20 @@ export function ProjectsPanel({
               <article key={p.id} className={`${s.card} ${p.visible ? "" : s.cardDim}`}>
                 <div className={s.cardBand}>
                   <div className={s.cardBandFill} style={{ background: p.gradient || "none" }} />
+                  {p.imageUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element -- author-supplied URL, no loader
+                    <img
+                      src={p.imageUrl}
+                      alt=""
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  )}
                   <div className={s.cardBandTop}>
                     <span className={s.cardOrder}>#{index + 1}</span>
                     {p.featured && (
@@ -295,9 +313,9 @@ export function ProjectsPanel({
                   <h3 className={s.cardTitle}>{p.title}</h3>
                   <div className={s.cardMeta}>
                     {p.category}
-                    {p.age ? ` · ${p.age}` : ""} · {p.tools}
+                    {relativeAge(p.publishedAt) ? ` · ${relativeAge(p.publishedAt)}` : ""} · {p.tools}
                   </div>
-                  {p.description && <p className={s.cardDesc}>{p.description}</p>}
+                  {p.body && <p className={s.cardDesc}>{p.body}</p>}
                   {p.linkUrl && (
                     <a
                       className={s.cardLink}
@@ -476,8 +494,9 @@ function ProjectDialog({
       ...form,
       title: form.title?.trim(),
       tools: form.tools?.trim(),
-      age: form.age?.trim() || null,
-      description: form.description?.trim() || null,
+      publishedAt: form.publishedAt?.trim() || null,
+      body: form.body?.trim() || null,
+      imageUrl: form.imageUrl?.trim() || null,
       linkUrl: form.linkUrl?.trim() || null,
       sortOrder: form.sortOrder ?? initial.sortOrder,
     });
@@ -548,12 +567,20 @@ function ProjectDialog({
         </div>
 
         <div className={s.grid2}>
-          <Field label="Time label" hint="Free text, e.g. “2 days ago”.">
+          <Field
+            label="Date"
+            hint={
+              form.publishedAt
+                ? `Shows as “${relativeAge(form.publishedAt)}” on the card.`
+                : "When the work was made. Older work is fine."
+            }
+          >
             <input
-              className={s.input}
-              value={form.age ?? ""}
-              placeholder="2 weeks ago"
-              onChange={(e) => set("age", e.target.value)}
+              type="date"
+              className={`${s.input} ${s.inputMono}`}
+              value={toDateInputValue(form.publishedAt)}
+              max={toDateInputValue(new Date())}
+              onChange={(e) => set("publishedAt", e.target.value)}
             />
           </Field>
           <Field label="Sort order" hint="Lower shows first. Arrows in the grid do this too.">
@@ -622,19 +649,23 @@ function ProjectDialog({
       <div className={s.modalGroup}>
         <div className={s.groupLabel}>Details</div>
         <Field
-          label="Description"
-          hint="Short breakdown — poly count, shader notes, what to look at."
-          counter={`${(form.description ?? "").length}/2000`}
+          label="Article text"
+          hint="The card shows the first line or two; the rest appears when it is opened."
+          counter={`${(form.body ?? "").length}/2000`}
         >
           <textarea
             className={s.textarea}
-            rows={4}
-            value={form.description ?? ""}
+            rows={5}
+            value={form.body ?? ""}
             maxLength={2000}
             placeholder="Hand-painted, 24k tris, game-ready character from block-out to pose."
-            onChange={(e) => set("description", e.target.value)}
+            onChange={(e) => set("body", e.target.value)}
           />
         </Field>
+        <PictureField
+          value={form.imageUrl ?? ""}
+          onChange={(url) => set("imageUrl", url)}
+        />
         <Field label="Link" hint="Opens when a visitor clicks the card on flz.works.">
           <input
             className={`${s.input} ${s.inputMono}`}
@@ -661,5 +692,126 @@ function ProjectDialog({
         />
       </div>
     </Modal>
+  );
+}
+
+/* ── Picture: upload or paste a URL ─────────────────────────────────────── */
+
+function PictureField({ value, onChange }: { value: string; onChange: (url: string) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+
+  const upload = async (file: File) => {
+    setUploading(true);
+    setError("");
+
+    try {
+      const data = new FormData();
+      data.append("file", file);
+
+      const res = await fetch("/api/flz/upload", { method: "POST", body: data });
+      const payload = await res.json().catch(() => null);
+
+      if (!res.ok || !payload?.url) {
+        throw new Error(payload?.error || "The image could not be uploaded.");
+      }
+
+      onChange(payload.url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "The image could not be uploaded.");
+    } finally {
+      setUploading(false);
+      // Let the same file be picked again after a failure.
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  };
+
+  return (
+    <Field
+      label="Picture"
+      hint="JPG, PNG or WebP, up to 5 MB. Falls back to the card wash when empty."
+      error={error}
+    >
+      <div className={s.fieldRow}>
+        <div
+          aria-hidden={!value}
+          style={{
+            position: "relative",
+            width: 96,
+            aspectRatio: "4 / 3",
+            flexShrink: 0,
+            overflow: "hidden",
+            borderRadius: 12,
+            border: "1px solid rgba(255,255,255,.14)",
+            background: "rgba(255,255,255,.05)",
+          }}
+        >
+          {value ? (
+            // eslint-disable-next-line @next/next/no-img-element -- author-supplied URL, no loader
+            <img
+              src={value}
+              alt=""
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          ) : (
+            <span
+              style={{
+                display: "grid",
+                placeItems: "center",
+                width: "100%",
+                height: "100%",
+                color: "rgba(255,255,255,.35)",
+              }}
+            >
+              <ImagePlus size={18} />
+            </span>
+          )}
+        </div>
+
+        <div style={{ display: "grid", gap: 8, flex: 1, minWidth: 0 }}>
+          <input
+            className={`${s.input} ${s.inputMono}`}
+            value={value}
+            placeholder="/media/… or https://…"
+            onChange={(e) => onChange(e.target.value)}
+          />
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            <input
+              ref={inputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              hidden
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) void upload(file);
+              }}
+            />
+            <button
+              type="button"
+              className={`${s.btn} ${s.btnSm}`}
+              disabled={uploading}
+              onClick={() => inputRef.current?.click()}
+            >
+              {uploading ? <Spinner size={13} /> : <ImagePlus size={14} />}
+              {uploading ? "Uploading…" : "Upload image"}
+            </button>
+            {value && (
+              <button
+                type="button"
+                className={`${s.btn} ${s.btnSm} ${s.btnGhost}`}
+                disabled={uploading}
+                onClick={() => {
+                  onChange("");
+                  setError("");
+                }}
+              >
+                <X size={14} /> Remove
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </Field>
   );
 }

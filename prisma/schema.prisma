@@ -172,9 +172,9 @@ model FlzProject {
   title       String
   tools       String   // e.g. "Blender · ZBrush"
   category    String   // e.g. "Characters", "Automotive", "Gameplay", "Assets"
-  age         String?  // e.g. "2 days ago" or date string
+  publishedAt DateTime? // when the work was made; rendered as "3 months ago"
   gradient    String?  // radial gradient or color preset
-  description String?  // detailed breakdown or summary
+  body        String?  // article text shown on the card
   featured    Boolean  @default(false)
   visible     Boolean  @default(true)
   sortOrder   Int      @default(0)

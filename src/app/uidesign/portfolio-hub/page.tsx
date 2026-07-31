@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { relativeAge } from "@/lib/flz-date";
 
 // ── Design token CSS (flz-works DS, scoped to this page) ─────────────────────
 const DS_TOKENS = `
@@ -292,7 +293,7 @@ const DS_TOKENS = `
 `;
 
 // ── Static data ──────────────────────────────────────────────────────────────
-const PROJECTS: { id: number; tools: string; title: string; cat: string; age: string; grad: string; link: string }[] = [];
+const PROJECTS: { id: number; tools: string; title: string; cat: string; age: string; grad: string; link: string; img: string; body: string }[] = [];
 
 const FILTERS = ["All", "Assets", "Characters", "Gameplay", "Automotive"];
 
@@ -363,7 +364,7 @@ function SearchView({ allProjects }: { allProjects: typeof PROJECTS }) {
     : allProjects;
 
   const tiles = [...visible];
-  while (tiles.length < 6) tiles.push({ id: -tiles.length, tools: "", title: "", cat: "", age: "", grad: "none", link: "" });
+  while (tiles.length < 6) tiles.push({ id: -tiles.length, tools: "", title: "", cat: "", age: "", grad: "none", link: "", img: "", body: "" });
 
   return (
     <div className="flz-view" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 14, overflow: "hidden" }}>
@@ -486,13 +487,48 @@ function ProjectTile({ project }: { project: typeof PROJECTS[number] }) {
       style={tileStyle}
     >
       <div style={{ position: "absolute", inset: 0, background: project.grad }} />
+      {project.img && (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element -- author-supplied URL, no loader */}
+          <img
+            src={project.img}
+            alt=""
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+          />
+          {/* Keeps the title and meta legible over any photo. */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "linear-gradient(180deg,rgba(12,10,9,.15) 0%,rgba(12,10,9,.35) 45%,rgba(12,10,9,.82) 100%)",
+            }}
+          />
+        </>
+      )}
       <div style={{ position: "relative", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <span style={{ font: `500 9.5px/1 var(--flz-font-mono)`, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--flz-text-secondary)" }}>{project.tools}</span>
         <span className="flz-tile-arr" style={{ color: "var(--flz-text-primary)" }}><IconNE /></span>
       </div>
       <div style={{ position: "relative" }}>
         <div style={{ font: `500 20px/1 var(--flz-font-display)`, letterSpacing: "-.02em", color: "var(--flz-text-primary)" }}>{project.title}</div>
-        <div style={{ font: `400 var(--flz-fs-body-sm)/1 var(--flz-font-sans)`, color: "var(--flz-text-secondary)", marginTop: 6 }}>{project.cat} · {project.age}</div>
+        {project.body && (
+          <p
+            style={{
+              font: `400 var(--flz-fs-body-sm)/1.4 var(--flz-font-sans)`,
+              color: "var(--flz-text-secondary)",
+              margin: "6px 0 0",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
+            {project.body}
+          </p>
+        )}
+        <div style={{ font: `400 var(--flz-fs-body-sm)/1 var(--flz-font-sans)`, color: "var(--flz-text-secondary)", marginTop: 6 }}>
+          {[project.cat, project.age].filter(Boolean).join(" · ")}
+        </div>
       </div>
     </a>
   );
@@ -565,7 +601,7 @@ function MainSlab({
 
   // Pad to 6 tiles (show empty placeholders)
   const tiles = [...visibleProjects];
-  while (tiles.length < 6) tiles.push({ id: -tiles.length, tools: "", title: "", cat: "", age: "", grad: "none", link: "" });
+  while (tiles.length < 6) tiles.push({ id: -tiles.length, tools: "", title: "", cat: "", age: "", grad: "none", link: "", img: "", body: "" });
 
   return (
     <div className="flz-slab" style={slabStyle}>
@@ -692,9 +728,11 @@ export default function PortfolioHubPage() {
             tools: p.tools,
             title: p.title,
             cat: p.category,
-            age: p.age || "",
+            age: relativeAge(p.publishedAt),
             grad: p.gradient || "radial-gradient(120% 130% at 24% 6%,rgba(216,195,166,.62),rgba(120,96,72,.12) 55%,transparent 76%)",
             link: p.linkUrl || "",
+            img: p.imageUrl || "",
+            body: p.body || "",
           }));
           setProjectsList(mapped);
         }
