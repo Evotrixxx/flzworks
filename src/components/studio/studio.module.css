@@ -113,16 +113,6 @@
 .brandMark span {
   color: var(--st-fg-3);
 }
-.brandChip {
-  font: 500 9.5px/1 var(--st-mono);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--st-accent);
-  background: var(--st-accent-soft);
-  border: 1px solid var(--st-accent-line);
-  border-radius: var(--st-r-pill);
-  padding: 5px 9px;
-}
 .topSpacer {
   flex: 1;
 }
@@ -1713,9 +1703,6 @@
   .userChip {
     display: none;
   }
-  .brandChip {
-    display: none;
-  }
   .grid,
   .socialGrid {
     grid-template-columns: 1fr;
@@ -1793,7 +1780,6 @@
   box-shadow: 0 10px 34px rgba(36,38,44,.07),inset 0 -1px 0 var(--st-line);
 }
 .brandMark span,.navItemActive .navIcon,.panelHeadIcon { color: var(--st-accent); }
-.brandChip { background: var(--st-accent-soft);border-color: var(--st-accent-line);color: var(--st-accent); }
 .userChip,.navItemActive,.toolbar,.panel,.card,.row,.socialCard,.telemetry {
   background: rgba(255,255,255,.74);
   border-color: rgba(255,255,255,.82);

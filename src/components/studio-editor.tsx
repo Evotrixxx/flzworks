@@ -67,10 +67,9 @@ export function StudioEditor({
       <header className={s.topbar}>
         <Link href="/" className={s.brand}>
           <span className={s.brandMark}>
-            Flz<span>.</span>works
+            Flz<span>.</span>studio
           </span>
         </Link>
-        <span className={s.brandChip}>Studio</span>
         <span className={s.topSpacer} />
         <span className={s.userChip}>
           <span className={s.userDot} />
