@@ -1,13 +1,29 @@
 // TEMP local-only visual check for the studio rework. Delete before committing.
 import { StudioEditor } from "@/components/studio-editor";
 import { GRADIENT_PRESETS } from "@/components/studio/types";
+import { emptyTelemetrySnapshot } from "@/lib/telemetry";
+import type { SocialMetricsSnapshot } from "@/lib/social-metrics";
 
 const now = new Date("2026-07-29T10:00:00Z");
+
+const previewSocialMetrics: SocialMetricsSnapshot = {
+  updatedAt: now.toISOString(),
+  accounts: [
+    { platform: "instagram", followers: 4312, likes: 28640, available: true },
+    { platform: "tiktok", followers: 1820, likes: 41200, available: true },
+    { platform: "x", followers: 764, likes: 5900, available: true },
+    { platform: "linkedin", followers: 1206, likes: 3180, available: true },
+  ],
+};
 
 export default function StudioPreviewPage() {
   return (
     <StudioEditor
       userEmail="floszbeni@gmail.com"
+      telemetry={emptyTelemetrySnapshot()}
+      telemetryLive={false}
+      socialMetrics={previewSocialMetrics}
+      socialMetricsLive={false}
       flzSettings={{
         hero_headline: "Games and 3D,\nbuilt in public.",
         building_start_date: "2023-09-01",

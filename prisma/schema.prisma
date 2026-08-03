@@ -192,3 +192,33 @@ model FlzSetting {
   value     String
   updatedAt DateTime @updatedAt
 }
+
+// Consent-based, first-party audience measurement. No IP address, user agent,
+// referrer, account ID, cookie ID, or cross-site identifier is stored.
+model TelemetrySession {
+  id         String           @id
+  site       String
+  path       String
+  startedAt  DateTime         @default(now())
+  lastSeenAt DateTime         @default(now())
+  endedAt    DateTime?
+  durationMs Int              @default(0)
+  events     TelemetryEvent[]
+
+  @@index([site, startedAt])
+  @@index([lastSeenAt])
+}
+
+model TelemetryEvent {
+  id         String           @id @default(cuid())
+  sessionId  String
+  session    TelemetrySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  site       String
+  type       String
+  label      String?
+  dedupeKey  String?          @unique
+  occurredAt DateTime         @default(now())
+
+  @@index([site, type, occurredAt])
+  @@index([sessionId, occurredAt])
+}

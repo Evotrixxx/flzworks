@@ -1,0 +1,87 @@
+.panel {
+  position: fixed;
+  z-index: 90;
+  left: 50%;
+  bottom: 18px;
+  width: min(560px, calc(100vw - 28px));
+  transform: translateX(-50%);
+  box-sizing: border-box;
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,.82);
+  border-radius: 22px;
+  background: rgba(250,250,252,.94);
+  color: #1d1d1f;
+  box-shadow: 0 24px 70px rgba(29,29,31,.22), inset 0 0 0 1px rgba(29,29,31,.06);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  animation: consent-in .32s cubic-bezier(.22,1,.36,1) both;
+}
+.eyebrow {
+  color: rgba(29,29,31,.48);
+  font: 600 10px/1 "SFMono-Regular", "SF Mono", ui-monospace, Menlo, monospace;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.title { margin: 9px 0 7px; font-size: 19px; line-height: 1.15; letter-spacing: -.025em; }
+.copy { margin: 0; color: rgba(29,29,31,.68); font-size: 13px; line-height: 1.5; }
+.meta { margin: 9px 0 0; color: rgba(29,29,31,.5); font-size: 11px; line-height: 1.45; }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 15px; }
+.accept,.decline {
+  min-height: 44px;
+  border-radius: 999px;
+  border: 1px solid rgba(29,29,31,.14);
+  font: 600 13px/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  cursor: pointer;
+  transition: transform .18s cubic-bezier(.22,1,.36,1), background .18s, color .18s;
+}
+.accept { background: #1d1d1f; color: #fff; }
+.decline { background: rgba(29,29,31,.045); color: #1d1d1f; }
+.accept:hover { background: #000; }
+.decline:hover { background: rgba(29,29,31,.085); }
+.accept:active,.decline:active { transform: scale(.98); }
+.accept:focus-visible,.decline:focus-visible,.privacyButton:focus-visible,.close:focus-visible {
+  outline: 3px solid rgba(0,113,227,.45);
+  outline-offset: 3px;
+}
+.close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  padding: 4px 7px;
+  border: 0;
+  background: transparent;
+  color: rgba(29,29,31,.54);
+  font: 500 11px/1 -apple-system, BlinkMacSystemFont, sans-serif;
+  cursor: pointer;
+}
+.privacyButton {
+  position: fixed;
+  z-index: 80;
+  left: 14px;
+  bottom: 14px;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.76);
+  background: rgba(250,250,252,.78);
+  color: rgba(29,29,31,.62);
+  box-shadow: 0 8px 24px rgba(29,29,31,.12), inset 0 0 0 1px rgba(29,29,31,.06);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  font: 500 10px/1 "SFMono-Regular", "SF Mono", ui-monospace, Menlo, monospace;
+  letter-spacing: .025em;
+  cursor: pointer;
+}
+@keyframes consent-in {
+  from { opacity: 0; transform: translate(-50%, 12px) scale(.985); }
+  to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+@media (max-width: 560px) {
+  .panel { bottom: 10px; padding: 16px; }
+  .actions { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .panel { animation: none; }
+  .accept,.decline { transition-duration: 1ms; }
+}

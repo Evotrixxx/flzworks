@@ -10,7 +10,11 @@ import { ProjectsPanel } from "@/components/studio/projects-panel";
 import { SettingsPanel } from "@/components/studio/settings-panel";
 import { SocialPanel } from "@/components/studio/social-panel";
 import { Spinner, ToastStack, type ToastItem, type ToastKind } from "@/components/studio/ui";
+import { TelemetryCard } from "@/components/studio/telemetry-card";
+import { SocialMetricsCard } from "@/components/studio/social-metrics-card";
 import type { FlzProjectData } from "@/components/studio/types";
+import type { SocialMetricsSnapshot } from "@/lib/social-metrics";
+import type { TelemetrySnapshot } from "@/lib/telemetry";
 import s from "@/components/studio/studio.module.css";
 
 type Section = "projects" | "settings" | "articles" | "social";
@@ -21,6 +25,10 @@ interface StudioEditorProps {
   flzProjects: FlzProjectData[];
   flzSettings: Record<string, string>;
   userEmail: string;
+  telemetry: TelemetrySnapshot;
+  telemetryLive?: boolean;
+  socialMetrics: SocialMetricsSnapshot;
+  socialMetricsLive?: boolean;
 }
 
 export function StudioEditor({
@@ -29,6 +37,10 @@ export function StudioEditor({
   flzProjects,
   flzSettings,
   userEmail,
+  telemetry,
+  telemetryLive = true,
+  socialMetrics,
+  socialMetricsLive = true,
 }: StudioEditorProps) {
   const [section, setSection] = useState<Section>("projects");
   const [projects, setProjects] = useState<FlzProjectData[]>(flzProjects);
@@ -78,6 +90,7 @@ export function StudioEditor({
 
       <div className={s.shell}>
         <aside className={s.sidebar}>
+          <TelemetryCard initial={telemetry} live={telemetryLive} />
           <nav className={s.navList} aria-label="Studio sections">
             {nav.map((item) => (
               <button
@@ -94,21 +107,7 @@ export function StudioEditor({
             ))}
           </nav>
 
-          <div className={s.glance}>
-            <div className={s.glanceTitle}>Grid at a glance</div>
-            <div className={s.glanceRow}>
-              <span className={s.glanceLabel}>Live cards</span>
-              <span className={s.glanceValue}>{projects.filter((p) => p.visible).length}</span>
-            </div>
-            <div className={s.glanceRow}>
-              <span className={s.glanceLabel}>Hidden</span>
-              <span className={s.glanceValue}>{projects.filter((p) => !p.visible).length}</span>
-            </div>
-            <div className={s.glanceRow}>
-              <span className={s.glanceLabel}>Featured</span>
-              <span className={s.glanceValue}>{projects.filter((p) => p.featured).length}</span>
-            </div>
-          </div>
+          <SocialMetricsCard initial={socialMetrics} live={socialMetricsLive} />
         </aside>
 
         <main className={s.content}>
@@ -135,16 +134,16 @@ export function StudioEditor({
             values they have already saved, so coming back to a section would
             show stale server props and the next save would write them back.
           */}
-          <div className={section === "projects" ? undefined : s.sectionHidden}>
+          <div className={`${s.sectionPane} ${section === "projects" ? "" : s.sectionHidden}`}>
             <ProjectsPanel projects={projects} setProjects={setProjects} notify={notify} />
           </div>
-          <div className={section === "settings" ? undefined : s.sectionHidden}>
+          <div className={`${s.sectionPane} ${section === "settings" ? "" : s.sectionHidden}`}>
             <SettingsPanel initialSettings={flzSettings} notify={notify} />
           </div>
-          <div className={section === "articles" ? undefined : s.sectionHidden}>
+          <div className={`${s.sectionPane} ${section === "articles" ? "" : s.sectionHidden}`}>
             <ArticlesPanel articles={articles} notify={notify} />
           </div>
-          <div className={section === "social" ? undefined : s.sectionHidden}>
+          <div className={`${s.sectionPane} ${section === "social" ? "" : s.sectionHidden}`}>
             <SocialPanel initial={social} notify={notify} />
           </div>
         </main>

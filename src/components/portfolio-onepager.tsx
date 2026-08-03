@@ -5,6 +5,9 @@ import type { InstagramMediaItem } from "@/lib/instagram";
 import Image from "next/image";
 import type { PortfolioArticleWithImages } from "@/lib/portfolio-sync";
 import { Image as ImageIcon, X } from "lucide-react";
+import { TelemetryConsent } from "@/components/telemetry-consent";
+import { TELEMETRY_READY_EVENT, trackTelemetryEvent } from "@/lib/telemetry-client";
+import type { TelemetrySite } from "@/lib/telemetry";
 
 const CATEGORY_LABELS: Record<string, string> = {
   CAR_DESIGN: "3D & Environments",
@@ -23,6 +26,7 @@ interface PortfolioOnepagerProps {
 }
 
 export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen }: PortfolioOnepagerProps) {
+  const telemetrySite: TelemetrySite = forceNamecardOpen ? "main" : "autosalon";
   const [selectedArticle, setSelectedArticle] = useState<PortfolioArticleWithImages | null>(null);
   const [activeGallery, setActiveGallery] = useState<{
     folderName: string;
@@ -84,6 +88,7 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
   };
 
   const downloadVCard = () => {
+    trackTelemetryEvent("vcard_download", telemetrySite);
     const vcard = [
       "BEGIN:VCARD",
       "VERSION:3.0",
@@ -125,6 +130,14 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
       document.body.style.overflow = "";
     };
   }, [activeGallery, selectedArticle]);
+
+  useEffect(() => {
+    if (!isNamecardOpen) return;
+    const recordView = () => trackTelemetryEvent("vcard_view", telemetrySite);
+    recordView();
+    window.addEventListener(TELEMETRY_READY_EVENT, recordView);
+    return () => window.removeEventListener(TELEMETRY_READY_EVENT, recordView);
+  }, [isNamecardOpen, telemetrySite]);
 
   // Keyboard navigation for lightbox
   useEffect(() => {
@@ -237,6 +250,7 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
 
   return (
     <div className="bp-root min-h-screen selection:bg-[#ffd166]/20 selection:text-[#ffd166]">
+      <TelemetryConsent site={telemetrySite} />
       {/* Header */}
       <header className={`bp-topbar ${uiHidden ? "hidden" : ""}`} style={{ display: uiHidden ? 'none' : 'flex' }}>
         <button className="bp-logo" onClick={() => scrollToSection("hero")}>
@@ -384,6 +398,7 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
               target="_blank"
               rel="noopener noreferrer"
               className="bp-sheet"
+              onClick={() => trackTelemetryEvent("social_open", telemetrySite, "instagram")}
             >
               <div className="bp-sheet-img">
                 {instagramMedia.length > 0 && (instagramMedia[0].thumbnail_url || instagramMedia[0].media_url) ? (
@@ -411,6 +426,7 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
               target="_blank"
               rel="noopener noreferrer"
               className="bp-sheet"
+              onClick={() => trackTelemetryEvent("social_open", telemetrySite, "tiktok")}
             >
               <div className="bp-sheet-img flex flex-col items-center justify-center bg-[#dce7f5]/5 transition-colors hover:bg-[#dce7f5]/10">
                 <span className="text-2xl font-bold tracking-wider text-[#ffd166]">TT</span>
@@ -425,6 +441,7 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
               target="_blank"
               rel="noopener noreferrer"
               className="bp-sheet"
+              onClick={() => trackTelemetryEvent("social_open", telemetrySite, "linkedin")}
             >
               <div className="bp-sheet-img flex flex-col items-center justify-center bg-[#dce7f5]/5 transition-colors hover:bg-[#dce7f5]/10">
                 <span className="text-2xl font-bold tracking-wider text-[#ffd166]">LI</span>
@@ -537,7 +554,13 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
         <div className="bp-titleblock-cell">
           <div className="bp-titleblock-label">GITHUB</div>
           <div className="bp-titleblock-value bp-accent">
-            <a className="bp-titleblock-link" href="https://github.com/Flzvision" target="_blank" rel="noopener noreferrer">
+            <a
+              className="bp-titleblock-link"
+              href="https://github.com/Flzvision"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => trackTelemetryEvent("social_open", telemetrySite, "github")}
+            >
               GITHUB PROFILE ↗
             </a>
           </div>

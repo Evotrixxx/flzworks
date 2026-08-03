@@ -60,17 +60,17 @@ export function SectionHead({
   description,
   children,
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
-  description: string;
+  description?: string;
   children?: ReactNode;
 }) {
   return (
     <div className={s.sectionHead}>
       <div className={s.sectionHeadText}>
-        <div className={s.sectionEyebrow}>{eyebrow}</div>
+        {eyebrow && <div className={s.sectionEyebrow}>{eyebrow}</div>}
         <h1 className={s.sectionTitle}>{title}</h1>
-        <p className={s.sectionDesc}>{description}</p>
+        {description && <p className={s.sectionDesc}>{description}</p>}
       </div>
       {children && <div className={s.sectionActions}>{children}</div>}
     </div>

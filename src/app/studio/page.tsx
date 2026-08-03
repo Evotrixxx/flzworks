@@ -9,6 +9,8 @@ import { readSocialConfig, DEFAULT_SOCIAL, SocialEntry } from "@/lib/social-conf
 import { StudioEditor } from "@/components/studio-editor";
 import type { FlzProjectData } from "@/components/studio/types";
 import { checkIsAdminEmail } from "@/lib/flz-security";
+import { emptyTelemetrySnapshot, getTelemetrySnapshot } from "@/lib/telemetry";
+import { emptySocialMetricsSnapshot, getSocialMetricsSnapshot } from "@/lib/social-metrics";
 import s from "@/components/studio/studio.module.css";
 
 export const dynamic = "force-dynamic";
@@ -114,6 +116,20 @@ export default async function StudioPage() {
     flzSettings[setting.key] = setting.value;
   }
 
+  let telemetry = emptyTelemetrySnapshot();
+  try {
+    telemetry = await getTelemetrySnapshot();
+  } catch (err) {
+    console.error("Failed to query telemetry in StudioPage:", err);
+  }
+
+  let socialMetrics = emptySocialMetricsSnapshot();
+  try {
+    socialMetrics = await getSocialMetricsSnapshot();
+  } catch (err) {
+    console.error("Failed to query social metrics in StudioPage:", err);
+  }
+
   return (
     <StudioEditor
       articles={articles}
@@ -121,6 +137,8 @@ export default async function StudioPage() {
       flzProjects={flzProjects}
       flzSettings={flzSettings}
       userEmail={user.email}
+      telemetry={telemetry}
+      socialMetrics={socialMetrics}
     />
   );
 }

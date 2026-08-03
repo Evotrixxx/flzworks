@@ -214,9 +214,7 @@ export function ProjectsPanel({
   return (
     <>
       <SectionHead
-        eyebrow="flz.works · work grid"
         title="Projects"
-        description="Everything in the project grid on the landing page. Order here is the order visitors see; hidden cards stay in the studio only."
       >
         <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={() => setEditing(blankProject(projects.length + 1))}>
           <Plus size={15} strokeWidth={2.5} /> New project

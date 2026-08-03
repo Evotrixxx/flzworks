@@ -1,16 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { relativeAge } from "@/lib/flz-date";
+import { TelemetryConsent } from "@/components/telemetry-consent";
+import { TELEMETRY_READY_EVENT, trackTelemetryEvent } from "@/lib/telemetry-client";
 
 // ── Design token CSS (flz-works DS, scoped to this page) ─────────────────────
 const DS_TOKENS = `
-  @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Geist:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap");
-
   .flz-hub-root {
-    --flz-font-display: "Space Grotesk", "Helvetica Neue", Helvetica, sans-serif;
-    --flz-font-sans: "Geist", "Helvetica Neue", Helvetica, sans-serif;
-    --flz-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --flz-font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+    --flz-font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    --flz-font-mono: "SFMono-Regular", "SF Mono", ui-monospace, Menlo, Monaco, Consolas, monospace;
+    font-synthesis: none;
 
     --flz-text-primary: #F4F2EF;
     --flz-text-secondary: rgba(244,242,239,0.62);
@@ -127,7 +129,7 @@ const DS_TOKENS = `
   .flz-chip {
     display: inline-flex; align-items: center; height: 32px; padding: 0 14px;
     border-radius: 999px; border: 1px solid rgba(255,255,255,.18);
-    font: 500 13px/1 "Geist","Helvetica Neue",sans-serif;
+    font: 500 13px/1 var(--flz-font-sans);
     color: rgba(244,242,239,.62); background: transparent;
     cursor: pointer; transition: background .16s, color .16s, border-color .16s;
     white-space: nowrap;
@@ -156,7 +158,7 @@ const DS_TOKENS = `
   .flz-btn-solid {
     display: inline-flex; align-items: center; height: 32px; padding: 0 16px;
     border-radius: 999px; background: #F4F2EF; color: #0B0B0C;
-    font: 500 13px/1 "Geist","Helvetica Neue",sans-serif;
+    font: 500 13px/1 var(--flz-font-sans);
     border: none; cursor: pointer; transition: background .16s;
     white-space: nowrap;
   }
@@ -179,7 +181,7 @@ const DS_TOKENS = `
     display: inline-flex; align-items: center; gap: 6px; height: 22px;
     padding: 0 9px; border-radius: 999px;
     background: rgba(244,242,239,.15); border: 1px solid rgba(244,242,239,.22);
-    font: 500 10.5px/1 "JetBrains Mono",ui-monospace,monospace;
+    font: 500 10.5px/1 var(--flz-font-mono);
     letter-spacing: .06em; text-transform: uppercase; color: #F4F2EF;
     backdrop-filter: blur(8px); white-space: nowrap;
   }
@@ -289,6 +291,106 @@ const DS_TOKENS = `
     /* ContactCard internals: stack on mobile */
     .flz-contact-inner { flex-direction: column !important; }
     .flz-contact-qr { width: 100% !important; flex-direction: row !important; padding: 10px 14px !important; border-radius: 12px !important; }
+  }
+
+  /* HIG-inspired visual skin. Structure and responsive layout stay intact. */
+  .flz-hub-root {
+    --flz-text-primary: #1d1d1f;
+    --flz-text-secondary: rgba(29,29,31,.68);
+    --flz-text-muted: rgba(29,29,31,.46);
+    --flz-glass-fill-raised: rgba(255,255,255,.7);
+    --flz-glass-border: 1px solid rgba(255,255,255,.88);
+    --flz-border-strong: rgba(29,29,31,.18);
+    background:
+      radial-gradient(circle at 84% 2%, rgba(202,218,244,.78), transparent 32rem),
+      radial-gradient(circle at 10% 96%, rgba(247,219,205,.48), transparent 36rem),
+      linear-gradient(180deg, #fbfbfd 0%, #f5f5f7 48%, #ececef 100%) !important;
+    color-scheme: light;
+  }
+  .flz-hub-root > .flz-orb:nth-of-type(1) { background: radial-gradient(closest-side,rgba(132,177,244,.34),transparent) !important; }
+  .flz-hub-root > .flz-orb:nth-of-type(2) { background: radial-gradient(closest-side,rgba(245,194,170,.24),transparent) !important; }
+  .flz-hub-root > .flz-orb:nth-of-type(3) { background: radial-gradient(closest-side,rgba(176,160,224,.2),transparent) !important; }
+  .flz-slab {
+    background: linear-gradient(145deg,rgba(255,255,255,.76),rgba(247,247,250,.7));
+    border: 1px solid rgba(255,255,255,.9);
+    box-shadow: inset 0 0 0 1px rgba(29,29,31,.05), 0 34px 90px rgba(37,39,46,.14);
+    backdrop-filter: blur(34px) saturate(165%);
+    -webkit-backdrop-filter: blur(34px) saturate(165%);
+  }
+  .flz-stat-tile,
+  .flz-tile,
+  .flz-sidebar > * {
+    background-color: rgba(255,255,255,.7) !important;
+    border-color: rgba(255,255,255,.88) !important;
+    box-shadow: inset 0 0 0 1px rgba(29,29,31,.075), 0 14px 34px rgba(37,39,46,.075);
+  }
+  .flz-tile:hover {
+    border-color: rgba(29,29,31,.14) !important;
+    box-shadow: inset 0 0 0 1px rgba(29,29,31,.08), 0 22px 46px rgba(37,39,46,.13);
+  }
+  .flz-chip { border-color: rgba(29,29,31,.08); background: rgba(29,29,31,.035); color: rgba(29,29,31,.66); }
+  .flz-chip:hover { background: rgba(29,29,31,.075); color: #1d1d1f; }
+  .flz-chip.active { background: #1d1d1f; border-color: #1d1d1f; color: #fff; box-shadow: 0 7px 18px rgba(29,29,31,.16); }
+  .flz-iconbtn { color: #1d1d1f; }
+  .flz-iconbtn.solid { background: #1d1d1f; color: #fff; box-shadow: 0 7px 18px rgba(29,29,31,.18); }
+  .flz-iconbtn.glass { background: rgba(255,255,255,.66); border-color: rgba(29,29,31,.08); }
+  .flz-btn-solid { background: #1d1d1f; color: #fff; box-shadow: 0 10px 24px rgba(29,29,31,.16); }
+  .flz-iconbtn:active,
+  .flz-chip:active,
+  .flz-btn-solid:active { transform: scale(.96); }
+  .flz-iconbtn:focus-visible,
+  .flz-chip:focus-visible,
+  .flz-btn-solid:focus-visible { outline: 3px solid rgba(10,132,255,.62); outline-offset: 3px; }
+  .flz-badge { background: rgba(29,29,31,.7); border-color: rgba(255,255,255,.28); color: #fff; }
+  .flz-modal { filter: drop-shadow(0 28px 70px rgba(37,39,46,.22)); }
+
+  /* Motion layer: transform/opacity only, so the preserved layout never shifts. */
+  @keyframes flz-shell-in {
+    from { opacity: 0; transform: translateY(18px) scale(.992); filter: blur(6px); }
+    to { opacity: 1; transform: none; filter: blur(0); }
+  }
+  @keyframes flz-rail-in {
+    from { opacity: 0; transform: translateX(-14px) scale(.94); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes flz-stat-pop {
+    from { opacity: 0; transform: translateY(10px) scale(.96); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes flz-panel-rise {
+    from { opacity: 0; transform: translateY(12px) scale(.985); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes flz-control-pop {
+    0% { transform: scale(.96); }
+    70% { transform: scale(1.025); }
+    100% { transform: none; }
+  }
+  .flz-slab { animation: flz-shell-in .68s var(--flz-ease-glass) both; }
+  .flz-rail { animation: flz-rail-in .58s var(--flz-ease-glass) 120ms both; }
+  .flz-stats .flz-stat-tile { animation: flz-stat-pop .48s var(--flz-ease-glass) backwards; }
+  .flz-stats .flz-stat-tile:nth-child(1) { animation-delay: 140ms; }
+  .flz-stats .flz-stat-tile:nth-child(2) { animation-delay: 190ms; }
+  .flz-stats .flz-stat-tile:nth-child(3) { animation-delay: 240ms; }
+  .flz-sidebar > * { animation: flz-panel-rise .55s var(--flz-ease-glass) backwards; }
+  .flz-sidebar > :nth-child(1) { animation-delay: 280ms; }
+  .flz-sidebar > :nth-child(2) { animation-delay: 340ms; }
+  .flz-chip.active { animation: flz-control-pop .3s var(--flz-ease-glass); }
+  .flz-stat-tile { transition: transform .25s var(--flz-ease-glass), box-shadow .25s var(--flz-ease-glass); }
+  .flz-iconbtn { transition: background .16s, color .16s, transform .2s var(--flz-ease-glass), box-shadow .2s var(--flz-ease-glass); }
+
+  @media (hover: hover) {
+    .flz-stat-tile:hover { transform: translateY(-2px); box-shadow: inset 0 0 0 1px rgba(29,29,31,.08), 0 18px 38px rgba(37,39,46,.11); }
+    .flz-iconbtn:hover { transform: scale(1.045); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .flz-slab,
+    .flz-rail,
+    .flz-stats .flz-stat-tile,
+    .flz-sidebar > *,
+    .flz-chip.active { animation: none !important; }
+    .flz-stat-tile:hover,
+    .flz-iconbtn:hover { transform: none !important; }
   }
 `;
 
@@ -400,6 +502,7 @@ function SearchView({ allProjects }: { allProjects: typeof PROJECTS }) {
 
 function ContactCard() {
   const downloadVCard = () => {
+    trackTelemetryEvent("vcard_download", "main");
     const vcard = [
       "BEGIN:VCARD", "VERSION:3.0",
       "FN:Bence Flosz", "N:Flosz;Bence;;;",
@@ -423,7 +526,10 @@ function ContactCard() {
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 0, padding: "18px 20px", borderRadius: 20, background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.14)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.18)" }}>
           <div style={{ font: `500 9px/1 var(--flz-font-mono)`, letterSpacing: ".1em", textTransform: "uppercase", color: "rgba(255,196,88,.8)", borderBottom: "1px solid rgba(255,255,255,.1)", paddingBottom: 12, marginBottom: 16 }}>FLZ WORKS // IDENTITY CARD</div>
           <div style={{ display: "flex", gap: 16, alignItems: "flex-start", flex: 1 }}>
-            <div style={{ width: 72, height: 88, borderRadius: 12, background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.12)", overflow: "hidden", flexShrink: 0 }}><img src="/profile.jpg" alt="Bence Flosz" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /></div>
+            <div style={{ width: 72, height: 88, borderRadius: 12, background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.12)", overflow: "hidden", flexShrink: 0 }}>
+              {/* eslint-disable-next-line @next/next/no-img-element -- fixed-size contact portrait */}
+              <img src="/profile.jpg" alt="Bence Flosz" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+            </div>
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
               {[
                 ["NAME", "Bence Flosz"],
@@ -565,7 +671,14 @@ function DiscordCard({ url }: { url: string }) {
   );
 
   return url ? (
-    <a href={url} target="_blank" rel="noopener noreferrer" className="flz-tile" style={cardStyle}>
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flz-tile"
+      style={cardStyle}
+      onClick={() => trackTelemetryEvent("social_open", "main", "discord")}
+    >
       {inner}
     </a>
   ) : (
@@ -636,7 +749,7 @@ function MainSlab({
       <div className="flz-enter flz-filters" style={{ "--flz-delay": "140ms", display: "flex", gap: 9, alignItems: "center", flexWrap: "wrap" } as React.CSSProperties}>
         {FILTERS.map(f => (
           f === "Automotive"
-            ? <a key={f} href="/" className="flz-chip" style={{ textDecoration: "none" }}>{f}</a>
+            ? <Link key={f} href="/" className="flz-chip" style={{ textDecoration: "none" }}>{f}</Link>
             : <button key={f} className={`flz-chip${activeFilter === f ? " active" : ""}`} onClick={() => setActiveFilter(f)}>{f}</button>
         ))}
       </div>
@@ -723,7 +836,17 @@ export default function PortfolioHubPage() {
       .then((data) => {
         if (data?.isAdmin) setIsAdmin(true);
         if (data?.projects && Array.isArray(data.projects) && data.projects.length > 0) {
-          const mapped = data.projects.map((p: any) => ({
+          const mapped = data.projects.map((p: {
+            id: number;
+            tools: string;
+            title: string;
+            category: string;
+            publishedAt: string | null;
+            gradient?: string | null;
+            linkUrl?: string | null;
+            imageUrl?: string | null;
+            body?: string | null;
+          }) => ({
             id: p.id,
             tools: p.tools,
             title: p.title,
@@ -764,9 +887,15 @@ export default function PortfolioHubPage() {
 
   useEffect(() => {
     if (!contactOpen) return;
+    const recordView = () => trackTelemetryEvent("vcard_view", "main");
+    recordView();
+    window.addEventListener(TELEMETRY_READY_EVENT, recordView);
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setContactOpen(false); };
     document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
+    return () => {
+      window.removeEventListener(TELEMETRY_READY_EVENT, recordView);
+      document.removeEventListener("keydown", handler);
+    };
   }, [contactOpen]);
 
   const visibleProjects =
@@ -781,6 +910,7 @@ export default function PortfolioHubPage() {
       fontFamily: "var(--flz-font-sans), sans-serif",
     }}>
       <style dangerouslySetInnerHTML={{ __html: DS_TOKENS }} />
+      <TelemetryConsent site="main" />
 
       {/* Ambient orbs */}
       <div className="flz-orb" style={{ position: "absolute", top: "2%", left: "14%", width: 420, height: 300, borderRadius: "50%", background: "radial-gradient(closest-side,rgba(232,214,189,.5),rgba(232,214,189,0))", filter: "blur(46px)", animation: "flz-drift1 34s ease-in-out infinite", willChange: "transform", pointerEvents: "none" }} />
@@ -801,7 +931,7 @@ export default function PortfolioHubPage() {
               background: "rgba(6, 182, 212, 0.22)",
               border: "1px solid rgba(6, 182, 212, 0.45)",
               color: "#38bdf8",
-              font: "600 12px/1 'JetBrains Mono', monospace",
+              font: "600 12px/1 var(--flz-font-mono)",
               textTransform: "uppercase",
               letterSpacing: ".08em",
               backdropFilter: "blur(16px)",
