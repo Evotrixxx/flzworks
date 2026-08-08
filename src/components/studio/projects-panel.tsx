@@ -133,25 +133,25 @@ export function ProjectsPanel({
     const reordered = [...projects];
     [reordered[from], reordered[to]] = [reordered[to], reordered[from]];
     const renumbered = reordered.map((p, index) => ({ ...p, sortOrder: index + 1 }));
-    const changed = renumbered.filter(
-      (p) => projects.find((o) => o.id === p.id)?.sortOrder !== p.sortOrder,
-    );
-
     const previous = projects;
     setReordering(true);
     setProjects(renumbered);
 
     try {
-      const results = await Promise.all(
-        changed.map((p) =>
-          fetch(`/api/flz/projects/${p.id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ sortOrder: p.sortOrder }),
-          }),
-        ),
-      );
-      if (results.some((r) => !r.ok)) throw new Error("Could not save the new order");
+      const res = await fetch("/api/flz/projects/reorder", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projects: renumbered.map(({ id: projectId, sortOrder }) => ({
+            id: projectId,
+            sortOrder,
+          })),
+        }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.error || "Could not save the new order");
+      }
       notify("Order saved");
     } catch (err) {
       setProjects(previous);
@@ -484,10 +484,18 @@ function ProjectDialog({
     tools: form.tools?.trim() ? "" : "Name at least one tool.",
   };
   const hasErrors = Object.values(errors).some(Boolean);
+  const dirty = JSON.stringify(form) !== JSON.stringify(initial);
 
   const submit = () => {
     setTouched(true);
-    if (hasErrors) return;
+    if (hasErrors) {
+      requestAnimationFrame(() => {
+        document
+          .querySelector<HTMLElement>('[role="dialog"] [aria-invalid="true"]')
+          ?.focus();
+      });
+      return;
+    }
     onSubmit({
       ...form,
       title: form.title?.trim(),
@@ -504,6 +512,7 @@ function ProjectDialog({
     <Modal
       title={initial.id ? "Edit project" : "New project"}
       onClose={onClose}
+      confirmCloseMessage={dirty ? "Discard the unsaved project changes?" : undefined}
       footer={
         <>
           <span className={s.helper}>

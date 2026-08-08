@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { verifyAdminUser, flzProjectSchema } from "@/lib/flz-security";
+import { verifyAdminUser, flzProjectUpdateSchema } from "@/lib/flz-security";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -16,7 +16,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
   try {
     const body = await request.json().catch(() => null);
-    const parsed = flzProjectSchema.partial().safeParse(body);
+    const parsed = flzProjectUpdateSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(

@@ -108,6 +108,45 @@ export function ArticlesPanel({
     }
   };
 
+  const toggleVisibility = async (article: PortfolioArticleWithImages) => {
+    const baseline = saved[article.id];
+    const nextVisible = !baseline.visible;
+    setSaving(article.id);
+
+    try {
+      const res = await fetch("/api/portfolio/edit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: article.id,
+          folderName: article.folderName,
+          ...baseline,
+          visible: nextVisible,
+        }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.error || "Could not change article visibility");
+      }
+
+      // Visibility is an immediate action. Preserve every other unsaved field
+      // in the draft instead of publishing or discarding it.
+      setSaved((prev) => ({
+        ...prev,
+        [article.id]: { ...prev[article.id], visible: nextVisible },
+      }));
+      setForms((prev) => ({
+        ...prev,
+        [article.id]: { ...prev[article.id], visible: nextVisible },
+      }));
+      notify(nextVisible ? `“${baseline.title}” is visible` : `“${baseline.title}” hidden`);
+    } catch (err) {
+      notify(err instanceof Error ? err.message : "Could not change article visibility", "error");
+    } finally {
+      setSaving(null);
+    }
+  };
+
   const liveCount = articles.filter((a) => saved[a.id].visible).length;
 
   return (
@@ -213,13 +252,13 @@ export function ArticlesPanel({
                         </span>
                         <button
                           type="button"
-                          className={`${s.pill} ${form.visible ? s.pillLive : s.pillHidden}`}
+                          className={`${s.pill} ${base.visible ? s.pillLive : s.pillHidden}`}
                           disabled={busy}
-                          onClick={() => save(article, { visible: !form.visible })}
-                          title={form.visible ? "Hide from the sheet index" : "Show in the sheet index"}
+                          onClick={() => toggleVisibility(article)}
+                          title={base.visible ? "Hide from the sheet index" : "Show in the sheet index"}
                         >
                           {busy ? <Spinner size={11} /> : <span className={s.pillDot} />}
-                          {form.visible ? "Visible" : "Hidden"}
+                          {base.visible ? "Visible" : "Hidden"}
                         </button>
                         <button
                           type="button"
@@ -245,7 +284,15 @@ export function ArticlesPanel({
                               onChange={(e) => set(article.id, { title: e.target.value })}
                             />
                           </Field>
-                          <Field label="Date" hint="YYYY-MM-DD">
+                          <Field
+                            label="Date"
+                            hint="YYYY-MM-DD"
+                            error={
+                              DATE_RE.test(form.date) || form.date === "N/A"
+                                ? ""
+                                : "Use YYYY-MM-DD or N/A."
+                            }
+                          >
                             <input
                               className={`${s.input} ${s.inputMono} ${
                                 DATE_RE.test(form.date) || form.date === "N/A" ? "" : s.inputInvalid

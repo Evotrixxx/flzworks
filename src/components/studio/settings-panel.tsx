@@ -64,7 +64,9 @@ export function SettingsPanel({
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.success) throw new Error(data?.error || "Could not save the settings");
-      setSaved(form);
+      const confirmed = normalize({ ...form, ...data.settings });
+      setForm(confirmed);
+      setSaved(confirmed);
       notify("Site settings saved");
     } catch (err) {
       notify(err instanceof Error ? err.message : "Could not save the settings", "error");
@@ -87,6 +89,7 @@ export function SettingsPanel({
             <textarea
               className={s.textarea}
               rows={3}
+              maxLength={2000}
               value={form.hero_headline}
               placeholder={"Games and 3D,\nbuilt in public."}
               onChange={(e) => set("hero_headline", e.target.value)}

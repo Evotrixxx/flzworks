@@ -1,6 +1,15 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import {
+  cloneElement,
+  isValidElement,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  type ReactElement,
+  type ReactNode,
+} from "react";
 import { AlertCircle, CheckCircle2, Loader2, Search, X } from "lucide-react";
 import s from "./studio.module.css";
 
@@ -24,15 +33,12 @@ export function ToastStack({
   toasts: ToastItem[];
   onDismiss: (id: number) => void;
 }) {
-  if (toasts.length === 0) return null;
-
   return (
     <div className={s.toastWrap} aria-live="polite" aria-atomic="false">
       {toasts.map((t) => (
         <div
           key={t.id}
           className={`${s.toast} ${t.kind === "success" ? s.toastSuccess : s.toastError}`}
-          role="status"
         >
           <span className={t.kind === "success" ? s.toastIconOk : s.toastIconErr}>
             {t.kind === "success" ? <CheckCircle2 size={17} /> : <AlertCircle size={17} />}
@@ -138,22 +144,51 @@ export function Field({
   counter?: string;
   children: ReactNode;
 }) {
+  const generatedId = useId();
+  const controlId = `studio-field-${generatedId}`;
+  const helperId = `${controlId}-help`;
+  const counterId = `${controlId}-count`;
+  type ControlProps = {
+    id?: string;
+    required?: boolean;
+    "aria-required"?: boolean;
+    "aria-invalid"?: boolean;
+    "aria-describedby"?: string;
+  };
+  const element = isValidElement(children) ? (children as ReactElement<ControlProps>) : null;
+  const isControl =
+    element &&
+    typeof element.type === "string" &&
+    ["input", "textarea", "select"].includes(element.type);
+  const describedBy = [counter ? counterId : "", error || hint ? helperId : ""]
+    .filter(Boolean)
+    .join(" ");
+  const control = isControl
+    ? cloneElement(element, {
+        id: element.props.id ?? controlId,
+        required,
+        "aria-required": required || undefined,
+        "aria-invalid": Boolean(error) || undefined,
+        "aria-describedby": describedBy || undefined,
+      })
+    : children;
+
   return (
-    <label className={s.field}>
+    <div className={s.field}>
       <span className={s.fieldRow}>
-        <span className={s.label}>
+        <label className={s.label} htmlFor={isControl ? element.props.id ?? controlId : undefined}>
           {label}
           {required && <span className={s.labelReq}>*</span>}
-        </span>
-        {counter && <span className={s.counter}>{counter}</span>}
+        </label>
+        {counter && <span className={s.counter} id={counterId}>{counter}</span>}
       </span>
-      {children}
+      {control}
       {error ? (
-        <span className={`${s.helper} ${s.helperError}`}>{error}</span>
+        <span className={`${s.helper} ${s.helperError}`} id={helperId} role="alert">{error}</span>
       ) : hint ? (
-        <span className={s.helper}>{hint}</span>
+        <span className={s.helper} id={helperId}>{hint}</span>
       ) : null}
-    </label>
+    </div>
   );
 }
 
@@ -256,21 +291,70 @@ export function Modal({
   title,
   onClose,
   narrow,
+  confirmCloseMessage,
   footer,
   children,
 }: {
   title: string;
   onClose: () => void;
   narrow?: boolean;
+  confirmCloseMessage?: string;
   footer: ReactNode;
   children: ReactNode;
 }) {
-  const bodyRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const openerRef = useRef<HTMLElement | null>(null);
+  const closeRef = useRef(onClose);
+  const confirmCloseRef = useRef(confirmCloseMessage);
+  const backdropPressed = useRef(false);
+  const titleId = useId();
 
-  // Escape to close, and keep the page behind from scrolling.
   useEffect(() => {
+    closeRef.current = onClose;
+    confirmCloseRef.current = confirmCloseMessage;
+  }, [onClose, confirmCloseMessage]);
+
+  const requestIncidentalClose = useCallback(() => {
+    const message = confirmCloseRef.current;
+    if (!message || window.confirm(message)) closeRef.current();
+  }, []);
+
+  // Trap focus, support Escape, keep the page behind from scrolling, and
+  // restore focus to the control that opened the dialog.
+  useEffect(() => {
+    openerRef.current = document.activeElement as HTMLElement | null;
+    const focusableSelector =
+      'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    const dialog = dialogRef.current;
+    const bodyFirst = dialog
+      ?.querySelector<HTMLElement>("[data-modal-body]")
+      ?.querySelector<HTMLElement>(focusableSelector);
+    (bodyFirst ?? dialog?.querySelector<HTMLElement>(focusableSelector))?.focus();
+
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        e.preventDefault();
+        requestIncidentalClose();
+        return;
+      }
+      if (e.key !== "Tab" || !dialog) return;
+
+      const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(focusableSelector));
+      if (focusable.length === 0) {
+        e.preventDefault();
+        dialog.focus();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     document.addEventListener("keydown", onKey);
     const previous = document.body.style.overflow;
@@ -278,35 +362,37 @@ export function Modal({
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = previous;
+      openerRef.current?.focus?.();
     };
-  }, [onClose]);
-
-  // Move focus into the dialog, and hand it back to the trigger on close.
-  useEffect(() => {
-    const opener = document.activeElement as HTMLElement | null;
-    const first = bodyRef.current?.querySelector<HTMLElement>(
-      "input:not([type=hidden]), textarea, select, button",
-    );
-    first?.focus();
-    return () => opener?.focus?.();
-  }, []);
+  }, [requestIncidentalClose]);
 
   return (
-    <div className={s.backdrop} onClick={onClose}>
+    <div
+      className={s.backdrop}
+      onMouseDown={(e) => {
+        backdropPressed.current = e.target === e.currentTarget;
+      }}
+      onClick={(e) => {
+        if (backdropPressed.current && e.target === e.currentTarget) requestIncidentalClose();
+        backdropPressed.current = false;
+      }}
+    >
       <div
+        ref={dialogRef}
         className={`${s.modal} ${narrow ? s.modalNarrow : ""}`}
         role="dialog"
         aria-modal="true"
-        aria-label={title}
+        aria-labelledby={titleId}
+        tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
       >
         <div className={s.modalHead}>
-          <h2 className={s.modalTitle}>{title}</h2>
+          <h2 className={s.modalTitle} id={titleId}>{title}</h2>
           <button type="button" className={s.iconBtn} onClick={onClose} aria-label="Close dialog">
             <X size={16} />
           </button>
         </div>
-        <div className={s.modalBody} ref={bodyRef}>
+        <div className={s.modalBody} data-modal-body>
           {children}
         </div>
         <div className={s.modalFoot}>{footer}</div>

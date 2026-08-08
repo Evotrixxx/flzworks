@@ -16,7 +16,7 @@
 
   --st-fg: #f4f2ef;
   --st-fg-2: rgba(244, 242, 239, 0.62);
-  --st-fg-3: rgba(244, 242, 239, 0.42);
+  --st-fg-3: rgba(244, 242, 239, 0.56);
 
   --st-line: rgba(255, 255, 255, 0.1);
   --st-line-2: rgba(255, 255, 255, 0.18);
@@ -147,7 +147,6 @@
 /* ── Shell ──────────────────────────────────────────────────────────────── */
 .shell {
   position: relative;
-  z-index: 1;
   display: flex;
   gap: 28px;
   max-width: 1360px;
@@ -501,7 +500,6 @@
   box-shadow: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-  outline: none;
   padding: 0;
   font: 400 13.5px/1 var(--st-sans);
   color: var(--st-fg);
@@ -930,7 +928,6 @@
   -webkit-backdrop-filter: none;
   color: var(--st-fg);
   font: 400 13.5px/1.4 var(--st-sans);
-  outline: none;
   transition:
     border-color 0.16s,
     background 0.16s;
@@ -973,7 +970,8 @@
   color: var(--st-fg);
 }
 .root .inputInvalid.inputInvalid {
-  border-color: var(--st-warn-line);
+  border-color: var(--st-warn);
+  box-shadow: 0 0 0 1px var(--st-warn);
 }
 .helper {
   font: 400 11.5px/1.45 var(--st-sans);

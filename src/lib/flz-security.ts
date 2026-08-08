@@ -1,6 +1,12 @@
-import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+
+export {
+  flzProjectOrderSchema,
+  flzProjectSchema,
+  flzProjectUpdateSchema,
+  flzSettingSchema,
+} from "@/lib/flz-schemas";
 
 export const ADMIN_EMAILS = [
   "floszbeni@gmail.com",
@@ -12,25 +18,6 @@ export function checkIsAdminEmail(email: string): boolean {
   const lower = email.toLowerCase();
   return ADMIN_EMAILS.includes(lower) || lower.endsWith("@flz.works");
 }
-
-export const flzProjectSchema = z.object({
-  title: z.string().min(1, "Title is required").max(100, "Title is too long"),
-  tools: z.string().min(1, "Tools are required").max(100, "Tools text is too long"),
-  category: z.string().min(1, "Category is required").max(50, "Category is too long"),
-  publishedAt: z.coerce.date().optional().nullable(),
-  gradient: z.string().max(500, "Gradient is too long").optional().nullable(),
-  body: z.string().max(2000, "Article text is too long").optional().nullable(),
-  featured: z.boolean().default(false),
-  visible: z.boolean().default(true),
-  sortOrder: z.number().int().default(0),
-  linkUrl: z.string().max(500, "Link URL is too long").optional().nullable(),
-  imageUrl: z.string().max(500, "Image URL is too long").optional().nullable(),
-});
-
-export const flzSettingSchema = z.object({
-  key: z.string().min(1, "Setting key is required").max(100),
-  value: z.string().max(2000, "Setting value is too long"),
-});
 
 export async function verifyAdminUser() {
   const user = await getCurrentUser();

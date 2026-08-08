@@ -28,19 +28,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
     }
 
-    const updatedSettings: Record<string, string> = {};
+    const parsedEntries = Object.entries(body).map(([key, value]) =>
+      flzSettingSchema.safeParse({ key, value: String(value) }),
+    );
+    const invalidKeys = parsedEntries
+      .map((result, index) => (result.success ? null : Object.keys(body)[index]))
+      .filter((key): key is string => key !== null);
 
-    for (const [key, value] of Object.entries(body)) {
-      const parsed = flzSettingSchema.safeParse({ key, value: String(value) });
-      if (parsed.success) {
-        const saved = await prisma.flzSetting.upsert({
-          where: { key },
-          update: { value: String(value) },
-          create: { key, value: String(value) },
-        });
-        updatedSettings[saved.key] = saved.value;
-      }
+    if (invalidKeys.length > 0) {
+      return NextResponse.json(
+        { error: `Invalid settings: ${invalidKeys.join(", ")}`, invalidKeys },
+        { status: 400 },
+      );
     }
+
+    const validEntries = parsedEntries.map((result) => {
+      if (!result.success) throw new Error("Settings validation invariant failed");
+      return result.data;
+    });
+    const savedSettings = await prisma.$transaction(
+      validEntries.map((entry) =>
+        prisma.flzSetting.upsert({
+          where: { key: entry.key },
+          update: { value: entry.value },
+          create: entry,
+        }),
+      ),
+    );
+    const updatedSettings: Record<string, string> = Object.fromEntries(
+      savedSettings.map((saved) => [saved.key, saved.value]),
+    );
 
     return NextResponse.json({ success: true, settings: updatedSettings });
   } catch (error) {

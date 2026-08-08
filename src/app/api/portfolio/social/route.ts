@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getCurrentUser } from "@/lib/auth";
+import { verifyAdminUser } from "@/lib/flz-security";
 import { readSocialConfig, writeSocialConfig } from "@/lib/social-config";
 
 const EntrySchema = z.object({
@@ -19,19 +19,21 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const user = await getCurrentUser();
-  const isAdmin = user && (user.role === "ADMIN" || user.email === "seller@autopiac.test");
+  const auth = await verifyAdminUser();
+  if (auth.error) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
 
-  if (!user || !isAdmin) {
-    return NextResponse.json({ error: "Unauthorized." }, { status: 403 });
+  const parsed = BodySchema.safeParse(await request.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid payload." }, { status: 400 });
   }
 
   try {
-    const parsed = BodySchema.parse(await request.json());
-    await writeSocialConfig(parsed.entries);
-    return NextResponse.json({ success: true, entries: parsed.entries });
+    await writeSocialConfig(parsed.data.entries);
+    return NextResponse.json({ success: true, entries: parsed.data.entries });
   } catch (error) {
-    console.error("Failed to save social config:", error);
-    return NextResponse.json({ error: "Invalid payload." }, { status: 400 });
+    console.error("Failed to write social config:", error);
+    return NextResponse.json({ error: "Could not persist social configuration." }, { status: 500 });
   }
 }

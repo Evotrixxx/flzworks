@@ -27,7 +27,17 @@ export const DEFAULT_SOCIAL: SocialEntry[] = [
   { platform: "linkedin", label: "LINKEDIN", postUrl: "", imageUrl: "" },
 ];
 
-const CONFIG_PATH = path.join(process.cwd(), "data", "social-config.json");
+function configPath() {
+  const configuredDir = process.env.SOCIAL_CONFIG_DIR?.trim();
+  if (configuredDir) return path.join(configuredDir, "social-config.json");
+
+  // Railway mounts its persistent volume at /data and UPLOAD_DIR points to a
+  // child of it. Keep social configuration beside uploads in production,
+  // while preserving the existing local development path.
+  const uploadDir = process.env.UPLOAD_DIR?.trim();
+  const dataDir = uploadDir ? path.join(path.dirname(uploadDir), "config") : path.join(process.cwd(), "data");
+  return path.join(dataDir, "social-config.json");
+}
 
 /**
  * Read the saved config, always returning exactly the four known platforms in
@@ -36,7 +46,7 @@ const CONFIG_PATH = path.join(process.cwd(), "data", "social-config.json");
 export async function readSocialConfig(): Promise<SocialEntry[]> {
   let saved: unknown = null;
   try {
-    saved = JSON.parse(await readFile(CONFIG_PATH, "utf8"));
+    saved = JSON.parse(await readFile(configPath(), "utf8"));
   } catch {
     return DEFAULT_SOCIAL;
   }
@@ -56,6 +66,7 @@ export async function readSocialConfig(): Promise<SocialEntry[]> {
 }
 
 export async function writeSocialConfig(entries: SocialEntry[]): Promise<void> {
-  await mkdir(path.dirname(CONFIG_PATH), { recursive: true });
-  await writeFile(CONFIG_PATH, JSON.stringify(entries, null, 2), "utf8");
+  const target = configPath();
+  await mkdir(path.dirname(target), { recursive: true });
+  await writeFile(target, JSON.stringify(entries, null, 2), "utf8");
 }

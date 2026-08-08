@@ -835,13 +835,14 @@ export default function PortfolioHubPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data?.isAdmin) setIsAdmin(true);
-        if (data?.projects && Array.isArray(data.projects) && data.projects.length > 0) {
-          const mapped = data.projects.map((p: {
+        if (data?.projects && Array.isArray(data.projects)) {
+          const mapped = data.projects.filter((p: { visible?: boolean }) => p.visible !== false).map((p: {
             id: number;
             tools: string;
             title: string;
             category: string;
             publishedAt: string | null;
+            visible?: boolean;
             gradient?: string | null;
             linkUrl?: string | null;
             imageUrl?: string | null;

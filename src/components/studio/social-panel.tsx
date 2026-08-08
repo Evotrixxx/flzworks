@@ -46,7 +46,8 @@ export function SocialPanel({
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.success) throw new Error(data?.error || "Could not save the links");
-      setSaved(entries);
+      setEntries(data.entries);
+      setSaved(data.entries);
       notify("Social cards saved");
     } catch (err) {
       notify(err instanceof Error ? err.message : "Could not save the links", "error");
