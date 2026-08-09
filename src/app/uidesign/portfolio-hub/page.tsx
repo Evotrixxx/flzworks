@@ -71,6 +71,16 @@ const DS_TOKENS = `
     50%  { transform: translate3d(60px,-70px,0) scale(1.2); }
     100% { transform: translate3d(0,0,0) scale(.96); }
   }
+  @keyframes flz-ambient-sweep-a {
+    0%   { transform: translate3d(-8%,-4%,0) rotate(-8deg) scale(.94); }
+    50%  { transform: translate3d(34%,8%,0) rotate(6deg) scale(1.08); }
+    100% { transform: translate3d(72%,-2%,0) rotate(-3deg) scale(.98); }
+  }
+  @keyframes flz-ambient-sweep-b {
+    0%   { transform: translate3d(18%,8%,0) rotate(7deg) scale(1.02); }
+    50%  { transform: translate3d(-22%,-5%,0) rotate(-5deg) scale(.92); }
+    100% { transform: translate3d(-52%,7%,0) rotate(4deg) scale(1.06); }
+  }
   /* ── Entrance / transition motion ──────────────────────────────────────── */
   @keyframes flz-rise {
     from { opacity: 0; transform: translateY(14px); }
@@ -107,7 +117,7 @@ const DS_TOKENS = `
   .flz-modal    { animation: flz-modal-in .28s var(--flz-ease-glass) both; }
 
   @media (prefers-reduced-motion: reduce) {
-    .flz-orb { animation-duration: 1ms !important; animation-iteration-count: 1 !important; }
+    .flz-orb, .flz-slab-ambient { animation: none !important; }
     .flz-enter, .flz-view, .flz-tile-in, .flz-backdrop, .flz-modal {
       animation-duration: 1ms !important;
       animation-delay: 0ms !important;
@@ -126,14 +136,14 @@ const DS_TOKENS = `
   .flz-tile.flz-project-tile {
     padding: 0 !important;
     isolation: isolate;
-    background: #fff !important;
+    justify-content: flex-end;
+    background: #121317 !important;
     border: 1px solid rgba(29,29,31,.12) !important;
     box-shadow: 0 12px 28px rgba(37,39,46,.12) !important;
   }
   .flz-project-media {
-    position: relative;
-    flex: 1 1 56%;
-    min-height: 96px;
+    position: absolute;
+    inset: 0;
     overflow: hidden;
     background: #d8d8dc;
   }
@@ -150,7 +160,7 @@ const DS_TOKENS = `
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: linear-gradient(180deg,rgba(0,0,0,.24),transparent 42%);
+    background: linear-gradient(180deg,rgba(0,0,0,.28) 0%,transparent 36%,rgba(0,0,0,.14) 100%);
   }
   .flz-project-kicker,
   .flz-project-open {
@@ -187,18 +197,20 @@ const DS_TOKENS = `
   .flz-project-content {
     position: relative;
     z-index: 1;
-    flex: 0 0 auto;
-    min-height: 110px;
-    padding: 13px 15px 14px;
-    color: #1d1d1f;
-    background: rgba(255,255,255,.98);
-    border-top: 1px solid rgba(29,29,31,.09);
+    width: 100%;
+    min-height: 148px;
+    margin-top: auto;
+    padding: 58px 15px 15px;
+    box-sizing: border-box;
+    color: #fff;
+    background: linear-gradient(180deg,transparent 0%,rgba(8,9,12,.62) 35%,rgba(8,9,12,.92) 72%,rgba(8,9,12,.98) 100%);
   }
   .flz-project-title {
     margin: 0;
-    color: #1d1d1f;
-    font: 600 18px/1.12 var(--flz-font-display);
+    color: #fff;
+    font: 650 19px/1.12 var(--flz-font-display);
     letter-spacing: -.02em;
+    text-shadow: 0 1px 2px rgba(0,0,0,.95), 0 0 14px rgba(0,0,0,.72);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -206,8 +218,9 @@ const DS_TOKENS = `
   }
   .flz-project-body {
     margin: 6px 0 0;
-    color: rgba(29,29,31,.72);
+    color: rgba(255,255,255,.88);
     font: 400 12.5px/1.35 var(--flz-font-sans);
+    text-shadow: 0 1px 5px rgba(0,0,0,.9);
     display: -webkit-box;
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
@@ -215,10 +228,11 @@ const DS_TOKENS = `
   }
   .flz-project-meta {
     margin-top: 8px;
-    color: rgba(29,29,31,.62);
+    color: rgba(255,255,255,.72);
     font: 600 10.5px/1 var(--flz-font-mono);
     letter-spacing: .035em;
     text-transform: uppercase;
+    text-shadow: 0 1px 5px rgba(0,0,0,.95);
   }
   .flz-tile.flz-project-tile:focus-visible {
     outline: 3px solid #0a84ff;
@@ -413,7 +427,7 @@ const DS_TOKENS = `
       gap: 10px !important;
     }
     .flz-project-tile { min-height: 300px !important; }
-    .flz-project-content { min-height: 124px; }
+    .flz-project-content { min-height: 148px; padding-top: 54px; }
     /* Right column: full width, stack */
     .flz-sidebar {
       width: 100% !important;
@@ -463,6 +477,28 @@ const DS_TOKENS = `
     box-shadow: inset 0 0 0 1px rgba(29,29,31,.05), 0 34px 90px rgba(37,39,46,.14);
     backdrop-filter: blur(34px) saturate(165%);
     -webkit-backdrop-filter: blur(34px) saturate(165%);
+  }
+  .flz-slab > :not(.flz-slab-ambient) { position: relative; z-index: 1; }
+  .flz-slab-ambient {
+    position: absolute;
+    z-index: 0;
+    width: 68%;
+    height: 150%;
+    top: -28%;
+    border-radius: 50%;
+    pointer-events: none;
+    will-change: transform;
+    contain: paint;
+  }
+  .flz-slab-ambient-a {
+    left: -26%;
+    background: radial-gradient(ellipse at center,rgba(82,142,255,.28) 0%,rgba(115,96,225,.14) 38%,transparent 70%);
+    animation: flz-ambient-sweep-a 24s ease-in-out infinite alternate;
+  }
+  .flz-slab-ambient-b {
+    right: -24%;
+    background: radial-gradient(ellipse at center,rgba(255,125,91,.22) 0%,rgba(236,104,166,.12) 38%,transparent 70%);
+    animation: flz-ambient-sweep-b 30s ease-in-out infinite alternate;
   }
   .flz-stat-tile,
   .flz-tile,
@@ -531,13 +567,18 @@ const DS_TOKENS = `
     box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 22px 48px rgba(0,0,0,.42);
   }
   .flz-hub-root[data-theme="dark"] .flz-project-content {
-    color: #f5f5f7;
-    background: #181a20;
-    border-top-color: rgba(255,255,255,.1);
+    color: #fff;
+    background: linear-gradient(180deg,transparent 0%,rgba(5,6,9,.62) 35%,rgba(5,6,9,.93) 72%,rgba(5,6,9,.99) 100%);
   }
-  .flz-hub-root[data-theme="dark"] .flz-project-title { color: #f5f5f7; }
-  .flz-hub-root[data-theme="dark"] .flz-project-body { color: rgba(245,245,247,.72); }
-  .flz-hub-root[data-theme="dark"] .flz-project-meta { color: rgba(245,245,247,.58); }
+  .flz-hub-root[data-theme="dark"] .flz-project-title { color: #fff; }
+  .flz-hub-root[data-theme="dark"] .flz-project-body { color: rgba(255,255,255,.88); }
+  .flz-hub-root[data-theme="dark"] .flz-project-meta { color: rgba(255,255,255,.72); }
+  .flz-hub-root[data-theme="dark"] .flz-slab-ambient-a {
+    background: radial-gradient(ellipse at center,rgba(69,123,255,.34) 0%,rgba(105,74,210,.18) 38%,transparent 70%);
+  }
+  .flz-hub-root[data-theme="dark"] .flz-slab-ambient-b {
+    background: radial-gradient(ellipse at center,rgba(213,72,112,.28) 0%,rgba(232,108,68,.12) 38%,transparent 70%);
+  }
   .flz-hub-root[data-theme="dark"] .flz-chip {
     border-color: rgba(255,255,255,.11);
     background: rgba(255,255,255,.055);
@@ -616,7 +657,8 @@ const DS_TOKENS = `
     .flz-rail,
     .flz-stats .flz-stat-tile,
     .flz-sidebar > *,
-    .flz-chip.active { animation: none !important; }
+    .flz-chip.active,
+    .flz-slab-ambient { animation: none !important; }
     .flz-stat-tile:hover,
     .flz-iconbtn:hover { transform: none !important; }
   }
@@ -980,6 +1022,9 @@ function MainSlab({
 
   return (
     <div className="flz-slab" style={slabStyle}>
+      {/* Visible ambient motion lives inside the panel and uses transforms only. */}
+      <div className="flz-slab-ambient flz-slab-ambient-a" aria-hidden="true" />
+      <div className="flz-slab-ambient flz-slab-ambient-b" aria-hidden="true" />
       {/* Glass sheen overlay */}
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 3, background: "linear-gradient(180deg,rgba(255,255,255,.14) 0%,rgba(255,255,255,.03) 7%,rgba(255,255,255,0) 22%),linear-gradient(0deg,rgba(255,255,255,.08) 0%,rgba(255,255,255,0) 10%),linear-gradient(105deg,rgba(255,255,255,.06) 0%,rgba(255,255,255,0) 26%)" }} />
       <div style={{ position: "absolute", top: -16, left: "6%", width: 190, height: 52, borderRadius: "50%", background: "radial-gradient(closest-side,rgba(255,255,255,.5),rgba(255,255,255,0))", filter: "blur(11px)", pointerEvents: "none", zIndex: 3 }} />
