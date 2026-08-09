@@ -123,6 +123,112 @@ const DS_TOKENS = `
   .flz-tile-arr { transition: transform .28s cubic-bezier(.22,1,.36,1); }
   .flz-tile:hover .flz-tile-arr { transform: translate(3px,-3px); }
 
+  .flz-tile.flz-project-tile {
+    padding: 0 !important;
+    isolation: isolate;
+    background: #fff !important;
+    border: 1px solid rgba(29,29,31,.12) !important;
+    box-shadow: 0 12px 28px rgba(37,39,46,.12) !important;
+  }
+  .flz-project-media {
+    position: relative;
+    flex: 1 1 56%;
+    min-height: 96px;
+    overflow: hidden;
+    background: #d8d8dc;
+  }
+  .flz-project-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .42s var(--flz-ease-glass);
+  }
+  .flz-project-media::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg,rgba(0,0,0,.24),transparent 42%);
+  }
+  .flz-project-kicker,
+  .flz-project-open {
+    position: absolute;
+    z-index: 2;
+    top: 12px;
+    color: #fff;
+    background: rgba(12,12,14,.76);
+    border: 1px solid rgba(255,255,255,.24);
+    box-shadow: 0 5px 16px rgba(0,0,0,.24);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+  }
+  .flz-project-kicker {
+    left: 12px;
+    max-width: calc(100% - 64px);
+    padding: 7px 10px;
+    border-radius: 999px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font: 600 9.5px/1 var(--flz-font-mono);
+    letter-spacing: .09em;
+    text-transform: uppercase;
+  }
+  .flz-project-open {
+    right: 12px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+  }
+  .flz-project-content {
+    position: relative;
+    z-index: 1;
+    flex: 0 0 auto;
+    min-height: 110px;
+    padding: 13px 15px 14px;
+    color: #1d1d1f;
+    background: rgba(255,255,255,.98);
+    border-top: 1px solid rgba(29,29,31,.09);
+  }
+  .flz-project-title {
+    margin: 0;
+    color: #1d1d1f;
+    font: 600 18px/1.12 var(--flz-font-display);
+    letter-spacing: -.02em;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .flz-project-body {
+    margin: 6px 0 0;
+    color: rgba(29,29,31,.72);
+    font: 400 12.5px/1.35 var(--flz-font-sans);
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .flz-project-meta {
+    margin-top: 8px;
+    color: rgba(29,29,31,.62);
+    font: 600 10.5px/1 var(--flz-font-mono);
+    letter-spacing: .035em;
+    text-transform: uppercase;
+  }
+  .flz-tile.flz-project-tile:focus-visible {
+    outline: 3px solid #0a84ff;
+    outline-offset: 3px;
+  }
+  @media (hover: hover) {
+    .flz-tile.flz-project-tile:hover .flz-project-image { transform: scale(1.035); }
+    .flz-tile.flz-project-tile:hover .flz-project-open { background: #0a84ff; }
+  }
+
   .flz-railbtn { transition: transform .2s cubic-bezier(.22,1,.36,1); }
   .flz-railbtn:hover { transform: translateY(-2px); }
 
@@ -273,6 +379,8 @@ const DS_TOKENS = `
       grid-template-rows: auto auto auto !important;
       gap: 10px !important;
     }
+    .flz-project-tile { min-height: 300px !important; }
+    .flz-project-content { min-height: 124px; }
     /* Right column: full width, stack */
     .flz-sidebar {
       width: 100% !important;
@@ -320,9 +428,9 @@ const DS_TOKENS = `
   .flz-stat-tile,
   .flz-tile,
   .flz-sidebar > * {
-    background-color: rgba(255,255,255,.7) !important;
-    border-color: rgba(255,255,255,.88) !important;
-    box-shadow: inset 0 0 0 1px rgba(29,29,31,.075), 0 14px 34px rgba(37,39,46,.075);
+    background-color: rgba(255,255,255,.9) !important;
+    border-color: rgba(29,29,31,.11) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 14px 34px rgba(37,39,46,.10);
   }
   .flz-tile:hover {
     border-color: rgba(29,29,31,.14) !important;
@@ -332,8 +440,14 @@ const DS_TOKENS = `
   .flz-chip:hover { background: rgba(29,29,31,.075); color: #1d1d1f; }
   .flz-chip.active { background: #1d1d1f; border-color: #1d1d1f; color: #fff; box-shadow: 0 7px 18px rgba(29,29,31,.16); }
   .flz-iconbtn { color: #1d1d1f; }
+  .flz-rail {
+    background: rgba(255,255,255,.92) !important;
+    border: 1px solid rgba(29,29,31,.12) !important;
+  }
+  .flz-iconbtn.ghost { background: rgba(29,29,31,.055); }
   .flz-iconbtn.solid { background: #1d1d1f; color: #fff; box-shadow: 0 7px 18px rgba(29,29,31,.18); }
-  .flz-iconbtn.glass { background: rgba(255,255,255,.66); border-color: rgba(29,29,31,.08); }
+  .flz-iconbtn.glass { background: #fff; border-color: rgba(29,29,31,.14); box-shadow: 0 5px 14px rgba(37,39,46,.10); }
+  .flz-iconbtn:disabled { opacity: .38; cursor: default; box-shadow: none; }
   .flz-btn-solid { background: #1d1d1f; color: #fff; box-shadow: 0 10px 24px rgba(29,29,31,.16); }
   .flz-iconbtn:active,
   .flz-chip:active,
@@ -576,10 +690,8 @@ function ProjectTile({ project }: { project: typeof PROJECTS[number] }) {
   const tileStyle: React.CSSProperties = {
     position: "relative", overflow: "hidden",
     flex: 1, minWidth: 0, minHeight: 0,
-    display: "flex", flexDirection: "column", justifyContent: "space-between",
-    padding: 15, borderRadius: 28,
-    background: "#1c1a17",
-    border: "1px solid rgba(255,255,255,.10)",
+    display: "flex", flexDirection: "column",
+    borderRadius: 28,
     textDecoration: "none", color: "inherit",
   };
   // "Link" in the studio editor is what the tile opens; without one it stays inert.
@@ -589,50 +701,29 @@ function ProjectTile({ project }: { project: typeof PROJECTS[number] }) {
       href={project.link || "#"}
       target={external ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
-      className="flz-tile"
+      className="flz-tile flz-project-tile"
       style={tileStyle}
     >
-      <div style={{ position: "absolute", inset: 0, background: project.grad }} />
-      {project.img && (
-        <>
-          {/* eslint-disable-next-line @next/next/no-img-element -- author-supplied URL, no loader */}
-          <img
-            src={project.img}
-            alt=""
-            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
-          />
-          {/* Keeps the title and meta legible over any photo. */}
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              background: "linear-gradient(180deg,rgba(12,10,9,.15) 0%,rgba(12,10,9,.35) 45%,rgba(12,10,9,.82) 100%)",
-            }}
-          />
-        </>
-      )}
-      <div style={{ position: "relative", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <span style={{ font: `500 9.5px/1 var(--flz-font-mono)`, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--flz-text-secondary)" }}>{project.tools}</span>
-        <span className="flz-tile-arr" style={{ color: "var(--flz-text-primary)" }}><IconNE /></span>
-      </div>
-      <div style={{ position: "relative" }}>
-        <div style={{ font: `500 20px/1 var(--flz-font-display)`, letterSpacing: "-.02em", color: "var(--flz-text-primary)" }}>{project.title}</div>
-        {project.body && (
-          <p
-            style={{
-              font: `400 var(--flz-fs-body-sm)/1.4 var(--flz-font-sans)`,
-              color: "var(--flz-text-secondary)",
-              margin: "6px 0 0",
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden",
-            }}
-          >
-            {project.body}
-          </p>
+      <div className="flz-project-media" style={{ background: project.grad }}>
+        {project.img && (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element -- author-supplied URL, no loader */}
+            <img
+              src={project.img}
+              alt=""
+              className="flz-project-image"
+            />
+          </>
         )}
-        <div style={{ font: `400 var(--flz-fs-body-sm)/1 var(--flz-font-sans)`, color: "var(--flz-text-secondary)", marginTop: 6 }}>
+        <span className="flz-project-kicker">{project.tools}</span>
+        <span className="flz-project-open flz-tile-arr" aria-hidden="true"><IconNE /></span>
+      </div>
+      <div className="flz-project-content">
+        <h2 className="flz-project-title">{project.title}</h2>
+        {project.body && (
+          <p className="flz-project-body">{project.body}</p>
+        )}
+        <div className="flz-project-meta">
           {[project.cat, project.age].filter(Boolean).join(" · ")}
         </div>
       </div>
