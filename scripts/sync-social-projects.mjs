@@ -23,6 +23,7 @@ console.log(JSON.stringify({
   fetched: payload.fetched,
   created: payload.created,
   updated: payload.updated,
+  hidden: payload.hidden,
   providers: payload.providers,
 }));
 

@@ -20,6 +20,7 @@ export interface SocialProviderResult {
   fetched: number;
   created: number;
   updated: number;
+  hidden: number;
   error?: string;
 }
 
@@ -28,6 +29,7 @@ export interface SocialSyncResult {
   fetched: number;
   created: number;
   updated: number;
+  hidden: number;
 }
 
 type InstagramMedia = {
@@ -226,51 +228,62 @@ async function fetchTikTokPosts(): Promise<NormalizedSocialPost[]> {
 }
 
 async function persistPosts(platform: SocialProvider, posts: NormalizedSocialPost[]) {
+  const publicPostIds = posts.map((post) => post.postId);
   const existing = await prisma.flzProject.findMany({
-    where: { socialPlatform: platform, socialPostId: { in: posts.map((post) => post.postId) } },
+    where: { socialPlatform: platform, socialPostId: { in: publicPostIds } },
     select: { socialPostId: true },
   });
   const existingIds = new Set(existing.map((row) => row.socialPostId).filter(Boolean));
 
-  await prisma.$transaction(
-    posts.map((post) => prisma.flzProject.upsert({
-      where: {
-        socialPlatform_socialPostId: {
-          socialPlatform: post.platform,
-          socialPostId: post.postId,
-        },
-      },
-      create: {
-        title: post.title,
-        tools: post.platform === "instagram" ? "Instagram" : "TikTok",
-        category: "Social",
-        publishedAt: post.publishedAt,
-        body: post.body,
-        gradient: post.platform === "instagram"
-          ? "linear-gradient(145deg,#833ab4,#fd1d1d 55%,#fcb045)"
-          : "linear-gradient(145deg,#25f4ee,#111 45%,#fe2c55)",
-        visible: true,
-        featured: false,
-        sortOrder: -1,
-        linkUrl: post.linkUrl,
-        imageUrl: post.imageUrl,
+  const writes = posts.map((post) => prisma.flzProject.upsert({
+    where: {
+      socialPlatform_socialPostId: {
         socialPlatform: post.platform,
         socialPostId: post.postId,
       },
-      update: {
-        title: post.title,
-        tools: post.platform === "instagram" ? "Instagram" : "TikTok",
-        category: "Social",
-        publishedAt: post.publishedAt,
-        body: post.body,
-        linkUrl: post.linkUrl,
-        imageUrl: post.imageUrl,
-      },
-    })),
-  );
+    },
+    create: {
+      title: post.title,
+      tools: post.platform === "instagram" ? "Instagram" : "TikTok",
+      category: "Social",
+      publishedAt: post.publishedAt,
+      body: post.body,
+      gradient: post.platform === "instagram"
+        ? "linear-gradient(145deg,#833ab4,#fd1d1d 55%,#fcb045)"
+        : "linear-gradient(145deg,#25f4ee,#111 45%,#fe2c55)",
+      visible: true,
+      featured: false,
+      sortOrder: -1,
+      linkUrl: post.linkUrl,
+      imageUrl: post.imageUrl,
+      socialPlatform: post.platform,
+      socialPostId: post.postId,
+    },
+    update: {
+      title: post.title,
+      tools: post.platform === "instagram" ? "Instagram" : "TikTok",
+      category: "Social",
+      publishedAt: post.publishedAt,
+      body: post.body,
+      linkUrl: post.linkUrl,
+      imageUrl: post.imageUrl,
+      visible: true,
+    },
+  }));
+
+  const hideStale = prisma.flzProject.updateMany({
+    where: {
+      socialPlatform: platform,
+      socialPostId: publicPostIds.length > 0 ? { notIn: publicPostIds } : { not: null },
+      visible: true,
+    },
+    data: { visible: false },
+  });
+  const results = await prisma.$transaction([...writes, hideStale]);
+  const hidden = (results.at(-1) as { count?: number } | undefined)?.count ?? 0;
 
   const created = posts.filter((post) => !existingIds.has(post.postId)).length;
-  return { created, updated: posts.length - created };
+  return { created, updated: posts.length - created, hidden };
 }
 
 export function getSocialImportConfiguration() {
@@ -294,7 +307,7 @@ export async function syncSocialProjects(): Promise<SocialSyncResult> {
     ["tiktok", configuration.tiktok, fetchTikTokPosts],
   ] as const) {
     if (!configured) {
-      providers.push({ platform, configured: false, fetched: 0, created: 0, updated: 0 });
+      providers.push({ platform, configured: false, fetched: 0, created: 0, updated: 0, hidden: 0 });
       continue;
     }
 
@@ -310,6 +323,7 @@ export async function syncSocialProjects(): Promise<SocialSyncResult> {
         fetched: 0,
         created: 0,
         updated: 0,
+        hidden: 0,
         error: error instanceof Error ? error.message : "Unknown provider error",
       });
     }
@@ -320,5 +334,6 @@ export async function syncSocialProjects(): Promise<SocialSyncResult> {
     fetched: providers.reduce((sum, item) => sum + item.fetched, 0),
     created: providers.reduce((sum, item) => sum + item.created, 0),
     updated: providers.reduce((sum, item) => sum + item.updated, 0),
+    hidden: providers.reduce((sum, item) => sum + item.hidden, 0),
   };
 }

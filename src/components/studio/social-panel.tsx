@@ -78,7 +78,9 @@ export function SocialPanel({
           "error",
         );
       } else {
-        notify(`Social projects synced: ${data.created ?? 0} new, ${data.updated ?? 0} refreshed.`);
+        notify(
+          `Public posts synced: ${data.created ?? 0} new, ${data.updated ?? 0} refreshed, ${data.hidden ?? 0} no longer public.`,
+        );
       }
     } catch (err) {
       notify(err instanceof Error ? err.message : "Could not sync social projects", "error");
@@ -107,8 +109,8 @@ export function SocialPanel({
 
         <Panel icon={<RefreshCw size={16} />} title="Project auto-import">
           <p className={s.panelNote}>
-            Every connected Instagram post and TikTok video becomes a project on the main board.
-            Repeated syncs update the same card, so posts are never duplicated.
+            Every public Instagram post and TikTok video becomes a project on the main board.
+            Repeated syncs update the same card, and posts that are no longer public are hidden.
           </p>
           <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 10, marginTop: 14 }}>
             <span className={s.navCount}>
