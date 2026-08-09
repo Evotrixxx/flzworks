@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { relativeAge } from "@/lib/flz-date";
 import { TelemetryConsent } from "@/components/telemetry-consent";
@@ -270,6 +270,39 @@ const DS_TOKENS = `
   }
   .flz-btn-solid:hover { background: #fff; }
 
+  .flz-theme-toggle {
+    min-width: 96px;
+    height: 38px;
+    margin-left: auto;
+    padding: 0 12px 0 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(29,29,31,.13);
+    background: rgba(255,255,255,.82);
+    color: #1d1d1f;
+    box-shadow: 0 7px 20px rgba(37,39,46,.10);
+    backdrop-filter: blur(14px) saturate(150%);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+    font: 600 12px/1 var(--flz-font-sans);
+    cursor: pointer;
+    transition: transform .2s var(--flz-ease-glass), background-color .2s, color .2s, border-color .2s;
+  }
+  .flz-theme-toggle-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: #1d1d1f;
+    color: #fff;
+  }
+  .flz-theme-toggle:hover { transform: translateY(-1px); }
+  .flz-theme-toggle:active { transform: scale(.97); }
+  .flz-theme-toggle:focus-visible { outline: 3px solid rgba(10,132,255,.68); outline-offset: 3px; }
+
   .flz-stat-tile {
     display: flex; flex-direction: column; justify-content: space-between;
     padding: 12px 14px; border-radius: var(--flz-radius-md);
@@ -415,9 +448,15 @@ const DS_TOKENS = `
       linear-gradient(180deg, #fbfbfd 0%, #f5f5f7 48%, #ececef 100%) !important;
     color-scheme: light;
   }
-  .flz-hub-root > .flz-orb:nth-of-type(1) { background: radial-gradient(closest-side,rgba(132,177,244,.34),transparent) !important; }
-  .flz-hub-root > .flz-orb:nth-of-type(2) { background: radial-gradient(closest-side,rgba(245,194,170,.24),transparent) !important; }
-  .flz-hub-root > .flz-orb:nth-of-type(3) { background: radial-gradient(closest-side,rgba(176,160,224,.2),transparent) !important; }
+  .flz-hub-root > .flz-orb-a { background: radial-gradient(closest-side,rgba(132,177,244,.34),transparent 72%) !important; }
+  .flz-hub-root > .flz-orb-b { background: radial-gradient(closest-side,rgba(245,194,170,.24),transparent 72%) !important; }
+  .flz-hub-root > .flz-orb-c { background: radial-gradient(closest-side,rgba(176,160,224,.2),transparent 72%) !important; }
+  .flz-orb {
+    contain: paint;
+    filter: none !important;
+    opacity: .9;
+    transform: translateZ(0);
+  }
   .flz-slab {
     background: linear-gradient(145deg,rgba(255,255,255,.76),rgba(247,247,250,.7));
     border: 1px solid rgba(255,255,255,.9);
@@ -457,6 +496,81 @@ const DS_TOKENS = `
   .flz-btn-solid:focus-visible { outline: 3px solid rgba(10,132,255,.62); outline-offset: 3px; }
   .flz-badge { background: rgba(29,29,31,.7); border-color: rgba(255,255,255,.28); color: #fff; }
   .flz-modal { filter: drop-shadow(0 28px 70px rgba(37,39,46,.22)); }
+
+  /* Purpose-built dark theme: warm graphite surfaces with cool ambient color. */
+  .flz-hub-root[data-theme="dark"] {
+    --flz-text-primary: #f5f5f7;
+    --flz-text-secondary: rgba(245,245,247,.72);
+    --flz-text-muted: rgba(245,245,247,.52);
+    --flz-glass-fill-raised: rgba(24,26,32,.88);
+    --flz-glass-border: 1px solid rgba(255,255,255,.12);
+    --flz-border-strong: rgba(255,255,255,.2);
+    background:
+      radial-gradient(circle at 78% 0%, rgba(43,60,94,.42), transparent 34rem),
+      radial-gradient(circle at 8% 100%, rgba(78,42,57,.28), transparent 38rem),
+      linear-gradient(155deg,#08090c 0%,#101218 48%,#090a0e 100%) !important;
+    color-scheme: dark;
+  }
+  .flz-hub-root[data-theme="dark"] > .flz-orb-a { background: radial-gradient(closest-side,rgba(70,122,220,.24),transparent 72%) !important; }
+  .flz-hub-root[data-theme="dark"] > .flz-orb-b { background: radial-gradient(closest-side,rgba(177,75,112,.18),transparent 72%) !important; }
+  .flz-hub-root[data-theme="dark"] > .flz-orb-c { background: radial-gradient(closest-side,rgba(107,84,190,.18),transparent 72%) !important; }
+  .flz-hub-root[data-theme="dark"] .flz-slab {
+    background: linear-gradient(145deg,rgba(23,25,31,.88),rgba(13,15,20,.82));
+    border-color: rgba(255,255,255,.11);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 34px 90px rgba(0,0,0,.46);
+  }
+  .flz-hub-root[data-theme="dark"] .flz-stat-tile,
+  .flz-hub-root[data-theme="dark"] .flz-tile,
+  .flz-hub-root[data-theme="dark"] .flz-sidebar > * {
+    background-color: rgba(25,27,33,.94) !important;
+    border-color: rgba(255,255,255,.11) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 14px 34px rgba(0,0,0,.28);
+  }
+  .flz-hub-root[data-theme="dark"] .flz-tile:hover {
+    border-color: rgba(255,255,255,.2) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 22px 48px rgba(0,0,0,.42);
+  }
+  .flz-hub-root[data-theme="dark"] .flz-project-content {
+    color: #f5f5f7;
+    background: #181a20;
+    border-top-color: rgba(255,255,255,.1);
+  }
+  .flz-hub-root[data-theme="dark"] .flz-project-title { color: #f5f5f7; }
+  .flz-hub-root[data-theme="dark"] .flz-project-body { color: rgba(245,245,247,.72); }
+  .flz-hub-root[data-theme="dark"] .flz-project-meta { color: rgba(245,245,247,.58); }
+  .flz-hub-root[data-theme="dark"] .flz-chip {
+    border-color: rgba(255,255,255,.11);
+    background: rgba(255,255,255,.055);
+    color: rgba(245,245,247,.7);
+  }
+  .flz-hub-root[data-theme="dark"] .flz-chip:hover { background: rgba(255,255,255,.1); color: #fff; }
+  .flz-hub-root[data-theme="dark"] .flz-chip.active {
+    background: #f5f5f7;
+    border-color: #f5f5f7;
+    color: #111216;
+    box-shadow: 0 8px 24px rgba(0,0,0,.35);
+  }
+  .flz-hub-root[data-theme="dark"] .flz-rail {
+    background: rgba(19,21,26,.92) !important;
+    border-color: rgba(255,255,255,.13) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 22px 50px rgba(0,0,0,.42) !important;
+  }
+  .flz-hub-root[data-theme="dark"] .flz-iconbtn { color: #f5f5f7; }
+  .flz-hub-root[data-theme="dark"] .flz-iconbtn.ghost { background: rgba(255,255,255,.06); }
+  .flz-hub-root[data-theme="dark"] .flz-iconbtn.solid { background: #f5f5f7; color: #111216; }
+  .flz-hub-root[data-theme="dark"] .flz-iconbtn.glass {
+    background: rgba(255,255,255,.08);
+    border-color: rgba(255,255,255,.13);
+    box-shadow: 0 5px 16px rgba(0,0,0,.26);
+  }
+  .flz-hub-root[data-theme="dark"] .flz-theme-toggle {
+    background: rgba(20,22,27,.9);
+    border-color: rgba(255,255,255,.14);
+    color: #f5f5f7;
+    box-shadow: 0 9px 26px rgba(0,0,0,.32);
+  }
+  .flz-hub-root[data-theme="dark"] .flz-theme-toggle-icon { background: #f5f5f7; color: #111216; }
+  .flz-hub-root[data-theme="dark"] .flz-badge { background: rgba(7,8,11,.78); }
 
   /* Motion layer: transform/opacity only, so the preserved layout never shifts. */
   @keyframes flz-shell-in {
@@ -541,8 +655,55 @@ const IconNE = () => (
     <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
   </svg>
 );
+const IconSun = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round">
+    <circle cx="12" cy="12" r="3.5" />
+    <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+  </svg>
+);
+const IconMoon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20.4 15.6A8.5 8.5 0 0 1 8.4 3.6 8.5 8.5 0 1 0 20.4 15.6Z" />
+  </svg>
+);
 
 type ActiveView = "work" | "search";
+type Theme = "light" | "dark";
+const THEME_STORAGE_KEY = "flz-works-theme";
+const themeListeners = new Set<() => void>();
+
+function getThemeSnapshot(): Theme {
+  const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+  if (stored === "light" || stored === "dark") return stored;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function getServerThemeSnapshot(): Theme {
+  return "light";
+}
+
+function subscribeToTheme(listener: () => void) {
+  const media = window.matchMedia("(prefers-color-scheme: dark)");
+  const onSystemChange = () => {
+    if (!window.localStorage.getItem(THEME_STORAGE_KEY)) listener();
+  };
+  const onStorage = (event: StorageEvent) => {
+    if (event.key === THEME_STORAGE_KEY) listener();
+  };
+  themeListeners.add(listener);
+  media.addEventListener("change", onSystemChange);
+  window.addEventListener("storage", onStorage);
+  return () => {
+    themeListeners.delete(listener);
+    media.removeEventListener("change", onSystemChange);
+    window.removeEventListener("storage", onStorage);
+  };
+}
+
+function setStoredTheme(theme: Theme) {
+  window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+  themeListeners.forEach(listener => listener());
+}
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 function IconRail({ activeView, setActiveView, contactOpen, setContactOpen }: {
@@ -785,6 +946,8 @@ function MainSlab({
   visibleProjects,
   allProjects,
   activeView,
+  theme,
+  onThemeToggle,
 }: {
   daysBuilding: string;
   settings: Record<string, string>;
@@ -793,6 +956,8 @@ function MainSlab({
   visibleProjects: typeof PROJECTS;
   allProjects: typeof PROJECTS;
   activeView: ActiveView;
+  theme: Theme;
+  onThemeToggle: () => void;
 }) {
   const [projectPage, setProjectPage] = useState(0);
   const pageCount = Math.max(1, Math.ceil(visibleProjects.length / 6));
@@ -825,6 +990,18 @@ function MainSlab({
         <span style={{ font: `500 22px/1 var(--flz-font-display)`, letterSpacing: "-.04em", color: "var(--flz-text-primary)" }}>
           Flz<span style={{ color: "var(--flz-text-muted)" }}>.</span>works
         </span>
+        <button
+          type="button"
+          className="flz-theme-toggle"
+          onClick={onThemeToggle}
+          aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+          aria-pressed={theme === "dark"}
+        >
+          <span className="flz-theme-toggle-icon" aria-hidden="true">
+            {theme === "dark" ? <IconSun /> : <IconMoon />}
+          </span>
+          <span>{theme === "dark" ? "Light" : "Dark"}</span>
+        </button>
       </div>
 
       {/* Hero row */}
@@ -920,6 +1097,7 @@ export default function PortfolioHubPage() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [activeView, setActiveView] = useState<ActiveView>("work");
   const [contactOpen, setContactOpen] = useState(false);
+  const theme = useSyncExternalStore(subscribeToTheme, getThemeSnapshot, getServerThemeSnapshot);
 
   // Dynamic projects & settings state from DB
   const [projectsList, setProjectsList] = useState<typeof PROJECTS>(PROJECTS);
@@ -999,8 +1177,12 @@ export default function PortfolioHubPage() {
   const visibleProjects =
     activeFilter === "All" ? projectsList : projectsList.filter(p => p.cat === activeFilter);
 
+  const toggleTheme = () => {
+    setStoredTheme(theme === "dark" ? "light" : "dark");
+  };
+
   return (
-    <div className="flz-hub-root" style={{
+    <div className="flz-hub-root" data-theme={theme} style={{
       minHeight: "100vh",
       position: "relative",
       overflow: "hidden",
@@ -1011,9 +1193,9 @@ export default function PortfolioHubPage() {
       <TelemetryConsent site="main" />
 
       {/* Ambient orbs */}
-      <div className="flz-orb" style={{ position: "absolute", top: "2%", left: "14%", width: 420, height: 300, borderRadius: "50%", background: "radial-gradient(closest-side,rgba(232,214,189,.5),rgba(232,214,189,0))", filter: "blur(46px)", animation: "flz-drift1 34s ease-in-out infinite", willChange: "transform", pointerEvents: "none" }} />
-      <div className="flz-orb" style={{ position: "absolute", top: "34%", right: "6%", width: 460, height: 340, borderRadius: "50%", background: "radial-gradient(closest-side,rgba(176,140,102,.38),rgba(176,140,102,0))", filter: "blur(52px)", animation: "flz-drift2 44s ease-in-out infinite", willChange: "transform", pointerEvents: "none" }} />
-      <div className="flz-orb" style={{ position: "absolute", bottom: "10%", left: "38%", width: 520, height: 340, borderRadius: "50%", background: "radial-gradient(closest-side,rgba(120,132,150,.22),rgba(120,132,150,0))", filter: "blur(58px)", animation: "flz-drift3 52s ease-in-out infinite", willChange: "transform", pointerEvents: "none" }} />
+      <div className="flz-orb flz-orb-a" style={{ position: "absolute", top: "2%", left: "14%", width: 420, height: 300, borderRadius: "50%", animation: "flz-drift1 34s ease-in-out infinite", willChange: "transform", pointerEvents: "none" }} />
+      <div className="flz-orb flz-orb-b" style={{ position: "absolute", top: "34%", right: "6%", width: 460, height: 340, borderRadius: "50%", animation: "flz-drift2 44s ease-in-out infinite", willChange: "transform", pointerEvents: "none" }} />
+      <div className="flz-orb flz-orb-c" style={{ position: "absolute", bottom: "10%", left: "38%", width: 520, height: 340, borderRadius: "50%", animation: "flz-drift3 52s ease-in-out infinite", willChange: "transform", pointerEvents: "none" }} />
 
       {/* Admin Quick Editor Badge (Only visible when logged in as Admin) */}
       {isAdmin && (
@@ -1074,6 +1256,8 @@ export default function PortfolioHubPage() {
           visibleProjects={visibleProjects}
           allProjects={projectsList}
           activeView={activeView}
+          theme={theme}
+          onThemeToggle={toggleTheme}
         />
       </div>
     </div>
