@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "node scripts/verify-production-storage.mjs && prisma migrate deploy && next start",
+    "start": "node scripts/verify-production-storage.mjs && prisma migrate deploy && node scripts/bootstrap-instagram-projects.mjs && next start",
     "postinstall": "prisma generate",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
