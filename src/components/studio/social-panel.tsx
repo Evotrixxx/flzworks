@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
-import { ExternalLink, ImageOff, Radio, Save, Undo2, X } from "lucide-react";
+import { ExternalLink, ImageOff, Radio, RefreshCw, Save, Undo2, X } from "lucide-react";
 import type { SocialEntry } from "@/lib/social-config";
 import { Field, Panel, SectionHead, Spinner, type Notify } from "./ui";
 import s from "./studio.module.css";
@@ -21,14 +21,19 @@ function isUrlish(value: string) {
 
 export function SocialPanel({
   initial,
+  importConfiguration,
+  onProjectsChanged,
   notify,
 }: {
   initial: SocialEntry[];
+  importConfiguration: { instagram: boolean; tiktok: boolean };
+  onProjectsChanged: () => Promise<void>;
   notify: Notify;
 }) {
   const [saved, setSaved] = useState<SocialEntry[]>(initial);
   const [entries, setEntries] = useState<SocialEntry[]>(initial);
   const [saving, setSaving] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   const update = (platform: string, patch: Partial<SocialEntry>) =>
     setEntries((prev) => prev.map((e) => (e.platform === platform ? { ...e, ...patch } : e)));
@@ -56,6 +61,32 @@ export function SocialPanel({
     }
   };
 
+  const syncProjects = async () => {
+    setSyncing(true);
+    try {
+      const res = await fetch("/api/flz/social-projects/sync", { method: "POST" });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data) throw new Error(data?.error || "Could not sync social projects");
+
+      await onProjectsChanged();
+      const providerErrors = Array.isArray(data.providers)
+        ? data.providers.filter((provider: { error?: string }) => provider.error)
+        : [];
+      if (providerErrors.length) {
+        notify(
+          `Imported ${data.created ?? 0} new posts; ${providerErrors.map((p: { platform: string }) => p.platform).join(" and ")} needs attention.`,
+          "error",
+        );
+      } else {
+        notify(`Social projects synced: ${data.created ?? 0} new, ${data.updated ?? 0} refreshed.`);
+      }
+    } catch (err) {
+      notify(err instanceof Error ? err.message : "Could not sync social projects", "error");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   return (
     <>
       <SectionHead
@@ -72,6 +103,30 @@ export function SocialPanel({
             configured. Images can be a full <code>https://</code> address or a path served by this
             site, such as <code>/api/portfolio/media/…</code>.
           </p>
+        </Panel>
+
+        <Panel icon={<RefreshCw size={16} />} title="Project auto-import">
+          <p className={s.panelNote}>
+            Every connected Instagram post and TikTok video becomes a project on the main board.
+            Repeated syncs update the same card, so posts are never duplicated.
+          </p>
+          <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 10, marginTop: 14 }}>
+            <span className={s.navCount}>
+              Instagram: {importConfiguration.instagram ? "connected" : "API token needed"}
+            </span>
+            <span className={s.navCount}>
+              TikTok: {importConfiguration.tiktok ? "connected" : "Display API token needed"}
+            </span>
+            <span style={{ flex: 1 }} />
+            <button
+              type="button"
+              className={`${s.btn} ${s.btnPrimary}`}
+              disabled={syncing || (!importConfiguration.instagram && !importConfiguration.tiktok)}
+              onClick={syncProjects}
+            >
+              {syncing ? <Spinner /> : <RefreshCw size={15} />} {syncing ? "Syncing…" : "Sync posts now"}
+            </button>
+          </div>
         </Panel>
 
         <div className={s.socialGrid}>

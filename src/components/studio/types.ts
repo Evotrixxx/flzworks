@@ -13,6 +13,8 @@ export interface FlzProjectData {
   sortOrder: number;
   linkUrl?: string | null;
   imageUrl?: string | null;
+  socialPlatform?: string | null;
+  socialPostId?: string | null;
 }
 
 export const CATEGORIES = [
@@ -23,6 +25,7 @@ export const CATEGORIES = [
   "Environments",
   "Shaders/VFX",
   "Web Dev",
+  "Social",
 ] as const;
 
 /** Card washes used by the public hub tiles — kept in sync with its palette. */

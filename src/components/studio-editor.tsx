@@ -29,6 +29,7 @@ interface StudioEditorProps {
   telemetryLive?: boolean;
   socialMetrics: SocialMetricsSnapshot;
   socialMetricsLive?: boolean;
+  socialImportConfiguration: { instagram: boolean; tiktok: boolean };
 }
 
 export function StudioEditor({
@@ -41,6 +42,7 @@ export function StudioEditor({
   telemetryLive = true,
   socialMetrics,
   socialMetricsLive = true,
+  socialImportConfiguration,
 }: StudioEditorProps) {
   const [section, setSection] = useState<Section>("projects");
   const [projects, setProjects] = useState<FlzProjectData[]>(flzProjects);
@@ -50,6 +52,15 @@ export function StudioEditor({
     const id = Date.now() + Math.random();
     setToasts((prev) => [...prev, { id, message, kind }]);
     setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4500);
+  }, []);
+
+  const refreshProjects = useCallback(async () => {
+    const response = await fetch("/api/flz/projects", { cache: "no-store" });
+    const data = await response.json().catch(() => null);
+    if (!response.ok || !Array.isArray(data?.projects)) {
+      throw new Error(data?.error || "Could not refresh projects");
+    }
+    setProjects(data.projects);
   }, []);
 
   const nav: { id: Section; label: string; icon: React.ReactNode; count?: number }[] = [
@@ -143,7 +154,12 @@ export function StudioEditor({
             <ArticlesPanel articles={articles} notify={notify} />
           </div>
           <div className={`${s.sectionPane} ${section === "social" ? "" : s.sectionHidden}`}>
-            <SocialPanel initial={social} notify={notify} />
+            <SocialPanel
+              initial={social}
+              importConfiguration={socialImportConfiguration}
+              onProjectsChanged={refreshProjects}
+              notify={notify}
+            />
           </div>
         </main>
       </div>

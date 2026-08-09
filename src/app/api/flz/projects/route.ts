@@ -7,11 +7,11 @@ export async function GET() {
     const auth = await verifyAdminUser();
     const isAdmin = auth.error === null;
 
-    let projects: any[] = [];
+    let projects: Awaited<ReturnType<typeof prisma.flzProject.findMany>> = [];
     try {
       projects = await prisma.flzProject.findMany({
         where: isAdmin ? {} : { visible: true },
-        orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+        orderBy: [{ sortOrder: "asc" }, { publishedAt: "desc" }, { createdAt: "desc" }],
       });
     } catch (dbErr) {
       console.warn("flzProject DB query fallback:", dbErr);

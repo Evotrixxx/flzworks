@@ -180,11 +180,14 @@ model FlzProject {
   sortOrder   Int      @default(0)
   linkUrl     String?  // external link or demo URL
   imageUrl    String?  // custom media URL
+  socialPlatform String? // imported source, e.g. "instagram" or "tiktok"
+  socialPostId   String? // provider-owned post ID used for duplicate-proof syncing
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([visible, sortOrder])
   @@index([category])
+  @@unique([socialPlatform, socialPostId])
 }
 
 model FlzSetting {

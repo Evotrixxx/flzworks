@@ -11,6 +11,7 @@ import type { FlzProjectData } from "@/components/studio/types";
 import { checkIsAdminEmail } from "@/lib/flz-security";
 import { emptyTelemetrySnapshot, getTelemetrySnapshot } from "@/lib/telemetry";
 import { emptySocialMetricsSnapshot, getSocialMetricsSnapshot } from "@/lib/social-metrics";
+import { getSocialImportConfiguration } from "@/lib/social-project-sync";
 import s from "@/components/studio/studio.module.css";
 
 export const dynamic = "force-dynamic";
@@ -82,7 +83,7 @@ export default async function StudioPage() {
   let projectsData: Awaited<ReturnType<typeof prisma.flzProject.findMany>> = [];
   try {
     projectsData = await prisma.flzProject.findMany({
-      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+      orderBy: [{ sortOrder: "asc" }, { publishedAt: "desc" }, { createdAt: "desc" }],
     });
   } catch (err) {
     console.error("Failed to query flzProject in StudioPage:", err);
@@ -109,6 +110,8 @@ export default async function StudioPage() {
     sortOrder: p.sortOrder,
     linkUrl: p.linkUrl,
     imageUrl: p.imageUrl,
+    socialPlatform: p.socialPlatform,
+    socialPostId: p.socialPostId,
   }));
 
   const flzSettings: Record<string, string> = {};
@@ -139,6 +142,7 @@ export default async function StudioPage() {
       userEmail={user.email}
       telemetry={telemetry}
       socialMetrics={socialMetrics}
+      socialImportConfiguration={getSocialImportConfiguration()}
     />
   );
 }

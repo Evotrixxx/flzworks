@@ -43,10 +43,34 @@ GMAIL_SMTP_APP_PASSWORD=<gmail-app-password>
 GMAIL_SMTP_FROM=<gmail-address>
 INSTAGRAM_ACCESS_TOKEN=<meta-instagram-token>
 INSTAGRAM_USER_ID=<instagram-user-id-or-me>
+INSTAGRAM_API_VERSION=v23.0
+TIKTOK_CLIENT_KEY=<tiktok-developer-client-key>
+TIKTOK_CLIENT_SECRET=<tiktok-developer-client-secret>
+TIKTOK_REFRESH_TOKEN=<tiktok-user-refresh-token-with-video.list>
+SOCIAL_SYNC_SECRET=<another-long-random-secret>
 NEXT_PUBLIC_SOCIAL_INSTAGRAM=<instagram-profile-url>
 NEXT_PUBLIC_SOCIAL_FACEBOOK=<facebook-profile-url>
 NEXT_PUBLIC_SOCIAL_PINTEREST=<pinterest-profile-url>
 ```
+
+Instagram auto-import requires a Professional (Creator or Business) account and an API token
+that can read that account's media. TikTok auto-import requires an approved Login Kit + Display
+API app, the `video.list` scope, and the refresh token returned when `@vision.flz` authorizes it.
+The refresh token is rotated and stored server-side in the persistent database; it is never sent
+to the browser.
+
+### 4a. Schedule social posts to become projects
+
+Create a second Railway service from the same repository and set its start command to:
+
+```txt
+npm run social:sync
+```
+
+Give that service the same `APP_BASE_URL` and `SOCIAL_SYNC_SECRET` values as the web service,
+then set its Cron Schedule to `0 */12 * * *` (every 12 hours, UTC). It calls the protected sync
+endpoint and exits. The first successful run imports all historical media returned by each API;
+later runs update existing project cards and add only new posts.
 
 The app refuses to start in production unless `DATABASE_URL` points inside `/data/` and `UPLOAD_DIR` starts with `/data/`. This prevents Railway from silently creating a fresh empty SQLite database on ephemeral storage.
 

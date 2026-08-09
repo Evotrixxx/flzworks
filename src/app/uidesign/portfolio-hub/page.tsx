@@ -397,7 +397,7 @@ const DS_TOKENS = `
 // ── Static data ──────────────────────────────────────────────────────────────
 const PROJECTS: { id: number; tools: string; title: string; cat: string; age: string; grad: string; link: string; img: string; body: string }[] = [];
 
-const FILTERS = ["All", "Assets", "Characters", "Gameplay", "Automotive"];
+const FILTERS = ["All", "Social", "Assets", "Characters", "Gameplay", "Automotive"];
 
 // ── Icon helpers ──────────────────────────────────────────────────────────────
 const IconGrid = () => (
@@ -483,8 +483,8 @@ function SearchView({ allProjects }: { allProjects: typeof PROJECTS }) {
           <button onClick={() => setQuery("")} aria-label="Clear search" style={{ background: "none", border: "none", cursor: "pointer", color: "var(--flz-text-muted)", lineHeight: 1, width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "50%" }}>✕</button>
         )}
       </div>
-      <div className="flz-grid" style={{ flex: 1, minHeight: 0, display: "grid", gridTemplateColumns: "repeat(3,1fr)", gridTemplateRows: "1fr 1fr", gap: 12 }}>
-        {tiles.slice(0, 6).map((p, i) => (
+      <div className="flz-grid" style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "grid", gridTemplateColumns: "repeat(3,1fr)", gridAutoRows: "minmax(180px, 1fr)", gap: 12 }}>
+        {tiles.map((p, i) => (
           <div
             key={p.title ? p.id : `empty${i}`}
             className="flz-tile-in"
@@ -692,6 +692,7 @@ function MainSlab({
   activeFilter,
   setActiveFilter,
   visibleProjects,
+  allProjects,
   activeView,
 }: {
   daysBuilding: string;
@@ -699,8 +700,13 @@ function MainSlab({
   activeFilter: string;
   setActiveFilter: (f: string) => void;
   visibleProjects: typeof PROJECTS;
+  allProjects: typeof PROJECTS;
   activeView: ActiveView;
 }) {
+  const [projectPage, setProjectPage] = useState(0);
+  const pageCount = Math.max(1, Math.ceil(visibleProjects.length / 6));
+  const safeProjectPage = Math.min(projectPage, pageCount - 1);
+
   const slabStyle: React.CSSProperties = {
     position: "relative", flex: 1, minWidth: 0,
     display: "flex", flexDirection: "column", gap: 22,
@@ -713,7 +719,7 @@ function MainSlab({
   };
 
   // Pad to 6 tiles (show empty placeholders)
-  const tiles = [...visibleProjects];
+  const tiles = visibleProjects.slice(safeProjectPage * 6, safeProjectPage * 6 + 6);
   while (tiles.length < 6) tiles.push({ id: -tiles.length, tools: "", title: "", cat: "", age: "", grad: "none", link: "", img: "", body: "" });
 
   return (
@@ -750,7 +756,7 @@ function MainSlab({
         {FILTERS.map(f => (
           f === "Automotive"
             ? <Link key={f} href="/" className="flz-chip" style={{ textDecoration: "none" }}>{f}</Link>
-            : <button key={f} className={`flz-chip${activeFilter === f ? " active" : ""}`} onClick={() => setActiveFilter(f)}>{f}</button>
+            : <button key={f} className={`flz-chip${activeFilter === f ? " active" : ""}`} onClick={() => { setProjectPage(0); setActiveFilter(f); }}>{f}</button>
         ))}
       </div>
 
@@ -763,10 +769,10 @@ function MainSlab({
             <div className="flz-view" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 14 }}>
               <div className="flz-pager-row" style={{ display: "flex", alignItems: "center", gap: 14 }}>
                 <div style={{ flexShrink: 0, whiteSpace: "nowrap", font: `500 var(--flz-fs-label)/1 var(--flz-font-mono)`, letterSpacing: "var(--flz-ls-label)", textTransform: "uppercase", color: "var(--flz-text-muted)" }}>Recent projects</div>
-                <span style={{ flexShrink: 0, whiteSpace: "nowrap", font: `400 var(--flz-fs-body-sm)/1 var(--flz-font-sans)`, color: "var(--flz-text-secondary)" }}>Page 1 of 4</span>
+                <span style={{ flexShrink: 0, whiteSpace: "nowrap", font: `400 var(--flz-fs-body-sm)/1 var(--flz-font-sans)`, color: "var(--flz-text-secondary)" }}>Page {safeProjectPage + 1} of {pageCount}</span>
                 <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-                  <button className="flz-iconbtn glass" aria-label="Previous"><IconArrow size={15} rotate /></button>
-                  <button className="flz-iconbtn glass" aria-label="Next"><IconArrow size={15} /></button>
+                  <button className="flz-iconbtn glass" aria-label="Previous" disabled={safeProjectPage === 0} onClick={() => setProjectPage(Math.max(0, safeProjectPage - 1))}><IconArrow size={15} rotate /></button>
+                  <button className="flz-iconbtn glass" aria-label="Next" disabled={safeProjectPage >= pageCount - 1} onClick={() => setProjectPage(Math.min(pageCount - 1, safeProjectPage + 1))}><IconArrow size={15} /></button>
                 </div>
               </div>
               <div className="flz-grid" style={{ flex: 1, minHeight: 0, display: "grid", gridTemplateColumns: "repeat(3,1fr)", gridTemplateRows: "1fr 1fr", gap: 12 }}>
@@ -784,7 +790,7 @@ function MainSlab({
               </div>
             </div>
           )}
-          {activeView === "search" && <SearchView allProjects={PROJECTS} />}
+          {activeView === "search" && <SearchView allProjects={allProjects} />}
         </div>
 
         {/* Right column */}
@@ -975,6 +981,7 @@ export default function PortfolioHubPage() {
           activeFilter={activeFilter}
           setActiveFilter={setActiveFilter}
           visibleProjects={visibleProjects}
+          allProjects={projectsList}
           activeView={activeView}
         />
       </div>
