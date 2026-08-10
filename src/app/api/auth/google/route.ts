@@ -24,6 +24,12 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       );
     }
+    if (!body?.nonce || typeof body.nonce !== "string") {
+      return NextResponse.json(
+        { error: "A Google authentication nonce is required." },
+        { status: 400 },
+      );
+    }
 
     const ticket = await client.verifyIdToken({
       idToken: body.credential,
@@ -31,6 +37,13 @@ export async function POST(request: NextRequest) {
     });
 
     const payload = ticket.getPayload();
+    const tokenNonce = (payload as (typeof payload & { nonce?: string }) | undefined)?.nonce;
+    if (!tokenNonce || tokenNonce !== body.nonce) {
+      return NextResponse.json(
+        { error: "Google authentication nonce validation failed." },
+        { status: 401 },
+      );
+    }
     if (!payload?.email || !payload.email_verified) {
       return NextResponse.json(
         { error: "Google account email is not verified." },

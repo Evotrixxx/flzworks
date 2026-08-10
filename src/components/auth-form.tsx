@@ -1,11 +1,38 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { FormEvent, useCallback, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Lock, Mail, User, Loader2 } from "lucide-react";
 import type { Dictionary, Locale } from "@/lib/i18n";
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+const GOOGLE_FEDCM_CONFIG_URL = "https://accounts.google.com/gsi/fedcm.json";
+
+type FedCmCredential = Credential & {
+  token?: string | { id_token?: string; idToken?: string; credential?: string };
+};
+
+type FedCmRequestOptions = CredentialRequestOptions & {
+  identity: {
+    mode: "active";
+    providers: Array<{
+      configURL: string;
+      clientId: string;
+      params: {
+        response_type: "id_token";
+        scope: "openid email profile";
+        nonce: string;
+      };
+    }>;
+  };
+};
+
+function readFedCmIdToken(credential: FedCmCredential | null) {
+  const token = credential?.token;
+  if (typeof token === "string") return token;
+  if (!token) return null;
+  return token.id_token ?? token.idToken ?? token.credential ?? null;
+}
 
 export function GoogleSignInButton({
   redirectTo,
@@ -19,14 +46,12 @@ export function GoogleSignInButton({
   onError?: (err: string) => void;
 }) {
   const router = useRouter();
-  const buttonRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
   const [denied, setDenied] = useState(false);
   const [error, setError] = useState("");
-  const initializedRef = useRef(false);
 
   const handleCredentialResponse = useCallback(
-    async (response: GoogleCredentialResponse) => {
+    async (credential: string, nonce: string) => {
       setLoading(true);
       setError("");
       if (onStart) onStart();
@@ -35,7 +60,7 @@ export function GoogleSignInButton({
         const res = await fetch("/api/auth/google", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ credential: response.credential }),
+          body: JSON.stringify({ credential, nonce }),
         });
 
         const data = await res.json();
@@ -68,43 +93,47 @@ export function GoogleSignInButton({
     [router, redirectTo, locale, onStart, onError],
   );
 
-  useEffect(() => {
-    if (!GOOGLE_CLIENT_ID || !buttonRef.current || initializedRef.current) return;
+  const signInWithGoogle = useCallback(async () => {
+    setError("");
+    setLoading(true);
 
-    function tryInit() {
-      if (typeof google === "undefined" || !google?.accounts?.id) return false;
-      if (initializedRef.current) return true;
+    try {
+      if (!GOOGLE_CLIENT_ID || !navigator.credentials?.get) {
+        throw new Error("This browser does not support Google account sign-in.");
+      }
 
-      google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID!,
-        callback: handleCredentialResponse,
-        // Chrome's browser-mediated account chooser avoids popup blockers and
-        // third-party-cookie restrictions that can leave the legacy button inert.
-        use_fedcm_for_button: true,
-        button_auto_select: true,
-        itp_support: true,
-      });
+      const nonce = crypto.randomUUID();
+      const request: FedCmRequestOptions = {
+        identity: {
+          mode: "active",
+          providers: [
+            {
+              configURL: GOOGLE_FEDCM_CONFIG_URL,
+              clientId: GOOGLE_CLIENT_ID,
+              params: {
+                response_type: "id_token",
+                scope: "openid email profile",
+                nonce,
+              },
+            },
+          ],
+        },
+      };
 
-      google.accounts.id.renderButton(buttonRef.current!, {
-        type: "standard",
-        theme: "outline",
-        size: "large",
-        text: "signin_with",
-        shape: "pill",
-        width: 320,
-      });
+      const credential = (await navigator.credentials.get(request)) as FedCmCredential | null;
+      const idToken = readFedCmIdToken(credential);
+      if (!idToken) {
+        throw new Error("Google did not return an ID token.");
+      }
 
-      initializedRef.current = true;
-      return true;
+      await handleCredentialResponse(idToken, nonce);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Google Sign-In failed.";
+      setError(message);
+      if (onError) onError(message);
+      setLoading(false);
     }
-
-    if (!tryInit()) {
-      const interval = setInterval(() => {
-        if (tryInit()) clearInterval(interval);
-      }, 200);
-      return () => clearInterval(interval);
-    }
-  }, [handleCredentialResponse]);
+  }, [handleCredentialResponse, onError]);
 
   if (!GOOGLE_CLIENT_ID) {
     return null;
@@ -124,7 +153,20 @@ export function GoogleSignInButton({
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <div ref={buttonRef} className="min-h-[44px]" />
+      <button
+        type="button"
+        onClick={signInWithGoogle}
+        disabled={loading}
+        className="inline-flex min-h-11 w-80 items-center justify-center gap-3 rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-wait disabled:opacity-70"
+      >
+        <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" focusable="false">
+          <path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.54h3.24c1.9-1.75 2.98-4.33 2.98-7.41Z" />
+          <path fill="#34A853" d="M12 22c2.7 0 4.97-.9 6.62-2.43l-3.24-2.54c-.9.6-2.05.96-3.38.96-2.6 0-4.81-1.76-5.6-4.13H3.06v2.62A10 10 0 0 0 12 22Z" />
+          <path fill="#FBBC05" d="M6.4 13.86A6 6 0 0 1 6.08 12c0-.65.11-1.28.32-1.86V7.52H3.06A10 10 0 0 0 2 12c0 1.61.39 3.14 1.06 4.48l3.34-2.62Z" />
+          <path fill="#EA4335" d="M12 6.01c1.47 0 2.79.5 3.83 1.5l2.87-2.88A9.63 9.63 0 0 0 12 2a10 10 0 0 0-8.94 5.52l3.34 2.62c.79-2.37 3-4.13 5.6-4.13Z" />
+        </svg>
+        <span>{loading ? "Signing in…" : "Sign in with Google"}</span>
+      </button>
       {loading && (
         <div className="flex items-center gap-2 text-sm text-slate-500">
           <Loader2 className="h-4 w-4 animate-spin" />
