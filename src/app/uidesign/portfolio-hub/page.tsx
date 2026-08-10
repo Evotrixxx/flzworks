@@ -689,6 +689,7 @@ const DS_TOKENS = `
     animation: none !important;
   }
   .flz-rail > div:first-child { display: none !important; }
+  .flz-rail a.flz-iconbtn { text-decoration: none; }
   .flz-iconbtn {
     width: 40px;
     height: 40px;
@@ -845,15 +846,12 @@ const DS_TOKENS = `
     outline: 3px solid var(--flz-focus);
     outline-offset: 3px;
   }
-  .flz-empty-state,
-  .flz-search-shell {
+  .flz-empty-state {
     color: var(--flz-text-primary) !important;
     background: var(--flz-surface) !important;
     border: 1px solid var(--flz-separator) !important;
     box-shadow: none !important;
   }
-  .flz-search-shell { border-radius: 12px !important; }
-  .flz-search-input { color: var(--flz-text-primary) !important; }
   .flz-empty-state {
     grid-column: 1 / -1;
     width: 100%;
@@ -927,9 +925,22 @@ const IconGrid = () => (
     <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
   </svg>
 );
-const IconSearch = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.65" y2="16.65"/>
+const IconInstagram = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="3" y="3" width="18" height="18" rx="5" />
+    <circle cx="12" cy="12" r="4" />
+    <circle cx="17.4" cy="6.6" r=".8" fill="currentColor" stroke="none" />
+  </svg>
+);
+const IconTikTok = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M14 3v10.2a4.2 4.2 0 1 1-3.4-4.12" />
+    <path d="M14 3c.5 2.7 2.2 4.3 5 4.7" />
+  </svg>
+);
+const IconX = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.451-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z" />
   </svg>
 );
 const IconMail = () => (
@@ -960,7 +971,6 @@ const IconMoon = () => (
   </svg>
 );
 
-type ActiveView = "work" | "search";
 type Theme = "light" | "dark";
 const THEME_STORAGE_KEY = "flz-public-theme";
 const themeListeners = new Set<() => void>();
@@ -993,8 +1003,7 @@ function setStoredTheme(theme: Theme) {
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
-function IconRail({ activeView, setActiveView, contactOpen, setContactOpen }: {
-  activeView: ActiveView; setActiveView: (v: ActiveView) => void;
+function IconRail({ contactOpen, setContactOpen }: {
   contactOpen: boolean; setContactOpen: (v: boolean) => void;
 }) {
   const railStyle: React.CSSProperties = {
@@ -1010,53 +1019,17 @@ function IconRail({ activeView, setActiveView, contactOpen, setContactOpen }: {
   return (
     <div className="flz-rail" style={railStyle}>
       <div style={{ position: "absolute", inset: 0, borderRadius: "inherit", pointerEvents: "none", background: "linear-gradient(180deg,rgba(255,255,255,.24) 0%,rgba(255,255,255,0) 14%),linear-gradient(0deg,rgba(255,255,255,.14) 0%,rgba(255,255,255,0) 12%)" }} />
-      <span className="flz-railbtn"><button className={`flz-iconbtn ${activeView === "work" ? "solid" : "ghost"}`} aria-label="Work" onClick={() => setActiveView("work")}><IconGrid /></button></span>
-      <span className="flz-railbtn"><button className={`flz-iconbtn ${activeView === "search" ? "solid" : "ghost"}`} aria-label="Search" onClick={() => setActiveView("search")}><IconSearch /></button></span>
+      <span className="flz-railbtn"><span className="flz-iconbtn solid" role="img" aria-label="Projects"><IconGrid /></span></span>
+      <span className="flz-railbtn">
+        <a className="flz-iconbtn ghost" href="https://www.instagram.com/vision.flz/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" onClick={() => trackTelemetryEvent("social_open", "main", "instagram")}><IconInstagram /></a>
+      </span>
+      <span className="flz-railbtn">
+        <a className="flz-iconbtn ghost" href="https://www.tiktok.com/@vision.flz" target="_blank" rel="noopener noreferrer" aria-label="TikTok" onClick={() => trackTelemetryEvent("social_open", "main", "tiktok")}><IconTikTok /></a>
+      </span>
+      <span className="flz-railbtn">
+        <a className="flz-iconbtn ghost" href="https://x.com/flzworks" target="_blank" rel="noopener noreferrer" aria-label="X.com — FLZ Works" onClick={() => trackTelemetryEvent("social_open", "main", "x")}><IconX /></a>
+      </span>
       <span className="flz-railbtn"><button className={`flz-iconbtn ${contactOpen ? "solid" : "ghost"}`} aria-label="Messages" onClick={() => setContactOpen(!contactOpen)}><IconMail /></button></span>
-    </div>
-  );
-}
-
-function SearchView({ allProjects }: { allProjects: typeof PROJECTS }) {
-  const [query, setQuery] = useState("");
-  const visible = query.trim()
-    ? allProjects.filter(p =>
-        p.title.toLowerCase().includes(query.toLowerCase()) ||
-        p.tools.toLowerCase().includes(query.toLowerCase()) ||
-        p.cat.toLowerCase().includes(query.toLowerCase())
-      )
-    : allProjects;
-
-  const tiles = [...visible];
-
-  return (
-    <div className="flz-view" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 14, overflow: "hidden" }}>
-      <div className="flz-search-shell" style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 20, background: "#1c1a17", border: "1px solid rgba(255,255,255,.10)" }}>
-        <IconSearch />
-        <input
-          autoFocus
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          placeholder="Search projects, tools, categories…"
-          className="flz-search-input"
-          style={{ flex: 1, background: "none", border: "none", outline: "none", font: `400 15px/1 var(--flz-font-sans)`, color: "var(--flz-text-primary)", caretColor: "var(--flz-text-primary)" }}
-        />
-        {query && (
-          <button onClick={() => setQuery("")} aria-label="Clear search" style={{ background: "none", border: "none", cursor: "pointer", color: "var(--flz-text-muted)", lineHeight: 1, width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, borderRadius: "50%" }}>✕</button>
-        )}
-      </div>
-      <div className="flz-grid" style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "grid", gridTemplateColumns: "repeat(3,1fr)", gridAutoRows: "minmax(180px, 1fr)", gap: 12 }}>
-        {tiles.length === 0 && <div className="flz-empty-state">No projects match this search.</div>}
-        {tiles.map((p, i) => (
-          <div
-            key={p.title ? p.id : `empty${i}`}
-            className="flz-tile-in"
-            style={{ "--flz-delay": `${i * 45}ms`, display: "flex", minWidth: 0, minHeight: 0 } as React.CSSProperties}
-          >
-            <ProjectTile project={p as typeof PROJECTS[number]} />
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
@@ -1230,8 +1203,6 @@ function MainSlab({
   activeFilter,
   setActiveFilter,
   visibleProjects,
-  allProjects,
-  activeView,
   theme,
   onThemeToggle,
 }: {
@@ -1240,8 +1211,6 @@ function MainSlab({
   activeFilter: string;
   setActiveFilter: (f: string) => void;
   visibleProjects: typeof PROJECTS;
-  allProjects: typeof PROJECTS;
-  activeView: ActiveView;
   theme: Theme;
   onThemeToggle: () => void;
 }) {
@@ -1314,8 +1283,7 @@ function MainSlab({
 
         {/* Routing well (sunken glass) */}
         <div style={wellStyle}>
-          {activeView === "work" && (
-            <div className="flz-view" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 14 }}>
+          <div className="flz-view" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 14 }}>
               <div className="flz-pager-row" style={{ display: "flex", alignItems: "center", gap: 14 }}>
                 <div style={{ flexShrink: 0, whiteSpace: "nowrap", font: `500 var(--flz-fs-label)/1 var(--flz-font-mono)`, letterSpacing: "var(--flz-ls-label)", textTransform: "uppercase", color: "var(--flz-text-muted)" }}>Recent projects</div>
                 <span style={{ flexShrink: 0, whiteSpace: "nowrap", font: `400 var(--flz-fs-body-sm)/1 var(--flz-font-sans)`, color: "var(--flz-text-secondary)" }}>Page {safeProjectPage + 1} of {pageCount}</span>
@@ -1336,9 +1304,7 @@ function MainSlab({
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-          {activeView === "search" && <SearchView allProjects={allProjects} />}
+          </div>
         </div>
 
         {/* Right column */}
@@ -1376,7 +1342,6 @@ function MainSlab({
 export default function PortfolioHubPage() {
   const [daysBuilding, setDaysBuilding] = useState("—");
   const [activeFilter, setActiveFilter] = useState("All");
-  const [activeView, setActiveView] = useState<ActiveView>("work");
   const [contactOpen, setContactOpen] = useState(false);
   const theme = useSyncExternalStore(subscribeToTheme, getThemeSnapshot, getServerThemeSnapshot);
 
@@ -1528,15 +1493,13 @@ export default function PortfolioHubPage() {
 
       {/* Content */}
       <div className="flz-content" style={{ position: "relative", zIndex: 1, display: "flex", gap: 24, padding: "40px 44px", minHeight: "100vh", boxSizing: "border-box" }}>
-        <IconRail activeView={activeView} setActiveView={setActiveView} contactOpen={contactOpen} setContactOpen={setContactOpen} />
+        <IconRail contactOpen={contactOpen} setContactOpen={setContactOpen} />
         <MainSlab
           daysBuilding={daysBuilding}
           settings={settings}
           activeFilter={activeFilter}
           setActiveFilter={setActiveFilter}
           visibleProjects={visibleProjects}
-          allProjects={projectsList}
-          activeView={activeView}
           theme={theme}
           onThemeToggle={toggleTheme}
         />
