@@ -23,6 +23,8 @@ interface GoogleAccounts {
       itp_support?: boolean;
       use_fedcm_for_button?: boolean;
       button_auto_select?: boolean;
+      nonce?: string;
+      ux_mode?: "popup" | "redirect";
     }): void;
     renderButton(parent: HTMLElement, config: GoogleButtonConfig): void;
     prompt(): void;

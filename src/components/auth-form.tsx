@@ -1,7 +1,8 @@
 "use client";
 
-import { FormEvent, useCallback, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Script from "next/script";
 import { Lock, Mail, User, Loader2 } from "lucide-react";
 import type { Dictionary, Locale } from "@/lib/i18n";
 
@@ -19,7 +20,29 @@ type FedCmToken =
 
 type FedCmCredential = Credential & {
   token?: FedCmToken;
+  id_token?: FedCmToken;
+  idToken?: FedCmToken;
+  credential?: FedCmToken;
 };
+
+type GoogleAuthMode = "checking" | "fedcm" | "gis";
+
+function subscribeToBrowserCapability() {
+  return () => undefined;
+}
+
+function getGoogleAuthModeSnapshot(): GoogleAuthMode {
+  const userAgent = navigator.userAgent;
+  const isPhoneOrTablet =
+    /Android|iPhone|iPad|iPod/i.test(userAgent) ||
+    (/Macintosh/i.test(userAgent) && navigator.maxTouchPoints > 1);
+  const supportsDirectFedCm = "IdentityCredential" in window;
+  return !isPhoneOrTablet && supportsDirectFedCm ? "fedcm" : "gis";
+}
+
+function getGoogleAuthModeServerSnapshot(): GoogleAuthMode {
+  return "checking";
+}
 
 type FedCmRequestOptions = CredentialRequestOptions & {
   identity: {
@@ -64,7 +87,12 @@ function unpackFedCmIdToken(token: FedCmToken | undefined, depth = 0): string | 
 }
 
 function readFedCmIdToken(credential: FedCmCredential | null) {
-  return unpackFedCmIdToken(credential?.token);
+  return (
+    unpackFedCmIdToken(credential?.token) ??
+    unpackFedCmIdToken(credential?.id_token) ??
+    unpackFedCmIdToken(credential?.idToken) ??
+    unpackFedCmIdToken(credential?.credential)
+  );
 }
 
 export function GoogleSignInButton({
@@ -82,6 +110,15 @@ export function GoogleSignInButton({
   const [loading, setLoading] = useState(false);
   const [denied, setDenied] = useState(false);
   const [error, setError] = useState("");
+  const detectedAuthMode = useSyncExternalStore(
+    subscribeToBrowserCapability,
+    getGoogleAuthModeSnapshot,
+    getGoogleAuthModeServerSnapshot,
+  );
+  const [forceGisFallback, setForceGisFallback] = useState(false);
+  const authMode: GoogleAuthMode = forceGisFallback ? "gis" : detectedAuthMode;
+  const [gisReady, setGisReady] = useState(false);
+  const gisButtonRef = useRef<HTMLDivElement>(null);
 
   const handleCredentialResponse = useCallback(
     async (credential: string, nonce: string) => {
@@ -126,6 +163,50 @@ export function GoogleSignInButton({
     [router, redirectTo, locale, onStart, onError],
   );
 
+  useEffect(() => {
+    if (authMode !== "gis" || !gisReady || !GOOGLE_CLIENT_ID || !gisButtonRef.current) {
+      return;
+    }
+
+    if (typeof google === "undefined") {
+      return;
+    }
+
+    const nonce = crypto.randomUUID();
+    const container = gisButtonRef.current;
+    const width = Math.max(200, Math.min(320, container.clientWidth || 320));
+    container.replaceChildren();
+
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: (response) => {
+        const idToken = unpackFedCmIdToken(response.credential);
+        if (!idToken) {
+          const message = "Google returned an invalid ID token. Open this page in Chrome or Safari.";
+          setError(message);
+          if (onError) onError(message);
+          return;
+        }
+        void handleCredentialResponse(idToken, nonce);
+      },
+      auto_select: false,
+      itp_support: true,
+      use_fedcm_for_button: true,
+      button_auto_select: false,
+      nonce,
+      ux_mode: "popup",
+    });
+    google.accounts.id.renderButton(container, {
+      type: "standard",
+      theme: "outline",
+      size: "large",
+      text: "signin_with",
+      shape: "pill",
+      width,
+      locale,
+    });
+  }, [authMode, gisReady, handleCredentialResponse, locale, onError]);
+
   const signInWithGoogle = useCallback(async () => {
     setError("");
     setLoading(true);
@@ -157,7 +238,9 @@ export function GoogleSignInButton({
       const credential = (await navigator.credentials.get(request)) as FedCmCredential | null;
       const idToken = readFedCmIdToken(credential);
       if (!idToken) {
-        throw new Error("Google did not return an ID token.");
+        setForceGisFallback(true);
+        setLoading(false);
+        return;
       }
 
       await handleCredentialResponse(idToken, nonce);
@@ -187,12 +270,30 @@ export function GoogleSignInButton({
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <button
-        type="button"
-        onClick={signInWithGoogle}
-        disabled={loading}
-        className="inline-flex min-h-11 w-80 items-center justify-center gap-3 rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-wait disabled:opacity-70"
-      >
+      {authMode === "gis" && (
+        <Script
+          src="https://accounts.google.com/gsi/client"
+          strategy="afterInteractive"
+          onReady={() => setGisReady(true)}
+          onError={() => {
+            const message = "Google Sign-In could not be loaded. Open this page in Chrome or Safari.";
+            setError(message);
+            if (onError) onError(message);
+          }}
+        />
+      )}
+      {authMode === "gis" ? (
+        <div
+          ref={gisButtonRef}
+          className={`min-h-11 w-full max-w-80 ${loading ? "pointer-events-none opacity-70" : ""}`}
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={signInWithGoogle}
+          disabled={loading || authMode === "checking"}
+          className="inline-flex min-h-11 w-full max-w-80 items-center justify-center gap-3 rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-wait disabled:opacity-70"
+        >
         <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" focusable="false">
           <path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.54h3.24c1.9-1.75 2.98-4.33 2.98-7.41Z" />
           <path fill="#34A853" d="M12 22c2.7 0 4.97-.9 6.62-2.43l-3.24-2.54c-.9.6-2.05.96-3.38.96-2.6 0-4.81-1.76-5.6-4.13H3.06v2.62A10 10 0 0 0 12 22Z" />
@@ -200,7 +301,8 @@ export function GoogleSignInButton({
           <path fill="#EA4335" d="M12 6.01c1.47 0 2.79.5 3.83 1.5l2.87-2.88A9.63 9.63 0 0 0 12 2a10 10 0 0 0-8.94 5.52l3.34 2.62c.79-2.37 3-4.13 5.6-4.13Z" />
         </svg>
         <span>{loading ? "Signing in…" : "Sign in with Google"}</span>
-      </button>
+        </button>
+      )}
       {loading && (
         <div className="flex items-center gap-2 text-sm text-slate-500">
           <Loader2 className="h-4 w-4 animate-spin" />
