@@ -71,16 +71,6 @@ const DS_TOKENS = `
     50%  { transform: translate3d(60px,-70px,0) scale(1.2); }
     100% { transform: translate3d(0,0,0) scale(.96); }
   }
-  @keyframes flz-ambient-sweep-a {
-    0%   { transform: translate3d(-8%,-4%,0) rotate(-8deg) scale(.94); }
-    50%  { transform: translate3d(34%,8%,0) rotate(6deg) scale(1.08); }
-    100% { transform: translate3d(72%,-2%,0) rotate(-3deg) scale(.98); }
-  }
-  @keyframes flz-ambient-sweep-b {
-    0%   { transform: translate3d(18%,8%,0) rotate(7deg) scale(1.02); }
-    50%  { transform: translate3d(-22%,-5%,0) rotate(-5deg) scale(.92); }
-    100% { transform: translate3d(-52%,7%,0) rotate(4deg) scale(1.06); }
-  }
   /* ── Entrance / transition motion ──────────────────────────────────────── */
   @keyframes flz-rise {
     from { opacity: 0; transform: translateY(14px); }
@@ -117,7 +107,7 @@ const DS_TOKENS = `
   .flz-modal    { animation: flz-modal-in .28s var(--flz-ease-glass) both; }
 
   @media (prefers-reduced-motion: reduce) {
-    .flz-orb, .flz-slab-ambient { animation: none !important; }
+    .flz-orb { animation: none !important; }
     .flz-enter, .flz-view, .flz-tile-in, .flz-backdrop, .flz-modal {
       animation-duration: 1ms !important;
       animation-delay: 0ms !important;
@@ -462,43 +452,21 @@ const DS_TOKENS = `
       linear-gradient(180deg, #fbfbfd 0%, #f5f5f7 48%, #ececef 100%) !important;
     color-scheme: light;
   }
-  .flz-hub-root > .flz-orb-a { background: radial-gradient(closest-side,rgba(132,177,244,.34),transparent 72%) !important; }
-  .flz-hub-root > .flz-orb-b { background: radial-gradient(closest-side,rgba(245,194,170,.24),transparent 72%) !important; }
-  .flz-hub-root > .flz-orb-c { background: radial-gradient(closest-side,rgba(176,160,224,.2),transparent 72%) !important; }
+  .flz-hub-root > .flz-orb-a { background: radial-gradient(closest-side,rgba(108,164,247,.46),transparent 72%) !important; }
+  .flz-hub-root > .flz-orb-b { background: radial-gradient(closest-side,rgba(247,175,144,.34),transparent 72%) !important; }
+  .flz-hub-root > .flz-orb-c { background: radial-gradient(closest-side,rgba(155,132,226,.3),transparent 72%) !important; }
   .flz-orb {
     contain: paint;
     filter: none !important;
-    opacity: .9;
+    opacity: .88;
     transform: translateZ(0);
   }
   .flz-slab {
-    background: linear-gradient(145deg,rgba(255,255,255,.76),rgba(247,247,250,.7));
+    background: linear-gradient(145deg,rgba(255,255,255,.96),rgba(247,247,250,.94));
     border: 1px solid rgba(255,255,255,.9);
     box-shadow: inset 0 0 0 1px rgba(29,29,31,.05), 0 34px 90px rgba(37,39,46,.14);
-    backdrop-filter: blur(34px) saturate(165%);
-    -webkit-backdrop-filter: blur(34px) saturate(165%);
-  }
-  .flz-slab > :not(.flz-slab-ambient) { position: relative; z-index: 1; }
-  .flz-slab-ambient {
-    position: absolute;
-    z-index: 0;
-    width: 68%;
-    height: 150%;
-    top: -28%;
-    border-radius: 50%;
-    pointer-events: none;
-    will-change: transform;
-    contain: paint;
-  }
-  .flz-slab-ambient-a {
-    left: -26%;
-    background: radial-gradient(ellipse at center,rgba(82,142,255,.28) 0%,rgba(115,96,225,.14) 38%,transparent 70%);
-    animation: flz-ambient-sweep-a 24s ease-in-out infinite alternate;
-  }
-  .flz-slab-ambient-b {
-    right: -24%;
-    background: radial-gradient(ellipse at center,rgba(255,125,91,.22) 0%,rgba(236,104,166,.12) 38%,transparent 70%);
-    animation: flz-ambient-sweep-b 30s ease-in-out infinite alternate;
+    backdrop-filter: blur(24px) saturate(145%);
+    -webkit-backdrop-filter: blur(24px) saturate(145%);
   }
   .flz-stat-tile,
   .flz-tile,
@@ -547,11 +515,11 @@ const DS_TOKENS = `
       linear-gradient(155deg,#08090c 0%,#101218 48%,#090a0e 100%) !important;
     color-scheme: dark;
   }
-  .flz-hub-root[data-theme="dark"] > .flz-orb-a { background: radial-gradient(closest-side,rgba(70,122,220,.24),transparent 72%) !important; }
-  .flz-hub-root[data-theme="dark"] > .flz-orb-b { background: radial-gradient(closest-side,rgba(177,75,112,.18),transparent 72%) !important; }
-  .flz-hub-root[data-theme="dark"] > .flz-orb-c { background: radial-gradient(closest-side,rgba(107,84,190,.18),transparent 72%) !important; }
+  .flz-hub-root[data-theme="dark"] > .flz-orb-a { background: radial-gradient(closest-side,rgba(58,117,224,.38),transparent 72%) !important; }
+  .flz-hub-root[data-theme="dark"] > .flz-orb-b { background: radial-gradient(closest-side,rgba(193,67,111,.3),transparent 72%) !important; }
+  .flz-hub-root[data-theme="dark"] > .flz-orb-c { background: radial-gradient(closest-side,rgba(103,76,202,.3),transparent 72%) !important; }
   .flz-hub-root[data-theme="dark"] .flz-slab {
-    background: linear-gradient(145deg,rgba(23,25,31,.88),rgba(13,15,20,.82));
+    background: linear-gradient(145deg,rgba(23,25,31,.97),rgba(13,15,20,.95));
     border-color: rgba(255,255,255,.11);
     box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 34px 90px rgba(0,0,0,.46);
   }
@@ -573,12 +541,6 @@ const DS_TOKENS = `
   .flz-hub-root[data-theme="dark"] .flz-project-title { color: #fff; }
   .flz-hub-root[data-theme="dark"] .flz-project-body { color: rgba(255,255,255,.88); }
   .flz-hub-root[data-theme="dark"] .flz-project-meta { color: rgba(255,255,255,.72); }
-  .flz-hub-root[data-theme="dark"] .flz-slab-ambient-a {
-    background: radial-gradient(ellipse at center,rgba(69,123,255,.34) 0%,rgba(105,74,210,.18) 38%,transparent 70%);
-  }
-  .flz-hub-root[data-theme="dark"] .flz-slab-ambient-b {
-    background: radial-gradient(ellipse at center,rgba(213,72,112,.28) 0%,rgba(232,108,68,.12) 38%,transparent 70%);
-  }
   .flz-hub-root[data-theme="dark"] .flz-chip {
     border-color: rgba(255,255,255,.11);
     background: rgba(255,255,255,.055);
@@ -658,7 +620,6 @@ const DS_TOKENS = `
     .flz-stats .flz-stat-tile,
     .flz-sidebar > *,
     .flz-chip.active,
-    .flz-slab-ambient { animation: none !important; }
     .flz-stat-tile:hover,
     .flz-iconbtn:hover { transform: none !important; }
   }
@@ -1022,9 +983,6 @@ function MainSlab({
 
   return (
     <div className="flz-slab" style={slabStyle}>
-      {/* Visible ambient motion lives inside the panel and uses transforms only. */}
-      <div className="flz-slab-ambient flz-slab-ambient-a" aria-hidden="true" />
-      <div className="flz-slab-ambient flz-slab-ambient-b" aria-hidden="true" />
       {/* Glass sheen overlay */}
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 3, background: "linear-gradient(180deg,rgba(255,255,255,.14) 0%,rgba(255,255,255,.03) 7%,rgba(255,255,255,0) 22%),linear-gradient(0deg,rgba(255,255,255,.08) 0%,rgba(255,255,255,0) 10%),linear-gradient(105deg,rgba(255,255,255,.06) 0%,rgba(255,255,255,0) 26%)" }} />
       <div style={{ position: "absolute", top: -16, left: "6%", width: 190, height: 52, borderRadius: "50%", background: "radial-gradient(closest-side,rgba(255,255,255,.5),rgba(255,255,255,0))", filter: "blur(11px)", pointerEvents: "none", zIndex: 3 }} />
@@ -1237,10 +1195,10 @@ export default function PortfolioHubPage() {
       <style dangerouslySetInnerHTML={{ __html: DS_TOKENS }} />
       <TelemetryConsent site="main" />
 
-      {/* Ambient orbs */}
-      <div className="flz-orb flz-orb-a" style={{ position: "absolute", top: "2%", left: "14%", width: 420, height: 300, borderRadius: "50%", animation: "flz-drift1 34s ease-in-out infinite", willChange: "transform", pointerEvents: "none" }} />
-      <div className="flz-orb flz-orb-b" style={{ position: "absolute", top: "34%", right: "6%", width: 460, height: 340, borderRadius: "50%", animation: "flz-drift2 44s ease-in-out infinite", willChange: "transform", pointerEvents: "none" }} />
-      <div className="flz-orb flz-orb-c" style={{ position: "absolute", bottom: "10%", left: "38%", width: 520, height: 340, borderRadius: "50%", animation: "flz-drift3 52s ease-in-out infinite", willChange: "transform", pointerEvents: "none" }} />
+      {/* Slow transform-only motion belongs to the page background, outside the slab. */}
+      <div className="flz-orb flz-orb-a" style={{ position: "absolute", top: "-8%", left: "-7%", width: 620, height: 440, borderRadius: "50%", animation: "flz-drift1 30s ease-in-out infinite", willChange: "transform", pointerEvents: "none" }} />
+      <div className="flz-orb flz-orb-b" style={{ position: "absolute", top: "25%", right: "-12%", width: 680, height: 500, borderRadius: "50%", animation: "flz-drift2 38s ease-in-out infinite", willChange: "transform", pointerEvents: "none" }} />
+      <div className="flz-orb flz-orb-c" style={{ position: "absolute", bottom: "-18%", left: "18%", width: 760, height: 520, borderRadius: "50%", animation: "flz-drift3 46s ease-in-out infinite", willChange: "transform", pointerEvents: "none" }} />
 
       {/* Admin Quick Editor Badge (Only visible when logged in as Admin) */}
       {isAdmin && (

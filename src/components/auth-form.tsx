@@ -22,11 +22,13 @@ export function GoogleSignInButton({
   const buttonRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
   const [denied, setDenied] = useState(false);
+  const [error, setError] = useState("");
   const initializedRef = useRef(false);
 
   const handleCredentialResponse = useCallback(
     async (response: GoogleCredentialResponse) => {
       setLoading(true);
+      setError("");
       if (onStart) onStart();
 
       try {
@@ -52,16 +54,18 @@ export function GoogleSignInButton({
           throw new Error(data.error || "Google Sign-In failed.");
         }
 
-        const destination = data.redirect || "/studio";
+        const destination = data.redirect || redirectTo;
         router.push(`${destination}${destination.includes("?") ? "&" : "?"}lang=${locale}`);
         router.refresh();
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(err);
-        if (onError) onError(err.message || "Google Sign-In failed.");
+        const message = err instanceof Error ? err.message : "Google Sign-In failed.";
+        setError(message);
+        if (onError) onError(message);
         setLoading(false);
       }
     },
-    [router, locale, onStart, onError],
+    [router, redirectTo, locale, onStart, onError],
   );
 
   useEffect(() => {
@@ -74,6 +78,10 @@ export function GoogleSignInButton({
       google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID!,
         callback: handleCredentialResponse,
+        // Chrome's browser-mediated account chooser avoids popup blockers and
+        // third-party-cookie restrictions that can leave the legacy button inert.
+        use_fedcm_for_button: true,
+        itp_support: true,
       });
 
       google.accounts.id.renderButton(buttonRef.current!, {
@@ -121,6 +129,11 @@ export function GoogleSignInButton({
           <Loader2 className="h-4 w-4 animate-spin" />
           Signing in...
         </div>
+      )}
+      {error && (
+        <p role="alert" className="max-w-xs text-center text-sm font-medium text-rose-700">
+          {error}
+        </p>
       )}
     </div>
   );

@@ -21,6 +21,7 @@ interface GoogleAccounts {
       callback: (response: GoogleCredentialResponse) => void;
       auto_select?: boolean;
       itp_support?: boolean;
+      use_fedcm_for_button?: boolean;
     }): void;
     renderButton(parent: HTMLElement, config: GoogleButtonConfig): void;
     prompt(): void;
