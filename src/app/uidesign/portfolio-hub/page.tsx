@@ -931,6 +931,88 @@ const DS_TOKENS = `
     .flz-chip { min-height: 44px; }
     .flz-iconbtn { min-width: 44px; min-height: 44px; }
   }
+
+  /* Apple-style motion refinement: short travel, long deceleration, no bounce. */
+  @keyframes flz-apple-shell-in {
+    from { opacity: 0; transform: translateY(10px) scale(.996); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes flz-apple-rail-in {
+    from { opacity: 0; transform: translateX(-8px) scale(.98); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes flz-apple-item-in {
+    from { opacity: 0; transform: translateY(12px) scale(.992); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes flz-apple-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .flz-slab {
+    animation: flz-apple-shell-in .72s cubic-bezier(.16,1,.3,1) both !important;
+  }
+  .flz-rail {
+    animation: flz-apple-rail-in .64s cubic-bezier(.16,1,.3,1) 90ms both !important;
+  }
+  .flz-stat-tile {
+    animation: flz-apple-item-in .56s cubic-bezier(.16,1,.3,1) backwards !important;
+  }
+  .flz-stats .flz-stat-tile:nth-child(1) { animation-delay: 100ms !important; }
+  .flz-stats .flz-stat-tile:nth-child(2) { animation-delay: 145ms !important; }
+  .flz-stats .flz-stat-tile:nth-child(3) { animation-delay: 190ms !important; }
+  .flz-tile-in {
+    animation: flz-apple-item-in .62s cubic-bezier(.16,1,.3,1) both !important;
+    animation-delay: var(--flz-delay, 0ms) !important;
+  }
+  .flz-sidebar > * {
+    animation: flz-apple-item-in .62s cubic-bezier(.16,1,.3,1) backwards !important;
+  }
+  .flz-sidebar > :nth-child(1) { animation-delay: 210ms !important; }
+  .flz-sidebar > :nth-child(2) { animation-delay: 270ms !important; }
+  .flz-backdrop { animation: flz-fade-in .28s ease-out both; }
+  .flz-modal { animation: flz-modal-in .46s cubic-bezier(.16,1,.3,1) both; }
+  .flz-tile,
+  .flz-project-image,
+  .flz-iconbtn,
+  .flz-chip,
+  .flz-theme-toggle,
+  .flz-autosalon-cta {
+    transition-duration: .36s;
+    transition-timing-function: cubic-bezier(.16,1,.3,1);
+  }
+  @media (hover: hover) {
+    .flz-tile:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,.12) !important; }
+    .flz-tile:hover .flz-project-image { transform: scale(1.018); }
+    .flz-iconbtn:hover { transform: scale(1.04); }
+  }
+  @media (max-width: 640px) {
+    .flz-rail {
+      animation: flz-apple-fade-in .5s ease-out 90ms both !important;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .flz-slab,
+    .flz-rail,
+    .flz-stat-tile,
+    .flz-tile-in,
+    .flz-sidebar > *,
+    .flz-backdrop,
+    .flz-modal {
+      animation: none !important;
+    }
+    .flz-tile,
+    .flz-project-image,
+    .flz-iconbtn,
+    .flz-chip,
+    .flz-theme-toggle,
+    .flz-autosalon-cta {
+      transition-duration: 1ms !important;
+    }
+    .flz-tile:hover,
+    .flz-tile:hover .flz-project-image,
+    .flz-iconbtn:hover { transform: none !important; }
+  }
 `;
 
 // ── Static data ──────────────────────────────────────────────────────────────
