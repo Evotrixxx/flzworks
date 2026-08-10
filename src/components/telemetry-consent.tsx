@@ -12,6 +12,7 @@ type ConsentState = "loading" | "undecided" | "granted" | "denied";
 
 interface TelemetryConsentProps {
   site: TelemetrySite;
+  inline?: boolean;
 }
 
 function postTelemetry(body: Record<string, unknown>, useBeacon = false): Promise<void> {
@@ -95,7 +96,7 @@ function TelemetrySession({ site }: { site: TelemetrySite }) {
   return null;
 }
 
-export function TelemetryConsent({ site }: TelemetryConsentProps) {
+export function TelemetryConsent({ site, inline = false }: TelemetryConsentProps) {
   const [consent, setConsent] = useState<ConsentState>("loading");
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -136,7 +137,7 @@ export function TelemetryConsent({ site }: TelemetryConsentProps) {
             user-agent storage, referrers, or cross-site tracking. Raw visit data is kept for up to 90 days.
           </p>
           <p className={s.meta}>
-            Controller: FLZ Works / Bence Flosz · hi@flz.works. Purpose: improve the portfolio.
+            Controller: FLZ Works / Bence Flosz · 7BFloszB@gmail.com. Purpose: improve the portfolio.
             Legal basis: your consent. Data is not shared with third parties, and you can withdraw here at any time.
           </p>
           <div className={s.actions}>
@@ -154,7 +155,7 @@ export function TelemetryConsent({ site }: TelemetryConsentProps) {
           )}
         </section>
       ) : (
-        <button type="button" className={s.privacyButton} onClick={() => setSettingsOpen(true)}>
+        <button type="button" className={`${s.privacyButton} ${inline ? s.privacyButtonInline : ""}`} onClick={() => setSettingsOpen(true)}>
           Privacy · analytics {consent === "granted" ? "on" : "off"}
         </button>
       )}

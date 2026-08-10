@@ -5,6 +5,7 @@ import Link from "next/link";
 import { relativeAge } from "@/lib/flz-date";
 import { TelemetryConsent } from "@/components/telemetry-consent";
 import { TELEMETRY_READY_EVENT, trackTelemetryEvent } from "@/lib/telemetry-client";
+import { PUBLIC_CONTACT_PROFILE, PUBLIC_CONTACT_ROWS } from "@/lib/public-contact-profile";
 
 // ── Design token CSS (flz-works DS, scoped to this page) ─────────────────────
 const DS_TOKENS = `
@@ -518,29 +519,29 @@ const DS_TOKENS = `
     gap: 24px;
     padding: 28px;
     box-sizing: border-box;
-    border: 1px solid rgba(29,29,31,.1);
+    border: 1px solid #781d30;
     border-radius: 28px;
-    background: rgba(255,255,255,.62);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.86), 0 18px 48px rgba(37,39,46,.08);
+    background: linear-gradient(145deg,#4a0f1b 0%,#26070e 100%);
+    box-shadow: inset 0 1px 0 rgba(255,235,238,.12), 0 18px 48px rgba(72,8,24,.22);
   }
   .flz-message-intro { display: flex; flex-direction: column; align-items: flex-start; }
   .flz-message-kicker,
   .flz-message-form label > span {
-    color: var(--flz-text-muted);
+    color: #f3b6c0;
     font: 600 9.5px/1 var(--flz-font-mono);
     letter-spacing: .09em;
     text-transform: uppercase;
   }
   .flz-message-intro h2 {
     margin: 18px 0 10px;
-    color: var(--flz-text-primary);
+    color: #fff8f8;
     font: 550 clamp(2rem,3.2vw,3.4rem)/.98 var(--flz-font-display);
     letter-spacing: -.045em;
   }
   .flz-message-intro p {
     max-width: 34ch;
     margin: 0;
-    color: var(--flz-text-secondary);
+    color: rgba(255,238,241,.76);
     font: 400 14px/1.55 var(--flz-font-sans);
   }
   .flz-message-form { display: flex; min-width: 0; flex-direction: column; gap: 16px; }
@@ -550,29 +551,29 @@ const DS_TOKENS = `
   .flz-message-form textarea {
     width: 100%;
     box-sizing: border-box;
-    border: 1px solid rgba(29,29,31,.12);
+    border: 1px solid rgba(255,216,223,.22);
     border-radius: 14px;
-    background: rgba(255,255,255,.82);
-    color: var(--flz-text-primary);
+    background: rgba(20,2,7,.42);
+    color: #fff8f8;
     font: 400 14px/1.4 var(--flz-font-sans);
     transition: border-color .18s, box-shadow .18s, background .18s;
   }
   .flz-message-form input { height: 46px; padding: 0 14px; }
   .flz-message-form textarea { min-height: 128px; flex: 1; padding: 13px 14px; resize: vertical; }
   .flz-message-form input::placeholder,
-  .flz-message-form textarea::placeholder { color: var(--flz-text-muted); }
+  .flz-message-form textarea::placeholder { color: rgba(255,226,231,.48); }
   .flz-message-form input:focus,
   .flz-message-form textarea:focus {
     outline: none;
-    border-color: rgba(10,132,255,.58);
-    box-shadow: 0 0 0 4px rgba(10,132,255,.12);
+    border-color: #ffb5c1;
+    box-shadow: 0 0 0 4px rgba(255,181,193,.16);
   }
   .flz-message-action { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
-  .flz-message-action .flz-btn-solid { min-height: 42px; flex-shrink: 0; }
+  .flz-message-action .flz-btn-solid { min-height: 42px; flex-shrink: 0; background: #fff4f5; color: #4a0f1b; box-shadow: 0 10px 24px rgba(20,2,7,.28); }
   .flz-message-action .flz-btn-solid:disabled { opacity: .55; cursor: wait; }
-  .flz-message-status { color: var(--flz-text-muted); font: 400 11px/1.35 var(--flz-font-sans); }
-  .flz-message-status.success { color: #248a3d; }
-  .flz-message-status.error { color: #d70015; }
+  .flz-message-status { color: rgba(255,231,235,.66); font: 400 11px/1.35 var(--flz-font-sans); }
+  .flz-message-status.success { color: #b9f6c8; }
+  .flz-message-status.error { color: #ffd1d8; }
   .flz-footer {
     display: flex;
     align-items: center;
@@ -668,14 +669,14 @@ const DS_TOKENS = `
     box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 14px 32px rgba(0,0,0,.3) !important;
   }
   .flz-hub-root[data-theme="dark"] .flz-message-panel {
-    border-color: rgba(255,255,255,.1);
-    background: rgba(25,27,33,.74);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 18px 48px rgba(0,0,0,.24);
+    border-color: #8e2439;
+    background: linear-gradient(145deg,#4a0f1b 0%,#22060c 100%);
+    box-shadow: inset 0 1px 0 rgba(255,235,238,.1), 0 18px 48px rgba(0,0,0,.34);
   }
   .flz-hub-root[data-theme="dark"] .flz-message-form input,
   .flz-hub-root[data-theme="dark"] .flz-message-form textarea {
-    border-color: rgba(255,255,255,.12);
-    background: rgba(255,255,255,.055);
+    border-color: rgba(255,216,223,.22);
+    background: rgba(20,2,7,.42);
   }
 
   /* Motion layer: transform/opacity only, so the preserved layout never shifts. */
@@ -1245,11 +1246,11 @@ function ContactCard() {
     trackTelemetryEvent("vcard_download", "main");
     const vcard = [
       "BEGIN:VCARD", "VERSION:3.0",
-      "FN:Bence Flosz", "N:Flosz;Bence;;;",
+      `FN:${PUBLIC_CONTACT_PROFILE.name}`, "N:Flosz;Bence;;;",
       "ORG:FLZ Works",
-      "TITLE:3D Artist & Game Developer",
-      "EMAIL:hi@flz.works",
-      "URL:https://flz.works",
+      `TITLE:${PUBLIC_CONTACT_PROFILE.interest}`,
+      `EMAIL:${PUBLIC_CONTACT_PROFILE.email}`,
+      `URL:${PUBLIC_CONTACT_PROFILE.webUrl}`,
       "END:VCARD",
     ].join("\n");
     const blob = new Blob([vcard], { type: "text/vcard" });
@@ -1271,13 +1272,7 @@ function ContactCard() {
               <img src="/profile.jpg" alt="Bence Flosz" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
             </div>
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
-              {[
-                ["NAME", "Bence Flosz"],
-                ["HANDLE", "@flz"],
-                ["ROLE", "3D Artist & Game Dev"],
-                ["EMAIL", "hi@flz.works"],
-                ["WEB", "flz.works"],
-              ].map(([label, value]) => (
+              {PUBLIC_CONTACT_ROWS.map(([label, value]) => (
                 <div key={label}>
                   <div style={{ font: `500 8.5px/1 var(--flz-font-mono)`, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--flz-text-muted)", marginBottom: 2 }}>{label}</div>
                   <div style={{ font: `500 13px/1 var(--flz-font-display)`, color: "var(--flz-text-primary)" }}>{value}</div>
@@ -1610,7 +1605,7 @@ function MainSlab({
 
       <footer className="flz-enter flz-footer" style={{ "--flz-delay": "270ms" } as React.CSSProperties}>
         <span>© 2026 FLZ Works. All rights reserved.</span>
-        <span>Built in Budapest.</span>
+        <TelemetryConsent site="main" inline />
       </footer>
     </div>
   );
@@ -1721,7 +1716,6 @@ export default function PortfolioHubPage() {
       fontFamily: "var(--flz-font-sans), sans-serif",
     }}>
       <style dangerouslySetInnerHTML={{ __html: DS_TOKENS }} />
-      <TelemetryConsent site="main" />
 
       {/* Slow transform-only motion belongs to the page background, outside the slab. */}
       <div className="flz-orb flz-orb-a" style={{ position: "absolute", top: "-8%", left: "-7%", width: 620, height: 440, borderRadius: "50%", animation: "flz-drift1 30s ease-in-out infinite", willChange: "transform", pointerEvents: "none" }} />

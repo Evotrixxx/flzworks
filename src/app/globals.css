@@ -2421,6 +2421,8 @@ select[aria-invalid="true"] {
   letter-spacing: 0.12em;
 }
 .bp-logo {
+  display: inline-flex;
+  align-items: center;
   border: var(--bp-border-strong);
   padding: 6px 12px;
   font-weight: 600;
@@ -2430,6 +2432,7 @@ select[aria-invalid="true"] {
   background: transparent;
   font-family: inherit;
   cursor: pointer;
+  text-decoration: none;
 }
 .bp-nav {
   display: flex;

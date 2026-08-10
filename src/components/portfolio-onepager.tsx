@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react";
 import type { InstagramMediaItem } from "@/lib/instagram";
 import Image from "next/image";
+import Link from "next/link";
 import type { PortfolioArticleWithImages } from "@/lib/portfolio-sync";
 import { Image as ImageIcon, X } from "lucide-react";
 import { TelemetryConsent } from "@/components/telemetry-consent";
 import { TELEMETRY_READY_EVENT, trackTelemetryEvent } from "@/lib/telemetry-client";
 import type { TelemetrySite } from "@/lib/telemetry";
+import { PUBLIC_CONTACT_PROFILE, PUBLIC_CONTACT_ROWS } from "@/lib/public-contact-profile";
 
 const CATEGORY_LABELS: Record<string, string> = {
   CAR_DESIGN: "3D & Environments",
@@ -94,14 +96,11 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
       "BEGIN:VCARD",
       "VERSION:3.0",
       "N:Flosz;Bence;Norbert;;",
-      "FN:Bence Flosz",
+      `FN:${PUBLIC_CONTACT_PROFILE.name}`,
       "ORG:FLZ Works",
-      "TITLE:Gazdaságinformatikus (BGE) | Indie Game Developer & Studio Founder | Backend Developer",
-      "TEL;TYPE=CELL:+36206282353",
-      "EMAIL;TYPE=PREF,INTERNET:floszbeni@gmail.com",
-      "URL:https://flz.works",
-      "X-SOCIALPROFILE;type=linkedin:https://www.linkedin.com/in/bence-flosz-56134535a/",
-      "X-SOCIALPROFILE;type=github:https://github.com/Flzvision",
+      `TITLE:${PUBLIC_CONTACT_PROFILE.interest}`,
+      `EMAIL;TYPE=PREF,INTERNET:${PUBLIC_CONTACT_PROFILE.email}`,
+      `URL:${PUBLIC_CONTACT_PROFILE.webUrl}`,
       "END:VCARD"
     ].join("\n");
 
@@ -254,9 +253,9 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
       <TelemetryConsent site={telemetrySite} />
       {/* Header */}
       <header className={`bp-topbar ${uiHidden ? "hidden" : ""}`} style={{ display: uiHidden ? 'none' : 'flex' }}>
-        <button className="bp-logo" onClick={() => scrollToSection("hero")}>
+        <Link className="bp-logo" href="/" aria-label="FLZ.WORKS — open landing page">
           FLZ.WORKS
-        </button>
+        </Link>
         <nav className="bp-nav">
           <button
             className={`bp-nav-item ${activeSection === "hero" ? "is-active" : ""}`}
@@ -655,17 +654,13 @@ export function PortfolioOnepager({ instagramMedia, articles, forceNamecardOpen 
 
                 {/* Details */}
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-mono text-sm font-bold uppercase tracking-tight text-[#dce7f5] leading-none mb-2">
-                    BENCE FLOSZ
-                  </h3>
-                  <div className="text-[8px] font-mono tracking-wider text-[#ffd166] uppercase mb-4">
-                    Gazdaságinformatikus (BGE) | Indie Game Developer & Studio Founder | Backend Developer
-                  </div>
-
-                  <div className="space-y-1.5 font-mono text-[8px] text-[#dce7f5]/70">
-                    <div>STUDIO: FLZ WORKS</div>
-                    <div>LOC: BUDAPEST, HU</div>
-                    <div>URL: <a href="https://flz.works" target="_blank" rel="noopener noreferrer" className="text-[#ffd166] hover:underline">FLZ.WORKS</a></div>
+                  <div className="space-y-2.5 font-mono">
+                    {PUBLIC_CONTACT_ROWS.map(([label, value]) => (
+                      <div key={label}>
+                        <div className="text-[8px] tracking-widest text-[#dce7f5]/50">{label}</div>
+                        <div className="text-[11px] text-[#dce7f5] normal-case break-all">{value}</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>

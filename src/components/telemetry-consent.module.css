@@ -73,6 +73,16 @@
   text-underline-offset: 3px;
 }
 .privacyButton:hover { color: #1d1d1f; text-decoration: underline; }
+.privacyButtonInline {
+  position: static;
+  z-index: auto;
+  min-height: 28px;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+}
+.privacyButtonInline:hover { color: inherit; }
 @keyframes consent-in {
   from { opacity: 0; transform: translate(-50%, 12px) scale(.985); }
   to { opacity: 1; transform: translate(-50%, 0) scale(1); }
