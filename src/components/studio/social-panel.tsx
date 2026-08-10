@@ -79,7 +79,7 @@ export function SocialPanel({
         );
       } else {
         notify(
-          `Public posts synced: ${data.created ?? 0} new, ${data.updated ?? 0} refreshed, ${data.hidden ?? 0} no longer public.`,
+          `Imported ${data.created ?? 0} new public posts. Existing Studio projects were preserved.`,
         );
       }
     } catch (err) {
@@ -110,7 +110,7 @@ export function SocialPanel({
         <Panel icon={<RefreshCw size={16} />} title="Project auto-import">
           <p className={s.panelNote}>
             Every public Instagram post and TikTok video becomes a project on the main board.
-            Repeated syncs update the same card, and posts that are no longer public are hidden.
+            Sync imports only posts that do not have a card yet. Existing Studio projects are never changed or hidden.
           </p>
           <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 10, marginTop: 14 }}>
             <span className={s.navCount}>

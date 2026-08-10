@@ -76,6 +76,14 @@ function postTitle(text: string | undefined, fallback: string): string {
   return clip(firstLine || fallback, 100);
 }
 
+export function selectUnseenSocialPosts(
+  posts: NormalizedSocialPost[],
+  existingPostIds: Iterable<string>,
+): NormalizedSocialPost[] {
+  const existing = new Set(existingPostIds);
+  return posts.filter((post) => !existing.has(post.postId));
+}
+
 export function normalizeInstagramPost(item: InstagramMedia): NormalizedSocialPost | null {
   if (!item.id || !item.permalink) return null;
   const body = item.caption ? clip(item.caption, 2000) : null;
@@ -227,63 +235,59 @@ async function fetchTikTokPosts(): Promise<NormalizedSocialPost[]> {
   return posts;
 }
 
-async function persistPosts(platform: SocialProvider, posts: NormalizedSocialPost[]) {
+export async function persistPosts(platform: SocialProvider, posts: NormalizedSocialPost[]) {
   const publicPostIds = posts.map((post) => post.postId);
   const existing = await prisma.flzProject.findMany({
     where: { socialPlatform: platform, socialPostId: { in: publicPostIds } },
     select: { socialPostId: true },
   });
-  const existingIds = new Set(existing.map((row) => row.socialPostId).filter(Boolean));
-
-  const writes = posts.map((post) => prisma.flzProject.upsert({
-    where: {
-      socialPlatform_socialPostId: {
-        socialPlatform: post.platform,
-        socialPostId: post.postId,
-      },
-    },
-    create: {
-      title: post.title,
-      tools: post.platform === "instagram" ? "Instagram" : "TikTok",
-      category: "Social",
-      publishedAt: post.publishedAt,
-      body: post.body,
-      gradient: post.platform === "instagram"
-        ? "linear-gradient(145deg,#833ab4,#fd1d1d 55%,#fcb045)"
-        : "linear-gradient(145deg,#25f4ee,#111 45%,#fe2c55)",
-      visible: true,
-      featured: false,
-      sortOrder: -1,
-      linkUrl: post.linkUrl,
-      imageUrl: post.imageUrl,
-      socialPlatform: post.platform,
-      socialPostId: post.postId,
-    },
-    update: {
-      title: post.title,
-      tools: post.platform === "instagram" ? "Instagram" : "TikTok",
-      category: "Social",
-      publishedAt: post.publishedAt,
-      body: post.body,
-      linkUrl: post.linkUrl,
-      imageUrl: post.imageUrl,
-      visible: true,
-    },
-  }));
-
-  const hideStale = prisma.flzProject.updateMany({
-    where: {
-      socialPlatform: platform,
-      socialPostId: publicPostIds.length > 0 ? { notIn: publicPostIds } : { not: null },
-      visible: true,
-    },
-    data: { visible: false },
+  const tombstones = await prisma.flzSocialProjectTombstone.findMany({
+    where: { socialPlatform: platform, socialPostId: { in: publicPostIds } },
+    select: { socialPostId: true },
   });
-  const results = await prisma.$transaction([...writes, hideStale]);
-  const hidden = (results.at(-1) as { count?: number } | undefined)?.count ?? 0;
+  const existingIds = existing
+    .map((row) => row.socialPostId)
+    .filter((postId): postId is string => Boolean(postId));
+  const tombstonedIds = tombstones
+    .map((row) => row.socialPostId)
+    .filter((postId): postId is string => Boolean(postId));
+  const unseenPosts = selectUnseenSocialPosts(posts, [...existingIds, ...tombstonedIds]);
 
-  const created = posts.filter((post) => !existingIds.has(post.postId)).length;
-  return { created, updated: posts.length - created, hidden };
+  let created = 0;
+  for (const post of unseenPosts) {
+    try {
+      await prisma.flzProject.create({
+        data: {
+          title: post.title,
+          tools: post.platform === "instagram" ? "Instagram" : "TikTok",
+          category: "Social",
+          publishedAt: post.publishedAt,
+          body: post.body,
+          gradient: post.platform === "instagram"
+            ? "linear-gradient(145deg,#833ab4,#fd1d1d 55%,#fcb045)"
+            : "linear-gradient(145deg,#25f4ee,#111 45%,#fe2c55)",
+          visible: true,
+          featured: false,
+          sortOrder: -1,
+          linkUrl: post.linkUrl,
+          imageUrl: post.imageUrl,
+          socialPlatform: post.platform,
+          socialPostId: post.postId,
+        },
+      });
+      created += 1;
+    } catch (error) {
+      // Concurrent syncs can race on the provider identity. The winner's row is
+      // already present, so preserving it is the only safe response.
+      if (!(typeof error === "object" && error !== null && "code" in error && error.code === "P2002")) {
+        throw error;
+      }
+    }
+  }
+
+  // Existing projects are Studio-owned. Sync never edits, unhides, hides, or
+  // deletes them, even when provider content changes or disappears.
+  return { created, updated: 0, hidden: 0 };
 }
 
 export function getSocialImportConfiguration() {

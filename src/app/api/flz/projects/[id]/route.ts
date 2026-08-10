@@ -46,8 +46,32 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   const { id } = await params;
 
   try {
-    await prisma.flzProject.delete({
+    const project = await prisma.flzProject.findUnique({
       where: { id },
+      select: { socialPlatform: true, socialPostId: true },
+    });
+    if (!project) {
+      return NextResponse.json({ error: "Project not found." }, { status: 404 });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      if (project.socialPlatform && project.socialPostId) {
+        await tx.flzSocialProjectTombstone.upsert({
+          where: {
+            socialPlatform_socialPostId: {
+              socialPlatform: project.socialPlatform,
+              socialPostId: project.socialPostId,
+            },
+          },
+          create: {
+            socialPlatform: project.socialPlatform,
+            socialPostId: project.socialPostId,
+          },
+          update: { deletedAt: new Date() },
+        });
+      }
+
+      await tx.flzProject.delete({ where: { id } });
     });
 
     return NextResponse.json({ success: true, message: "Project deleted successfully." });

@@ -20,45 +20,57 @@ if (process.argv.includes("--dry-run")) {
 
 const prisma = new PrismaClient();
 try {
+  // This is an explicit recovery/import command, never a deployment hook.
+  // Existing rows belong to Studio and must remain byte-for-byte untouched.
+  let created = 0;
+  let preserved = 0;
   for (const post of posts) {
-    await prisma.flzProject.upsert({
-      where: {
-        socialPlatform_socialPostId: {
-          socialPlatform: "instagram-bootstrap",
-          socialPostId: post.postId,
-        },
-      },
-      create: {
-        title: post.title,
-        tools: "Instagram",
-        category: "Social",
-        publishedAt: post.publishedAt ? new Date(post.publishedAt) : null,
-        body: post.body || null,
-        gradient: "linear-gradient(145deg,#833ab4,#fd1d1d 55%,#fcb045)",
-        visible: true,
-        featured: false,
-        sortOrder: -1,
-        linkUrl: post.linkUrl,
-        imageUrl: post.imageUrl,
-        socialPlatform: "instagram-bootstrap",
-        socialPostId: post.postId,
-      },
-      update: {
-        title: post.title,
-        tools: "Instagram",
-        category: "Social",
-        publishedAt: post.publishedAt ? new Date(post.publishedAt) : null,
-        body: post.body || null,
-        linkUrl: post.linkUrl,
-        imageUrl: post.imageUrl,
-        visible: true,
-      },
+    const identity = {
+      socialPlatform: "instagram-bootstrap",
+      socialPostId: post.postId,
+    };
+    const tombstone = await prisma.flzSocialProjectTombstone.findUnique({
+      where: { socialPlatform_socialPostId: identity },
+      select: { id: true },
     });
+    if (tombstone) {
+      preserved += 1;
+      continue;
+    }
+    const existing = await prisma.flzProject.findUnique({
+      where: { socialPlatform_socialPostId: identity },
+      select: { id: true },
+    });
+    if (existing) {
+      preserved += 1;
+      continue;
+    }
+
+    try {
+      await prisma.flzProject.create({
+        data: {
+          title: post.title,
+          tools: "Instagram",
+          category: "Social",
+          publishedAt: post.publishedAt ? new Date(post.publishedAt) : null,
+          body: post.body || null,
+          gradient: "linear-gradient(145deg,#833ab4,#fd1d1d 55%,#fcb045)",
+          visible: true,
+          featured: false,
+          sortOrder: -1,
+          linkUrl: post.linkUrl,
+          imageUrl: post.imageUrl,
+          ...identity,
+        },
+      });
+      created += 1;
+    } catch (error) {
+      // A concurrent run may create the same row after findUnique. Preserve it.
+      if (error?.code !== "P2002") throw error;
+      preserved += 1;
+    }
   }
-  const saved = await prisma.flzProject.count({
-    where: { socialPlatform: "instagram-bootstrap", visible: true },
-  });
-  console.log(`Bootstrapped ${saved} public Instagram projects.`);
+  console.log(`Created ${created} missing Instagram projects; preserved ${preserved} existing Studio projects.`);
 } finally {
   await prisma.$disconnect();
 }
