@@ -510,6 +510,85 @@ const DS_TOKENS = `
     border-color: rgba(29,29,31,.14) !important;
     box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 12px 28px rgba(37,39,46,.1) !important;
   }
+  .flz-message-panel {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(210px,.72fr) minmax(320px,1.28fr);
+    gap: 24px;
+    padding: 28px;
+    box-sizing: border-box;
+    border: 1px solid rgba(29,29,31,.1);
+    border-radius: 28px;
+    background: rgba(255,255,255,.62);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.86), 0 18px 48px rgba(37,39,46,.08);
+  }
+  .flz-message-intro { display: flex; flex-direction: column; align-items: flex-start; }
+  .flz-message-kicker,
+  .flz-message-form label > span {
+    color: var(--flz-text-muted);
+    font: 600 9.5px/1 var(--flz-font-mono);
+    letter-spacing: .09em;
+    text-transform: uppercase;
+  }
+  .flz-message-intro h2 {
+    margin: 18px 0 10px;
+    color: var(--flz-text-primary);
+    font: 550 clamp(2rem,3.2vw,3.4rem)/.98 var(--flz-font-display);
+    letter-spacing: -.045em;
+  }
+  .flz-message-intro p {
+    max-width: 34ch;
+    margin: 0;
+    color: var(--flz-text-secondary);
+    font: 400 14px/1.55 var(--flz-font-sans);
+  }
+  .flz-message-intro a {
+    margin-top: auto;
+    color: var(--flz-text-primary);
+    font: 600 13px/1 var(--flz-font-sans);
+    text-underline-offset: 4px;
+  }
+  .flz-message-form { display: flex; min-width: 0; flex-direction: column; gap: 16px; }
+  .flz-message-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .flz-message-form label { display: flex; min-width: 0; flex-direction: column; gap: 8px; }
+  .flz-message-form input,
+  .flz-message-form textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid rgba(29,29,31,.12);
+    border-radius: 14px;
+    background: rgba(255,255,255,.82);
+    color: var(--flz-text-primary);
+    font: 400 14px/1.4 var(--flz-font-sans);
+    transition: border-color .18s, box-shadow .18s, background .18s;
+  }
+  .flz-message-form input { height: 46px; padding: 0 14px; }
+  .flz-message-form textarea { min-height: 128px; flex: 1; padding: 13px 14px; resize: vertical; }
+  .flz-message-form input::placeholder,
+  .flz-message-form textarea::placeholder { color: var(--flz-text-muted); }
+  .flz-message-form input:focus,
+  .flz-message-form textarea:focus {
+    outline: none;
+    border-color: rgba(10,132,255,.58);
+    box-shadow: 0 0 0 4px rgba(10,132,255,.12);
+  }
+  .flz-message-action { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+  .flz-message-action .flz-btn-solid { min-height: 42px; flex-shrink: 0; }
+  .flz-message-action .flz-btn-solid:disabled { opacity: .55; cursor: wait; }
+  .flz-message-status { color: var(--flz-text-muted); font: 400 11px/1.35 var(--flz-font-sans); }
+  .flz-message-status.success { color: #248a3d; }
+  .flz-message-status.error { color: #d70015; }
+  .flz-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding-top: 2px;
+    color: var(--flz-text-muted);
+    font: 500 10px/1.3 var(--flz-font-mono);
+    letter-spacing: .025em;
+  }
 
   /* Purpose-built dark theme: warm graphite surfaces with cool ambient color. */
   .flz-hub-root[data-theme="dark"] {
@@ -593,6 +672,16 @@ const DS_TOKENS = `
     background: #1b1d23 !important;
     border-color: rgba(255,255,255,.13) !important;
     box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 14px 32px rgba(0,0,0,.3) !important;
+  }
+  .flz-hub-root[data-theme="dark"] .flz-message-panel {
+    border-color: rgba(255,255,255,.1);
+    background: rgba(25,27,33,.74);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 18px 48px rgba(0,0,0,.24);
+  }
+  .flz-hub-root[data-theme="dark"] .flz-message-form input,
+  .flz-hub-root[data-theme="dark"] .flz-message-form textarea {
+    border-color: rgba(255,255,255,.12);
+    background: rgba(255,255,255,.055);
   }
 
   /* Motion layer: transform/opacity only, so the preserved layout never shifts. */
@@ -901,6 +990,8 @@ const DS_TOKENS = `
   @media (max-width: 900px) {
     .flz-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
     .flz-sidebar { width: 100% !important; }
+    .flz-message-panel { grid-template-columns: 1fr; }
+    .flz-message-intro a { margin-top: 18px; }
   }
   @media (max-width: 640px) {
     .flz-content { padding: 16px 14px 86px !important; }
@@ -930,6 +1021,11 @@ const DS_TOKENS = `
     .flz-autosalon-cta { min-height: 44px; padding-inline: 11px; }
     .flz-chip { min-height: 44px; }
     .flz-iconbtn { min-width: 44px; min-height: 44px; }
+    .flz-message-panel { padding: 20px; border-radius: 18px; }
+    .flz-message-fields { grid-template-columns: 1fr; }
+    .flz-message-action { align-items: stretch; flex-direction: column; }
+    .flz-message-action .flz-btn-solid { width: 100%; justify-content: center; }
+    .flz-footer { align-items: flex-start; flex-direction: column; padding-inline: 2px; }
   }
 
   /* Apple-style motion refinement: short travel, long deceleration, no bounce. */
@@ -1018,7 +1114,7 @@ const DS_TOKENS = `
 // ── Static data ──────────────────────────────────────────────────────────────
 const PROJECTS: { id: number; tools: string; title: string; cat: string; age: string; grad: string; link: string; img: string; body: string }[] = [];
 
-const FILTERS = ["All", "Social", "Assets", "Characters", "Gameplay", "Automotive"];
+const CATEGORY_ORDER = ["Social", "Assets", "Characters", "Gameplay", "Automotive"];
 
 // ── Icon helpers ──────────────────────────────────────────────────────────────
 const IconGrid = () => (
@@ -1043,6 +1139,12 @@ const IconTikTok = () => (
 const IconX = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.451-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z" />
+  </svg>
+);
+const IconMessage = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M4.5 5.5h15a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-4.5 3v-3a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2Z" />
+    <path d="m6.5 9 5.5 4 5.5-4" />
   </svg>
 );
 const IconIdCard = () => (
@@ -1108,8 +1210,13 @@ function setStoredTheme(theme: Theme) {
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
-function IconRail({ contactOpen, setContactOpen }: {
-  contactOpen: boolean; setContactOpen: (v: boolean) => void;
+type MainView = "projects" | "message";
+
+function IconRail({ contactOpen, setContactOpen, activeView, setActiveView }: {
+  contactOpen: boolean;
+  setContactOpen: (v: boolean) => void;
+  activeView: MainView;
+  setActiveView: (view: MainView) => void;
 }) {
   const railStyle: React.CSSProperties = {
     position: "relative", flexShrink: 0, width: 48, alignSelf: "center",
@@ -1124,7 +1231,7 @@ function IconRail({ contactOpen, setContactOpen }: {
   return (
     <div className="flz-rail" style={railStyle}>
       <div style={{ position: "absolute", inset: 0, borderRadius: "inherit", pointerEvents: "none", background: "linear-gradient(180deg,rgba(255,255,255,.24) 0%,rgba(255,255,255,0) 14%),linear-gradient(0deg,rgba(255,255,255,.14) 0%,rgba(255,255,255,0) 12%)" }} />
-      <span className="flz-railbtn"><span className="flz-iconbtn solid" role="img" aria-label="Projects"><IconGrid /></span></span>
+      <span className="flz-railbtn"><button className={`flz-iconbtn ${activeView === "projects" ? "solid" : "ghost"}`} type="button" aria-label="Show projects" aria-pressed={activeView === "projects"} onClick={() => setActiveView("projects")}><IconGrid /></button></span>
       <span className="flz-railbtn">
         <a className="flz-iconbtn ghost" href="https://www.instagram.com/vision.flz/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" onClick={() => trackTelemetryEvent("social_open", "main", "instagram")}><IconInstagram /></a>
       </span>
@@ -1134,7 +1241,8 @@ function IconRail({ contactOpen, setContactOpen }: {
       <span className="flz-railbtn">
         <a className="flz-iconbtn ghost" href="https://x.com/flzworks" target="_blank" rel="noopener noreferrer" aria-label="X.com — FLZ Works" onClick={() => trackTelemetryEvent("social_open", "main", "x")}><IconX /></a>
       </span>
-      <span className="flz-railbtn"><button className={`flz-iconbtn ${contactOpen ? "solid" : "ghost"}`} aria-label="Open ID card" aria-expanded={contactOpen} aria-controls="flz-id-card-dialog" onClick={() => setContactOpen(!contactOpen)}><IconIdCard /></button></span>
+      <span className="flz-railbtn"><button className={`flz-iconbtn ${activeView === "message" ? "solid" : "ghost"}`} type="button" aria-label="Message me" aria-pressed={activeView === "message"} onClick={() => setActiveView("message")}><IconMessage /></button></span>
+      <span className="flz-railbtn"><button className={`flz-iconbtn ${contactOpen ? "solid" : "ghost"}`} type="button" aria-label="Open ID card" aria-expanded={contactOpen} aria-controls="flz-id-card-dialog" onClick={() => setContactOpen(!contactOpen)}><IconIdCard /></button></span>
     </div>
   );
 }
@@ -1268,8 +1376,8 @@ function DiscordCard({ url }: { url: string }) {
     <>
       <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
         <span style={{ width: 38, height: 38, borderRadius: 12, background: "#5865F2", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff">
-            <path d="M19.3 5.3A17 17 0 0 0 15 4l-.2.4a15 15 0 0 1 3.7 1.2 13 13 0 0 0-11-.1A14 14 0 0 1 11.3 4L11 3.6A17 17 0 0 0 6.7 5 18 18 0 0 0 3.6 17a17 17 0 0 0 5.2 2.6l.6-.9a11 11 0 0 1-1.8-.9l.4-.3a12 12 0 0 0 10 0l.5.3c-.6.4-1.2.7-1.9.9l.6 1a17 17 0 0 0 5.2-2.7A18 18 0 0 0 19.3 5.3ZM9.4 14.3c-.7 0-1.3-.7-1.3-1.5s.6-1.5 1.3-1.5 1.3.7 1.3 1.5-.6 1.5-1.3 1.5Zm5.2 0c-.7 0-1.3-.7-1.3-1.5s.6-1.5 1.3-1.5 1.3.7 1.3 1.5-.6 1.5-1.3 1.5Z"/>
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
+            <path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515c-.074.136-.1.279-.138.426a18.27 18.27 0 0 0-5.487 0 16.58 16.58 0 0 1 .143-.426A19.74 19.74 0 0 0 5.065 4.37C2.116 8.743 1.318 13.579 1.736 18.057a19.9 19.9 0 0 0 5.993 3.03 14.09 14.09 0 0 0 1.455-2.366 12.93 12.93 0 0 1-2.285-1.098c.191-.14.378-.287.559-.437 4.412 2.041 9.193 2.041 13.552 0 .182.15.369.297.56.437a12.9 12.9 0 0 1-2.29 1.1 14.1 14.1 0 0 0 1.455 2.366 19.88 19.88 0 0 0 6.002-3.031c.49-5.177-.838-9.674-3.548-13.688ZM8.02 15.331c-1.326 0-2.421-1.207-2.421-2.694s1.071-2.694 2.421-2.694c1.361 0 2.445 1.216 2.421 2.694 0 1.487-1.071 2.694-2.421 2.694Zm7.974 0c-1.326 0-2.421-1.207-2.421-2.694s1.071-2.694 2.421-2.694c1.361 0 2.445 1.216 2.421 2.694 0 1.487-1.06 2.694-2.421 2.694Z"/>
           </svg>
         </span>
         <div style={{ lineHeight: 1.2 }}>
@@ -1302,12 +1410,80 @@ function DiscordCard({ url }: { url: string }) {
   );
 }
 
+function MessagePanel() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [error, setError] = useState("");
+
+  const sendMessage = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setStatus("sending");
+    setError("");
+    try {
+      const response = await fetch("/api/portfolio/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, message }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || "The message could not be sent.");
+      setName("");
+      setEmail("");
+      setMessage("");
+      setStatus("success");
+    } catch (sendError) {
+      setStatus("error");
+      setError(sendError instanceof Error ? sendError.message : "The message could not be sent.");
+    }
+  };
+
+  return (
+    <section className="flz-message-panel flz-view" aria-labelledby="flz-message-title">
+      <div className="flz-message-intro">
+        <div className="flz-message-kicker">Direct contact</div>
+        <h2 id="flz-message-title">Have a project in mind?</h2>
+        <p>Send a short note about the work, timeline, or collaboration. I’ll reply directly by email.</p>
+        <a href="mailto:hi@flz.works">hi@flz.works</a>
+      </div>
+      <form className="flz-message-form" onSubmit={sendMessage}>
+        <div className="flz-message-fields">
+          <label>
+            <span>Name</span>
+            <input value={name} onChange={(event) => setName(event.target.value)} autoComplete="name" maxLength={100} placeholder="Your name" />
+          </label>
+          <label>
+            <span>Email</span>
+            <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" maxLength={100} placeholder="you@example.com" required />
+          </label>
+        </div>
+        <label>
+          <span>Message</span>
+          <textarea value={message} onChange={(event) => setMessage(event.target.value)} maxLength={5000} placeholder="Tell me what you’re building…" required />
+        </label>
+        <div className="flz-message-action">
+          <span className={`flz-message-status ${status}`} role="status" aria-live="polite">
+            {status === "success" ? "Message sent — thank you." : status === "error" ? error : "Usually replies within 1–2 business days."}
+          </span>
+          <button className="flz-btn-solid" type="submit" disabled={status === "sending"}>
+            {status === "sending" ? "Sending…" : "Send message"}
+          </button>
+        </div>
+      </form>
+    </section>
+  );
+}
+
 function MainSlab({
   daysBuilding,
   settings,
   activeFilter,
   setActiveFilter,
+  filters,
   visibleProjects,
+  activeView,
+  setActiveView,
   theme,
   onThemeToggle,
 }: {
@@ -1315,7 +1491,10 @@ function MainSlab({
   settings: Record<string, string>;
   activeFilter: string;
   setActiveFilter: (f: string) => void;
+  filters: string[];
   visibleProjects: typeof PROJECTS;
+  activeView: MainView;
+  setActiveView: (view: MainView) => void;
   theme: Theme;
   onThemeToggle: () => void;
 }) {
@@ -1378,8 +1557,8 @@ function MainSlab({
 
       {/* Filter chips */}
       <div className="flz-enter flz-filters" style={{ "--flz-delay": "140ms", display: "flex", gap: 9, alignItems: "center", flexWrap: "wrap" } as React.CSSProperties}>
-        {FILTERS.map(f => (
-          <button key={f} className={`flz-chip${activeFilter === f ? " active" : ""}`} onClick={() => { setProjectPage(0); setActiveFilter(f); }}>{f}</button>
+        {filters.map(f => (
+          <button key={f} className={`flz-chip${activeFilter === f && activeView === "projects" ? " active" : ""}`} onClick={() => { setProjectPage(0); setActiveFilter(f); setActiveView("projects"); }}>{f}</button>
         ))}
       </div>
 
@@ -1388,7 +1567,8 @@ function MainSlab({
 
         {/* Routing well (sunken glass) */}
         <div style={wellStyle}>
-          <div className="flz-view" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 14 }}>
+          {activeView === "message" ? <MessagePanel /> : (
+            <div className="flz-view" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 14 }}>
               <div className="flz-pager-row" style={{ display: "flex", alignItems: "center", gap: 14 }}>
                 <div style={{ flexShrink: 0, whiteSpace: "nowrap", font: `500 var(--flz-fs-label)/1 var(--flz-font-mono)`, letterSpacing: "var(--flz-ls-label)", textTransform: "uppercase", color: "var(--flz-text-muted)" }}>Recent projects</div>
                 <span style={{ flexShrink: 0, whiteSpace: "nowrap", font: `400 var(--flz-fs-body-sm)/1 var(--flz-font-sans)`, color: "var(--flz-text-secondary)" }}>Page {safeProjectPage + 1} of {pageCount}</span>
@@ -1409,7 +1589,8 @@ function MainSlab({
                   </div>
                 ))}
               </div>
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Right column */}
@@ -1435,10 +1616,10 @@ function MainSlab({
         </div>
       </div>
 
-      {/* Footer: pager dots + build strip */}
-      <div className="flz-enter" style={{ "--flz-delay": "270ms", display: "flex", alignItems: "center", gap: 14, paddingTop: 2 } as React.CSSProperties}>
-
-      </div>
+      <footer className="flz-enter flz-footer" style={{ "--flz-delay": "270ms" } as React.CSSProperties}>
+        <span>© 2026 FLZ Works. All rights reserved.</span>
+        <span>Built in Budapest.</span>
+      </footer>
     </div>
   );
 }
@@ -1447,6 +1628,7 @@ function MainSlab({
 export default function PortfolioHubPage() {
   const [daysBuilding, setDaysBuilding] = useState("—");
   const [activeFilter, setActiveFilter] = useState("All");
+  const [activeView, setActiveView] = useState<MainView>("projects");
   const [contactOpen, setContactOpen] = useState(false);
   const theme = useSyncExternalStore(subscribeToTheme, getThemeSnapshot, getServerThemeSnapshot);
 
@@ -1527,6 +1709,12 @@ export default function PortfolioHubPage() {
 
   const visibleProjects =
     activeFilter === "All" ? projectsList : projectsList.filter(p => p.cat === activeFilter);
+  const projectCategories = Array.from(new Set(projectsList.map((project) => project.cat.trim()).filter(Boolean)));
+  const categories = [
+    ...CATEGORY_ORDER,
+    ...projectCategories.filter((category) => !CATEGORY_ORDER.includes(category)).sort((a, b) => a.localeCompare(b)),
+  ];
+  const filters = ["All", ...categories];
 
   const toggleTheme = () => {
     setStoredTheme(theme === "dark" ? "light" : "dark");
@@ -1598,13 +1786,16 @@ export default function PortfolioHubPage() {
 
       {/* Content */}
       <div className="flz-content" style={{ position: "relative", zIndex: 1, display: "flex", gap: 24, padding: "40px 44px", minHeight: "100vh", boxSizing: "border-box" }}>
-        <IconRail contactOpen={contactOpen} setContactOpen={setContactOpen} />
+        <IconRail contactOpen={contactOpen} setContactOpen={setContactOpen} activeView={activeView} setActiveView={setActiveView} />
         <MainSlab
           daysBuilding={daysBuilding}
           settings={settings}
           activeFilter={activeFilter}
           setActiveFilter={setActiveFilter}
+          filters={filters}
           visibleProjects={visibleProjects}
+          activeView={activeView}
+          setActiveView={setActiveView}
           theme={theme}
           onThemeToggle={toggleTheme}
         />
