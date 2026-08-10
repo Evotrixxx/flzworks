@@ -196,17 +196,6 @@ model FlzSetting {
   updatedAt DateTime @updatedAt
 }
 
-// Prevent a Studio-deleted imported post from being recreated by later syncs.
-model FlzSocialProjectTombstone {
-  id             String   @id @default(cuid())
-  socialPlatform String
-  socialPostId   String
-  deletedAt      DateTime @default(now())
-
-  @@unique([socialPlatform, socialPostId])
-  @@index([socialPlatform])
-}
-
 // Consent-based, first-party audience measurement. No IP address, user agent,
 // referrer, account ID, cookie ID, or cross-site identifier is stored.
 model TelemetrySession {

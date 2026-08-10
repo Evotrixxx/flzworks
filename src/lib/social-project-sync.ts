@@ -237,20 +237,21 @@ async function fetchTikTokPosts(): Promise<NormalizedSocialPost[]> {
 
 export async function persistPosts(platform: SocialProvider, posts: NormalizedSocialPost[]) {
   const publicPostIds = posts.map((post) => post.postId);
+  const tombstonePrefix = `social-project-tombstone:${platform}:`;
   const existing = await prisma.flzProject.findMany({
     where: { socialPlatform: platform, socialPostId: { in: publicPostIds } },
     select: { socialPostId: true },
   });
-  const tombstones = await prisma.flzSocialProjectTombstone.findMany({
-    where: { socialPlatform: platform, socialPostId: { in: publicPostIds } },
-    select: { socialPostId: true },
+  const tombstones = await prisma.flzSetting.findMany({
+    where: { key: { startsWith: tombstonePrefix } },
+    select: { key: true },
   });
   const existingIds = existing
     .map((row) => row.socialPostId)
     .filter((postId): postId is string => Boolean(postId));
-  const tombstonedIds = tombstones
-    .map((row) => row.socialPostId)
-    .filter((postId): postId is string => Boolean(postId));
+  const tombstonedIds = tombstones.map((row) =>
+    decodeURIComponent(row.key.slice(tombstonePrefix.length)),
+  );
   const unseenPosts = selectUnseenSocialPosts(posts, [...existingIds, ...tombstonedIds]);
 
   let created = 0;

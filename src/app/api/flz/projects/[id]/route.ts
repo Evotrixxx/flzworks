@@ -56,18 +56,14 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     await prisma.$transaction(async (tx) => {
       if (project.socialPlatform && project.socialPostId) {
-        await tx.flzSocialProjectTombstone.upsert({
-          where: {
-            socialPlatform_socialPostId: {
-              socialPlatform: project.socialPlatform,
-              socialPostId: project.socialPostId,
-            },
-          },
+        const tombstoneKey = `social-project-tombstone:${project.socialPlatform}:${encodeURIComponent(project.socialPostId)}`;
+        await tx.flzSetting.upsert({
+          where: { key: tombstoneKey },
           create: {
-            socialPlatform: project.socialPlatform,
-            socialPostId: project.socialPostId,
+            key: tombstoneKey,
+            value: new Date().toISOString(),
           },
-          update: { deletedAt: new Date() },
+          update: { value: new Date().toISOString() },
         });
       }
 

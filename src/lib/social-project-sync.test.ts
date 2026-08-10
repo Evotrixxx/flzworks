@@ -7,11 +7,9 @@ const { prismaMock } = vi.hoisted(() => ({
       findMany: vi.fn(),
       create: vi.fn(),
     },
-    flzSocialProjectTombstone: {
-      findMany: vi.fn(),
-    },
     flzSetting: {
       findUnique: vi.fn(),
+      findMany: vi.fn(),
       upsert: vi.fn(),
     },
   },
@@ -29,7 +27,7 @@ import {
 describe("social project normalization", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    prismaMock.flzSocialProjectTombstone.findMany.mockResolvedValue([]);
+    prismaMock.flzSetting.findMany.mockResolvedValue([]);
   });
 
   it("turns an Instagram reel into a linked project with its thumbnail", () => {
@@ -147,8 +145,8 @@ describe("social project normalization", () => {
       imageUrl: null,
     };
     prismaMock.flzProject.findMany.mockResolvedValue([]);
-    prismaMock.flzSocialProjectTombstone.findMany.mockResolvedValue([
-      { socialPostId: "deleted-in-studio" },
+    prismaMock.flzSetting.findMany.mockResolvedValue([
+      { key: "social-project-tombstone:tiktok:deleted-in-studio" },
     ]);
 
     await expect(persistPosts("tiktok", [deletedPost])).resolves.toEqual({

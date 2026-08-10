@@ -29,9 +29,11 @@ try {
       socialPlatform: "instagram-bootstrap",
       socialPostId: post.postId,
     };
-    const tombstone = await prisma.flzSocialProjectTombstone.findUnique({
-      where: { socialPlatform_socialPostId: identity },
-      select: { id: true },
+    const tombstone = await prisma.flzSetting.findUnique({
+      where: {
+        key: `social-project-tombstone:${identity.socialPlatform}:${encodeURIComponent(identity.socialPostId)}`,
+      },
+      select: { key: true },
     });
     if (tombstone) {
       preserved += 1;
