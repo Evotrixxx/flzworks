@@ -22,6 +22,7 @@ interface GoogleAccounts {
       auto_select?: boolean;
       itp_support?: boolean;
       use_fedcm_for_button?: boolean;
+      button_auto_select?: boolean;
     }): void;
     renderButton(parent: HTMLElement, config: GoogleButtonConfig): void;
     prompt(): void;

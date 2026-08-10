@@ -81,6 +81,7 @@ export function GoogleSignInButton({
         // Chrome's browser-mediated account chooser avoids popup blockers and
         // third-party-cookie restrictions that can leave the legacy button inert.
         use_fedcm_for_button: true,
+        button_auto_select: true,
         itp_support: true,
       });
 
