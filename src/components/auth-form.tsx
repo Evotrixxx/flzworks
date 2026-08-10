@@ -8,8 +8,17 @@ import type { Dictionary, Locale } from "@/lib/i18n";
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 const GOOGLE_FEDCM_CONFIG_URL = "https://accounts.google.com/gsi/fedcm.json";
 
+type FedCmToken =
+  | string
+  | {
+      id_token?: FedCmToken;
+      idToken?: FedCmToken;
+      credential?: FedCmToken;
+      token?: FedCmToken;
+    };
+
 type FedCmCredential = Credential & {
-  token?: string | { id_token?: string; idToken?: string; credential?: string };
+  token?: FedCmToken;
 };
 
 type FedCmRequestOptions = CredentialRequestOptions & {
@@ -22,16 +31,40 @@ type FedCmRequestOptions = CredentialRequestOptions & {
         response_type: "id_token";
         scope: "openid email profile";
         nonce: string;
+        ss_domain: string;
       };
     }>;
   };
 };
 
+function unpackFedCmIdToken(token: FedCmToken | undefined, depth = 0): string | null {
+  if (!token || depth > 3) return null;
+
+  if (typeof token === "string") {
+    const value = token.trim();
+    if (value.split(".").length === 3) return value;
+
+    if (value.startsWith("{")) {
+      try {
+        return unpackFedCmIdToken(JSON.parse(value) as FedCmToken, depth + 1);
+      } catch {
+        return null;
+      }
+    }
+
+    return null;
+  }
+
+  return (
+    unpackFedCmIdToken(token.id_token, depth + 1) ??
+    unpackFedCmIdToken(token.idToken, depth + 1) ??
+    unpackFedCmIdToken(token.credential, depth + 1) ??
+    unpackFedCmIdToken(token.token, depth + 1)
+  );
+}
+
 function readFedCmIdToken(credential: FedCmCredential | null) {
-  const token = credential?.token;
-  if (typeof token === "string") return token;
-  if (!token) return null;
-  return token.id_token ?? token.idToken ?? token.credential ?? null;
+  return unpackFedCmIdToken(credential?.token);
 }
 
 export function GoogleSignInButton({
@@ -114,6 +147,7 @@ export function GoogleSignInButton({
                 response_type: "id_token",
                 scope: "openid email profile",
                 nonce,
+                ss_domain: window.location.origin,
               },
             },
           ],
