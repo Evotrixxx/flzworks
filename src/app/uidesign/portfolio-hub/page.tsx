@@ -543,12 +543,6 @@ const DS_TOKENS = `
     color: var(--flz-text-secondary);
     font: 400 14px/1.55 var(--flz-font-sans);
   }
-  .flz-message-intro a {
-    margin-top: auto;
-    color: var(--flz-text-primary);
-    font: 600 13px/1 var(--flz-font-sans);
-    text-underline-offset: 4px;
-  }
   .flz-message-form { display: flex; min-width: 0; flex-direction: column; gap: 16px; }
   .flz-message-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .flz-message-form label { display: flex; min-width: 0; flex-direction: column; gap: 8px; }
@@ -991,7 +985,6 @@ const DS_TOKENS = `
     .flz-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
     .flz-sidebar { width: 100% !important; }
     .flz-message-panel { grid-template-columns: 1fr; }
-    .flz-message-intro a { margin-top: 18px; }
   }
   @media (max-width: 640px) {
     .flz-content { padding: 16px 14px 86px !important; }
@@ -1425,7 +1418,7 @@ function MessagePanel() {
       const response = await fetch("/api/portfolio/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, message }),
+        body: JSON.stringify({ name, email, message, source: "main" }),
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || "The message could not be sent.");
@@ -1445,7 +1438,6 @@ function MessagePanel() {
         <div className="flz-message-kicker">Direct contact</div>
         <h2 id="flz-message-title">Have a project in mind?</h2>
         <p>Send a short note about the work, timeline, or collaboration. I’ll reply directly by email.</p>
-        <a href="mailto:hi@flz.works">hi@flz.works</a>
       </div>
       <form className="flz-message-form" onSubmit={sendMessage}>
         <div className="flz-message-fields">

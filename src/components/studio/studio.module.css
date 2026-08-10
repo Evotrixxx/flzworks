@@ -1971,6 +1971,77 @@
   }
 }
 
+/* Contact inbox */
+.messageUnreadCount {
+  color: var(--st-muted);
+  font-size: 12px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.messageFilters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.messageList { display: grid; gap: 8px; }
+.messageItem {
+  overflow: hidden;
+  border: 1px solid var(--st-line);
+  border-radius: 12px;
+  background: var(--st-raised);
+}
+.messageItemUnread {
+  border-color: var(--st-accent-line);
+  box-shadow: inset 3px 0 0 var(--st-accent);
+}
+.messageSummary {
+  width: 100%;
+  min-height: 72px;
+  display: grid;
+  grid-template-columns: 28px minmax(140px, .55fr) minmax(180px, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 0;
+  color: var(--st-fg);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.messageSummary:hover { background: var(--st-sunken); }
+.messageState { display: grid; place-items: center; color: var(--st-muted); }
+.messageItemUnread .messageState { color: var(--st-accent); }
+.messageSender,
+.messageMeta { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.messageSender strong,
+.messageSender span,
+.messagePreview,
+.messageMeta span,
+.messageMeta time { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.messageSender strong { font-size: 13px; }
+.messageSender span,
+.messagePreview,
+.messageMeta { color: var(--st-muted); font-size: 12px; }
+.messageMeta { text-align: right; }
+.messageDetail {
+  padding: 16px;
+  border-top: 1px solid var(--st-line);
+  background: var(--st-panel);
+}
+.messageDetail p {
+  max-width: 74ch;
+  margin: 0;
+  color: var(--st-fg);
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.messageActions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 16px; }
+.messageActionSpacer { flex: 1 1 auto; }
+@media (max-width:719px) {
+  .messageSummary { grid-template-columns: 24px minmax(0, 1fr); gap: 8px 10px; }
+  .messagePreview,
+  .messageMeta { grid-column: 2; text-align: left; }
+  .messageActionSpacer { display: none; }
+}
+
 /* FLZ Studio 2026
    A compact desktop workspace with opaque hierarchy and shared semantic tokens.
    This final layer intentionally replaces the earlier decorative glass skin. */

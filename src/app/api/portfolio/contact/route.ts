@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
-import { sendContactEmail } from "@/lib/mailer";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, email, message } = body;
+    if (!body || typeof body !== "object") {
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    }
+    const { name, email, message, source } = body;
 
     if (!message || typeof message !== "string" || message.trim() === "") {
       return NextResponse.json(
@@ -13,8 +16,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate the email format server-side when one is provided (client checks
-    // can be bypassed) so we don't send back replies to malformed addresses.
+    // Client-side checks can be bypassed, so validate optional reply addresses here too.
     const trimmedEmail = typeof email === "string" ? email.trim() : "";
     if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
       return NextResponse.json(
@@ -23,17 +25,20 @@ export async function POST(request: Request) {
       );
     }
 
-    const result = await sendContactEmail({
-      name: typeof name === "string" ? name.trim().slice(0, 100) : undefined,
-      email: trimmedEmail ? trimmedEmail.slice(0, 100) : undefined,
-      message: message.slice(0, 5000),
+    const saved = await prisma.flzContactMessage.create({
+      data: {
+        name: typeof name === "string" ? name.trim().slice(0, 100) : undefined,
+        email: trimmedEmail ? trimmedEmail.slice(0, 100) : undefined,
+        message: message.trim().slice(0, 5000),
+        source: source === "main" || source === "autosalon" ? source : "portfolio",
+      },
     });
 
-    return NextResponse.json({ success: true, sent: result.sent });
+    return NextResponse.json({ success: true, id: saved.id }, { status: 201 });
   } catch (error) {
-    console.error("Failed to send contact email:", error);
+    console.error("Failed to save contact message:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Internal server error" },
+      { error: "Could not save message" },
       { status: 500 }
     );
   }

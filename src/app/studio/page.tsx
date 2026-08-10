@@ -8,6 +8,7 @@ import { syncPortfolioArticles, PortfolioArticleWithImages } from "@/lib/portfol
 import { readSocialConfig, DEFAULT_SOCIAL, SocialEntry } from "@/lib/social-config";
 import { StudioEditor } from "@/components/studio-editor";
 import type { FlzProjectData } from "@/components/studio/types";
+import type { MessageStatus, StudioMessage } from "@/components/studio/messages-panel";
 import { checkIsAdminEmail } from "@/lib/flz-security";
 import { emptyTelemetrySnapshot, getTelemetrySnapshot } from "@/lib/telemetry";
 import { emptySocialMetricsSnapshot, getSocialMetricsSnapshot } from "@/lib/social-metrics";
@@ -96,6 +97,15 @@ export default async function StudioPage() {
     console.error("Failed to query flzSetting in StudioPage:", err);
   }
 
+  let messagesData: Awaited<ReturnType<typeof prisma.flzContactMessage.findMany>> = [];
+  try {
+    messagesData = await prisma.flzContactMessage.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (err) {
+    console.error("Failed to query contact messages in StudioPage:", err);
+  }
+
   // Only hand the client the fields the editor works with — timestamps stay server-side.
   const flzProjects: FlzProjectData[] = projectsData.map((p) => ({
     id: p.id,
@@ -119,6 +129,17 @@ export default async function StudioPage() {
     flzSettings[setting.key] = setting.value;
   }
 
+  const messages: StudioMessage[] = messagesData.map((item) => ({
+    id: item.id,
+    name: item.name,
+    email: item.email,
+    message: item.message,
+    source: item.source,
+    status: item.status as MessageStatus,
+    createdAt: item.createdAt.toISOString(),
+    updatedAt: item.updatedAt.toISOString(),
+  }));
+
   let telemetry = emptyTelemetrySnapshot();
   try {
     telemetry = await getTelemetrySnapshot();
@@ -139,6 +160,7 @@ export default async function StudioPage() {
       social={social}
       flzProjects={flzProjects}
       flzSettings={flzSettings}
+      messages={messages}
       userEmail={user.email}
       telemetry={telemetry}
       socialMetrics={socialMetrics}

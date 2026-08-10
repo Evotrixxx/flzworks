@@ -2,11 +2,12 @@
 
 import { useCallback, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { ExternalLink, FolderOpen, Layers, LogOut, Moon, Radio, SlidersHorizontal, Sun } from "lucide-react";
+import { ExternalLink, FolderOpen, Layers, LogOut, Mail, Moon, Radio, SlidersHorizontal, Sun } from "lucide-react";
 import type { PortfolioArticleWithImages } from "@/lib/portfolio-sync";
 import type { SocialEntry } from "@/lib/social-config";
 import { ArticlesPanel } from "@/components/studio/articles-panel";
 import { ProjectsPanel } from "@/components/studio/projects-panel";
+import { MessagesPanel, type StudioMessage } from "@/components/studio/messages-panel";
 import { SettingsPanel } from "@/components/studio/settings-panel";
 import { SocialPanel } from "@/components/studio/social-panel";
 import { Spinner, ToastStack, type ToastItem, type ToastKind } from "@/components/studio/ui";
@@ -17,7 +18,7 @@ import type { SocialMetricsSnapshot } from "@/lib/social-metrics";
 import type { TelemetrySnapshot } from "@/lib/telemetry";
 import s from "@/components/studio/studio.module.css";
 
-type Section = "projects" | "settings" | "articles" | "social";
+type Section = "projects" | "messages" | "settings" | "articles" | "social";
 type StudioTheme = "light" | "dark";
 
 const THEME_STORAGE_KEY = "flz-studio-theme";
@@ -57,6 +58,7 @@ interface StudioEditorProps {
   social: SocialEntry[];
   flzProjects: FlzProjectData[];
   flzSettings: Record<string, string>;
+  messages: StudioMessage[];
   userEmail: string;
   telemetry: TelemetrySnapshot;
   telemetryLive?: boolean;
@@ -70,6 +72,7 @@ export function StudioEditor({
   social,
   flzProjects,
   flzSettings,
+  messages,
   userEmail,
   telemetry,
   telemetryLive = true,
@@ -103,6 +106,7 @@ export function StudioEditor({
 
   const nav: { id: Section; label: string; icon: React.ReactNode; count?: number }[] = [
     { id: "projects", label: "Projects", icon: <Layers size={16} />, count: projects.length },
+    { id: "messages", label: "Messages", icon: <Mail size={16} />, count: messages.filter((item) => item.status === "NEW").length },
     { id: "settings", label: "Site & hero", icon: <SlidersHorizontal size={16} /> },
     { id: "articles", label: "Articles", icon: <FolderOpen size={16} />, count: articles.length },
     { id: "social", label: "Social", icon: <Radio size={16} />, count: social.length },
@@ -199,6 +203,9 @@ export function StudioEditor({
           */}
           <div className={`${s.sectionPane} ${section === "projects" ? "" : s.sectionHidden}`}>
             <ProjectsPanel projects={projects} setProjects={setProjects} notify={notify} />
+          </div>
+          <div className={`${s.sectionPane} ${section === "messages" ? "" : s.sectionHidden}`}>
+            <MessagesPanel initial={messages} notify={notify} />
           </div>
           <div className={`${s.sectionPane} ${section === "settings" ? "" : s.sectionHidden}`}>
             <SettingsPanel initialSettings={flzSettings} notify={notify} />
