@@ -500,6 +500,16 @@ const DS_TOKENS = `
   .flz-btn-solid:focus-visible { outline: 3px solid rgba(10,132,255,.62); outline-offset: 3px; }
   .flz-badge { background: rgba(29,29,31,.7); border-color: rgba(255,255,255,.28); color: #fff; }
   .flz-modal { filter: drop-shadow(0 28px 70px rgba(37,39,46,.22)); }
+  .flz-contact-card {
+    background: #f7f7f9;
+    border: 1px solid rgba(29,29,31,.14);
+    box-shadow: 0 24px 64px rgba(37,39,46,.22);
+  }
+  .flz-id-card {
+    background: #fff !important;
+    border-color: rgba(29,29,31,.14) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 12px 28px rgba(37,39,46,.1) !important;
+  }
 
   /* Purpose-built dark theme: warm graphite surfaces with cool ambient color. */
   .flz-hub-root[data-theme="dark"] {
@@ -574,6 +584,16 @@ const DS_TOKENS = `
   }
   .flz-hub-root[data-theme="dark"] .flz-theme-toggle-icon { background: #f5f5f7; color: #111216; }
   .flz-hub-root[data-theme="dark"] .flz-badge { background: rgba(7,8,11,.78); }
+  .flz-hub-root[data-theme="dark"] .flz-contact-card {
+    background: #111318;
+    border-color: rgba(255,255,255,.14);
+    box-shadow: 0 28px 72px rgba(0,0,0,.52);
+  }
+  .flz-hub-root[data-theme="dark"] .flz-id-card {
+    background: #1b1d23 !important;
+    border-color: rgba(255,255,255,.13) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 14px 32px rgba(0,0,0,.3) !important;
+  }
 
   /* Motion layer: transform/opacity only, so the preserved layout never shifts. */
   @keyframes flz-shell-in {
@@ -943,9 +963,12 @@ const IconX = () => (
     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.451-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z" />
   </svg>
 );
-const IconMail = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/>
+const IconIdCard = () => (
+  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="2.5" y="4.5" width="19" height="15" rx="2.5" />
+    <circle cx="8" cy="10" r="2.25" />
+    <path d="M4.75 16c.65-2 1.75-3 3.25-3s2.6 1 3.25 3" />
+    <path d="M14.25 9h4M14.25 12h4M14.25 15h2.75" />
   </svg>
 );
 const IconArrow = ({ size = 17, rotate = false }: { size?: number; rotate?: boolean }) => (
@@ -1029,7 +1052,7 @@ function IconRail({ contactOpen, setContactOpen }: {
       <span className="flz-railbtn">
         <a className="flz-iconbtn ghost" href="https://x.com/flzworks" target="_blank" rel="noopener noreferrer" aria-label="X.com — FLZ Works" onClick={() => trackTelemetryEvent("social_open", "main", "x")}><IconX /></a>
       </span>
-      <span className="flz-railbtn"><button className={`flz-iconbtn ${contactOpen ? "solid" : "ghost"}`} aria-label="Messages" onClick={() => setContactOpen(!contactOpen)}><IconMail /></button></span>
+      <span className="flz-railbtn"><button className={`flz-iconbtn ${contactOpen ? "solid" : "ghost"}`} aria-label="Open ID card" aria-expanded={contactOpen} aria-controls="flz-id-card-dialog" onClick={() => setContactOpen(!contactOpen)}><IconIdCard /></button></span>
     </div>
   );
 }
@@ -1053,11 +1076,11 @@ function ContactCard() {
   };
 
   return (
-    <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 14, overflow: "hidden" }}>
+    <div className="flz-contact-card" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 14, overflow: "hidden", padding: 18, borderRadius: 24 }}>
       <div style={{ font: `500 9.5px/1 var(--flz-font-mono)`, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--flz-text-muted)" }}>Contact</div>
       <div className="flz-contact-inner" style={{ display: "flex", gap: 14, flex: 1, minHeight: 0 }}>
         {/* ID Card */}
-        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 0, padding: "18px 20px", borderRadius: 20, background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.14)", boxShadow: "inset 0 1px 0 rgba(255,255,255,.18)" }}>
+        <div className="flz-id-card" style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 0, padding: "18px 20px", borderRadius: 20, border: "1px solid rgba(255,255,255,.14)" }}>
           <div style={{ font: `500 9px/1 var(--flz-font-mono)`, letterSpacing: ".1em", textTransform: "uppercase", color: "rgba(255,196,88,.8)", borderBottom: "1px solid rgba(255,255,255,.1)", paddingBottom: 12, marginBottom: 16 }}>FLZ WORKS // IDENTITY CARD</div>
           <div style={{ display: "flex", gap: 16, alignItems: "flex-start", flex: 1 }}>
             <div style={{ width: 72, height: 88, borderRadius: 12, background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.12)", overflow: "hidden", flexShrink: 0 }}>
@@ -1478,7 +1501,7 @@ export default function PortfolioHubPage() {
       {contactOpen && (
         <div className="flz-backdrop" style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,.4)", backdropFilter: "blur(6px)" }}
           onClick={() => setContactOpen(false)}>
-          <div className="flz-modal" style={{ width: 560, position: "relative" }} onClick={e => e.stopPropagation()}>
+          <div id="flz-id-card-dialog" className="flz-modal" role="dialog" aria-modal="true" aria-label="FLZ Works ID card" style={{ width: 560, position: "relative" }} onClick={e => e.stopPropagation()}>
             <button
               autoFocus
               onClick={() => setContactOpen(false)}
