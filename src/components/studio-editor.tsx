@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { ExternalLink, FolderOpen, Layers, LogOut, Radio, SlidersHorizontal } from "lucide-react";
+import { ExternalLink, FolderOpen, Layers, LogOut, Moon, Radio, SlidersHorizontal, Sun } from "lucide-react";
 import type { PortfolioArticleWithImages } from "@/lib/portfolio-sync";
 import type { SocialEntry } from "@/lib/social-config";
 import { ArticlesPanel } from "@/components/studio/articles-panel";
@@ -18,6 +18,43 @@ import type { TelemetrySnapshot } from "@/lib/telemetry";
 import s from "@/components/studio/studio.module.css";
 
 type Section = "projects" | "settings" | "articles" | "social";
+type StudioTheme = "light" | "dark";
+
+const THEME_STORAGE_KEY = "flz-works-theme";
+const themeListeners = new Set<() => void>();
+
+function getThemeSnapshot(): StudioTheme {
+  const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+  if (stored === "light" || stored === "dark") return stored;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function getServerThemeSnapshot(): StudioTheme {
+  return "light";
+}
+
+function subscribeToTheme(listener: () => void) {
+  const media = window.matchMedia("(prefers-color-scheme: dark)");
+  const notify = () => listener();
+  const onStorage = (event: StorageEvent) => {
+    if (event.key === THEME_STORAGE_KEY) listener();
+  };
+
+  media.addEventListener("change", notify);
+  window.addEventListener("storage", onStorage);
+  themeListeners.add(listener);
+
+  return () => {
+    media.removeEventListener("change", notify);
+    window.removeEventListener("storage", onStorage);
+    themeListeners.delete(listener);
+  };
+}
+
+function setStoredTheme(theme: StudioTheme) {
+  window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+  themeListeners.forEach((listener) => listener());
+}
 
 interface StudioEditorProps {
   articles: PortfolioArticleWithImages[];
@@ -47,6 +84,11 @@ export function StudioEditor({
   const [section, setSection] = useState<Section>("projects");
   const [projects, setProjects] = useState<FlzProjectData[]>(flzProjects);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const theme = useSyncExternalStore(
+    subscribeToTheme,
+    getThemeSnapshot,
+    getServerThemeSnapshot,
+  );
 
   const notify = useCallback((message: string, kind: ToastKind = "success") => {
     const id = Date.now() + Math.random();
@@ -71,7 +113,7 @@ export function StudioEditor({
   ];
 
   return (
-    <div className={s.root}>
+    <div className={s.root} data-theme={theme}>
       <div className={s.orbA} />
       <div className={s.orbB} />
 
@@ -82,6 +124,21 @@ export function StudioEditor({
           </span>
         </Link>
         <span className={s.topSpacer} />
+        <button
+          type="button"
+          className={s.themeToggle}
+          onClick={() => setStoredTheme(theme === "dark" ? "light" : "dark")}
+          aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+          aria-pressed={theme === "dark"}
+          title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+        >
+          <span className={s.themeToggleTrack} aria-hidden="true">
+            <span className={s.themeToggleKnob}>
+              {theme === "dark" ? <Moon size={12} /> : <Sun size={12} />}
+            </span>
+          </span>
+          <span className={s.themeToggleLabel}>{theme === "dark" ? "Dark" : "Light"}</span>
+        </button>
         <span className={s.userChip}>
           <span className={s.userDot} />
           <span className={s.userMail}>{userEmail}</span>
