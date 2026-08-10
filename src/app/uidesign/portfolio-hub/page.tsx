@@ -672,13 +672,13 @@ const IconMoon = () => (
 
 type ActiveView = "work" | "search";
 type Theme = "light" | "dark";
-const THEME_STORAGE_KEY = "flz-works-theme";
+const THEME_STORAGE_KEY = "flz-public-theme";
 const themeListeners = new Set<() => void>();
 
 function getThemeSnapshot(): Theme {
   const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
   if (stored === "light" || stored === "dark") return stored;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  return "light";
 }
 
 function getServerThemeSnapshot(): Theme {
@@ -686,19 +686,13 @@ function getServerThemeSnapshot(): Theme {
 }
 
 function subscribeToTheme(listener: () => void) {
-  const media = window.matchMedia("(prefers-color-scheme: dark)");
-  const onSystemChange = () => {
-    if (!window.localStorage.getItem(THEME_STORAGE_KEY)) listener();
-  };
   const onStorage = (event: StorageEvent) => {
     if (event.key === THEME_STORAGE_KEY) listener();
   };
   themeListeners.add(listener);
-  media.addEventListener("change", onSystemChange);
   window.addEventListener("storage", onStorage);
   return () => {
     themeListeners.delete(listener);
-    media.removeEventListener("change", onSystemChange);
     window.removeEventListener("storage", onStorage);
   };
 }

@@ -20,32 +20,28 @@ import s from "@/components/studio/studio.module.css";
 type Section = "projects" | "settings" | "articles" | "social";
 type StudioTheme = "light" | "dark";
 
-const THEME_STORAGE_KEY = "flz-works-theme";
+const THEME_STORAGE_KEY = "flz-studio-theme";
 const themeListeners = new Set<() => void>();
 
 function getThemeSnapshot(): StudioTheme {
   const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
   if (stored === "light" || stored === "dark") return stored;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  return "dark";
 }
 
 function getServerThemeSnapshot(): StudioTheme {
-  return "light";
+  return "dark";
 }
 
 function subscribeToTheme(listener: () => void) {
-  const media = window.matchMedia("(prefers-color-scheme: dark)");
-  const notify = () => listener();
   const onStorage = (event: StorageEvent) => {
     if (event.key === THEME_STORAGE_KEY) listener();
   };
 
-  media.addEventListener("change", notify);
   window.addEventListener("storage", onStorage);
   themeListeners.add(listener);
 
   return () => {
-    media.removeEventListener("change", notify);
     window.removeEventListener("storage", onStorage);
     themeListeners.delete(listener);
   };
