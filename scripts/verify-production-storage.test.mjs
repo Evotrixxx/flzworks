@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { validateProductionStorageEnv } from "./verify-production-storage.mjs";
+import {
+  validateProductionStorageEnv,
+  validateProductionStorageMount,
+} from "./verify-production-storage.mjs";
 
 describe("production storage guard", () => {
   it("passes with Railway persistent volume paths", () => {
@@ -32,5 +35,22 @@ describe("production storage guard", () => {
 
     expect(result.ok).toBe(false);
     expect(result.message).toContain("UPLOAD_DIR");
+  });
+
+  it("passes only when /data is an actual mount point", () => {
+    const env = { NODE_ENV: "production" };
+    expect(
+      validateProductionStorageMount(
+        env,
+        "125 99 0:81 / /data rw,relatime - ext4 /dev/volume rw",
+      ),
+    ).toEqual({ ok: true });
+
+    const result = validateProductionStorageMount(
+      env,
+      "90 31 0:40 / / rw,relatime - overlay overlay rw",
+    );
+    expect(result.ok).toBe(false);
+    expect(result.message).toContain("persistent volume");
   });
 });
