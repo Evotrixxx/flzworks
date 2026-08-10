@@ -728,6 +728,38 @@ const DS_TOKENS = `
     background: transparent !important;
     color: var(--flz-text-primary) !important;
   }
+  .flz-autosalon-cta {
+    position: relative;
+    min-height: 36px;
+    padding: 0 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    flex: 0 0 auto;
+    border: 1px solid rgba(220, 231, 245, .48);
+    border-radius: 11px;
+    color: #ffd166;
+    background-color: #12284b;
+    background-image:
+      linear-gradient(rgba(220, 231, 245, .08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(220, 231, 245, .08) 1px, transparent 1px);
+    background-size: 12px 12px;
+    box-shadow: inset 0 0 0 1px rgba(18, 40, 75, .2);
+    font: 600 12px/1 var(--flz-font-sans);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: border-color 160ms var(--flz-ease-std), background-color 160ms var(--flz-ease-std), transform 160ms var(--flz-ease-std);
+  }
+  .flz-autosalon-cta:hover {
+    border-color: #ffd166;
+    background-color: #17345f;
+  }
+  .flz-autosalon-cta:active { transform: scale(.98); }
+  .flz-autosalon-cta:focus-visible {
+    outline: 3px solid var(--flz-focus);
+    outline-offset: 3px;
+  }
   .flz-chip {
     height: 36px;
     padding-inline: 14px;
@@ -802,6 +834,17 @@ const DS_TOKENS = `
     font-family: var(--flz-font-sans);
     letter-spacing: .04em;
   }
+  .flz-featured { position: relative; }
+  .flz-featured-link {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    border-radius: inherit;
+  }
+  .flz-featured-link:focus-visible {
+    outline: 3px solid var(--flz-focus);
+    outline-offset: 3px;
+  }
   .flz-empty-state,
   .flz-search-shell {
     color: var(--flz-text-primary) !important;
@@ -866,6 +909,7 @@ const DS_TOKENS = `
     .flz-grid { grid-template-columns: 1fr !important; grid-auto-rows: minmax(300px, auto) !important; }
     .flz-project-tile { min-height: 330px !important; }
     .flz-theme-toggle { min-height: 44px; }
+    .flz-autosalon-cta { min-height: 44px; padding-inline: 11px; }
     .flz-chip { min-height: 44px; }
     .flz-iconbtn { min-width: 44px; min-height: 44px; }
   }
@@ -1237,6 +1281,10 @@ function MainSlab({
           </span>
           <span>{theme === "dark" ? "Light" : "Dark"}</span>
         </button>
+        <Link href="/autosalon" className="flz-autosalon-cta">
+          <span>Enter autosalon</span>
+          <IconNE />
+        </Link>
       </div>
 
       {/* Hero row */}
@@ -1257,9 +1305,7 @@ function MainSlab({
       {/* Filter chips */}
       <div className="flz-enter flz-filters" style={{ "--flz-delay": "140ms", display: "flex", gap: 9, alignItems: "center", flexWrap: "wrap" } as React.CSSProperties}>
         {FILTERS.map(f => (
-          f === "Automotive"
-            ? <Link key={f} href="/" className="flz-chip" style={{ textDecoration: "none" }}>{f}</Link>
-            : <button key={f} className={`flz-chip${activeFilter === f ? " active" : ""}`} onClick={() => { setProjectPage(0); setActiveFilter(f); }}>{f}</button>
+          <button key={f} className={`flz-chip${activeFilter === f ? " active" : ""}`} onClick={() => { setProjectPage(0); setActiveFilter(f); }}>{f}</button>
         ))}
       </div>
 
@@ -1299,7 +1345,7 @@ function MainSlab({
         <div className="flz-sidebar" style={{ flexShrink: 0, width: 322, display: "flex", flexDirection: "column", gap: 18, minHeight: 0, height: "100%" }}>
 
           {/* Featured card */}
-          <a href="#" className="flz-tile flz-featured" style={{ flex: "1.25", minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden", borderRadius: 28, background: "#1c1a17", border: "1px solid rgba(255,255,255,.10)", textDecoration: "none", color: "inherit" }}>
+          <div className="flz-tile flz-featured" style={{ flex: "1.25", minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden", borderRadius: 28, background: "#1c1a17", border: "1px solid rgba(255,255,255,.10)", textDecoration: "none", color: "inherit" }}>
             <div style={{ flex: 1, minHeight: 120, position: "relative", overflow: "hidden" }}>
               <iframe src="https://sketchfab.com/models/cbb1b3572d0545f8a8fdbdb09836ebd6/embed?autostart=1&preload=1&transparent=1&ui_hint=0" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }} allow="autoplay; fullscreen; xr-spatial-tracking" />
               <span style={{ position: "absolute", top: 12, left: 12, zIndex: 1 }}>
@@ -1310,7 +1356,8 @@ function MainSlab({
               <div style={{ font: `500 var(--flz-fs-h3)/1.1 var(--flz-font-display)`, letterSpacing: "var(--flz-ls-h3)", color: "var(--flz-text-primary)" }}>Pentagon Athaan 2026</div>
               <div style={{ font: `400 var(--flz-fs-body-sm)/1.45 var(--flz-font-sans)`, color: "var(--flz-text-secondary)", marginTop: 7 }}>Preview the model</div>
             </div>
-          </a>
+            <Link href="/autosalon" className="flz-featured-link" aria-label="Open Autosalon portfolio" />
+          </div>
 
           {/* Discord card — the invite comes from the studio's site settings */}
           <DiscordCard url={settings.discord_url?.trim() || ""} />
