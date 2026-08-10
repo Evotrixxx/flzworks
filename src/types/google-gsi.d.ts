@@ -12,7 +12,6 @@ interface GoogleButtonConfig {
   shape?: "rectangular" | "pill" | "circle" | "square";
   width?: number;
   locale?: string;
-  click_listener?: () => void;
 }
 
 interface GoogleAccounts {
@@ -24,8 +23,6 @@ interface GoogleAccounts {
       itp_support?: boolean;
       use_fedcm_for_button?: boolean;
       button_auto_select?: boolean;
-      cancel_on_tap_outside?: boolean;
-      context?: "signin" | "signup" | "use";
     }): void;
     renderButton(parent: HTMLElement, config: GoogleButtonConfig): void;
     prompt(): void;
