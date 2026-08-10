@@ -623,6 +623,252 @@ const DS_TOKENS = `
     .flz-stat-tile:hover,
     .flz-iconbtn:hover { transform: none !important; }
   }
+
+  /* FLZ 2026 visual system
+     A restrained content layer: opaque surfaces, one accent, one radius scale,
+     and motion only where it communicates state. */
+  .flz-hub-root {
+    --flz-text-primary: #1d1d1f;
+    --flz-text-secondary: #5f5f65;
+    --flz-text-muted: #74747b;
+    --flz-surface: #ffffff;
+    --flz-surface-secondary: #f5f5f7;
+    --flz-surface-tertiary: #e8e8ed;
+    --flz-separator: rgba(29, 29, 31, .14);
+    --flz-accent: #0066cc;
+    --flz-focus: rgba(0, 113, 227, .72);
+    --flz-radius-sm: 10px;
+    --flz-radius-md: 16px;
+    --flz-radius-lg: 20px;
+    background: #f5f5f7 !important;
+  }
+  .flz-hub-root[data-theme="dark"] {
+    --flz-text-primary: #f5f5f7;
+    --flz-text-secondary: #b7b7bd;
+    --flz-text-muted: #98989f;
+    --flz-surface: #1c1c1e;
+    --flz-surface-secondary: #111113;
+    --flz-surface-tertiary: #2c2c2e;
+    --flz-separator: rgba(255, 255, 255, .14);
+    --flz-accent: #2997ff;
+    --flz-focus: rgba(41, 151, 255, .82);
+    background: #0b0b0d !important;
+  }
+  .flz-orb {
+    opacity: .18 !important;
+    filter: blur(72px) !important;
+  }
+  .flz-hub-root[data-theme="dark"] .flz-orb { opacity: .14 !important; }
+  .flz-content {
+    width: min(100%, 1680px);
+    margin-inline: auto;
+    padding: 32px !important;
+    gap: 20px !important;
+  }
+  .flz-slab {
+    padding: 12px 8px 24px !important;
+    gap: 26px !important;
+    overflow: visible !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    animation: none !important;
+  }
+  .flz-rail {
+    width: 48px !important;
+    padding: 4px !important;
+    gap: 2px !important;
+    border-radius: 16px !important;
+    background: var(--flz-surface) !important;
+    border: 1px solid var(--flz-separator) !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .07) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    animation: none !important;
+  }
+  .flz-rail > div:first-child { display: none !important; }
+  .flz-iconbtn {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    color: var(--flz-text-secondary);
+  }
+  .flz-iconbtn.ghost { background: transparent !important; }
+  .flz-iconbtn.solid {
+    background: var(--flz-text-primary) !important;
+    color: var(--flz-surface) !important;
+    box-shadow: none !important;
+  }
+  .flz-iconbtn.glass {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--flz-surface) !important;
+    color: var(--flz-text-primary) !important;
+    border: 1px solid var(--flz-separator) !important;
+    box-shadow: none !important;
+  }
+  .flz-theme-toggle {
+    min-width: 0;
+    height: 36px;
+    padding: 0 12px 0 7px;
+    border-radius: 11px;
+    background: var(--flz-surface) !important;
+    border: 1px solid var(--flz-separator) !important;
+    color: var(--flz-text-primary) !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .flz-theme-toggle-icon {
+    width: 22px;
+    height: 22px;
+    background: transparent !important;
+    color: var(--flz-text-primary) !important;
+  }
+  .flz-chip {
+    height: 36px;
+    padding-inline: 14px;
+    border-radius: 11px;
+    border: 1px solid transparent !important;
+    background: transparent !important;
+    color: var(--flz-text-secondary) !important;
+    font-weight: 500;
+  }
+  .flz-chip:hover { background: var(--flz-surface-tertiary) !important; color: var(--flz-text-primary) !important; }
+  .flz-chip.active {
+    background: var(--flz-text-primary) !important;
+    border-color: var(--flz-text-primary) !important;
+    color: var(--flz-surface) !important;
+    box-shadow: none !important;
+    animation: none !important;
+  }
+  .flz-stat-tile {
+    width: 104px !important;
+    height: 88px !important;
+    padding: 13px 14px !important;
+    border-radius: 14px !important;
+    background: var(--flz-surface) !important;
+    border: 1px solid var(--flz-separator) !important;
+    box-shadow: none !important;
+    animation: none !important;
+  }
+  .flz-main-area { gap: 20px !important; }
+  .flz-grid {
+    grid-template-rows: none !important;
+    grid-auto-rows: minmax(250px, 1fr) !important;
+    gap: 12px !important;
+  }
+  .flz-tile-in { animation: none !important; }
+  .flz-tile.flz-project-tile,
+  .flz-featured,
+  .flz-sidebar > * {
+    border-radius: 18px !important;
+    border: 1px solid var(--flz-separator) !important;
+    box-shadow: none !important;
+  }
+  .flz-tile.flz-project-tile { background: #111113 !important; }
+  .flz-project-media::after {
+    background: linear-gradient(180deg, rgba(0,0,0,.32) 0%, transparent 34%, rgba(0,0,0,.08) 58%, rgba(0,0,0,.54) 100%);
+  }
+  .flz-project-content,
+  .flz-hub-root[data-theme="dark"] .flz-project-content {
+    min-height: 154px;
+    padding: 62px 16px 16px;
+    background: linear-gradient(180deg, transparent, rgba(8,9,12,.74) 38%, rgba(8,9,12,.96) 76%, #08090c 100%);
+  }
+  .flz-project-kicker {
+    border-radius: 8px;
+    padding: 7px 9px;
+    font-family: var(--flz-font-sans);
+    font-size: 11px;
+    letter-spacing: .04em;
+  }
+  .flz-project-open { border-radius: 10px; }
+  .flz-project-title { font-size: 19px; text-shadow: 0 1px 12px rgba(0,0,0,.9); }
+  .flz-project-body { font-size: 13px; color: rgba(255,255,255,.9); }
+  .flz-project-meta {
+    font-family: var(--flz-font-sans);
+    font-size: 11px;
+    letter-spacing: .02em;
+    color: rgba(255,255,255,.74);
+  }
+  .flz-sidebar { width: 300px !important; gap: 12px !important; }
+  .flz-badge {
+    border-radius: 8px;
+    background: rgba(12,12,14,.78) !important;
+    font-family: var(--flz-font-sans);
+    letter-spacing: .04em;
+  }
+  .flz-empty-state,
+  .flz-search-shell {
+    color: var(--flz-text-primary) !important;
+    background: var(--flz-surface) !important;
+    border: 1px solid var(--flz-separator) !important;
+    box-shadow: none !important;
+  }
+  .flz-search-shell { border-radius: 12px !important; }
+  .flz-search-input { color: var(--flz-text-primary) !important; }
+  .flz-empty-state {
+    grid-column: 1 / -1;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 220px;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    border-radius: 18px;
+    color: var(--flz-text-secondary) !important;
+    font-size: 14px;
+    text-align: center;
+  }
+  .flz-project-tile:focus-visible,
+  .flz-iconbtn:focus-visible,
+  .flz-chip:focus-visible,
+  .flz-btn-solid:focus-visible,
+  .flz-theme-toggle:focus-visible {
+    outline: 3px solid var(--flz-focus) !important;
+    outline-offset: 3px;
+  }
+  @media (hover: hover) {
+    .flz-tile:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.10) !important; }
+    .flz-iconbtn:hover { transform: none; background: var(--flz-surface-tertiary) !important; }
+    .flz-stat-tile:hover { transform: none; box-shadow: none !important; }
+  }
+  @media (max-width: 900px) {
+    .flz-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+    .flz-sidebar { width: 100% !important; }
+  }
+  @media (max-width: 640px) {
+    .flz-content { padding: 16px 14px 86px !important; }
+    .flz-slab { padding: 4px 0 20px !important; gap: 22px !important; }
+    .flz-rail {
+      bottom: 10px !important;
+      left: 50% !important;
+      right: auto !important;
+      width: auto !important;
+      padding: 4px !important;
+      gap: 2px !important;
+      border-radius: 16px !important;
+      transform: translateX(-50%);
+    }
+    .flz-hero { gap: 20px !important; }
+    .flz-stats { gap: 7px !important; }
+    .flz-stat-tile {
+      width: 0 !important;
+      min-width: 0 !important;
+      aspect-ratio: auto !important;
+      min-height: 82px;
+      padding-inline: 10px !important;
+    }
+    .flz-grid { grid-template-columns: 1fr !important; grid-auto-rows: minmax(300px, auto) !important; }
+    .flz-project-tile { min-height: 330px !important; }
+    .flz-theme-toggle { min-height: 44px; }
+    .flz-chip { min-height: 44px; }
+    .flz-iconbtn { min-width: 44px; min-height: 44px; }
+  }
 `;
 
 // ── Static data ──────────────────────────────────────────────────────────────
@@ -738,17 +984,17 @@ function SearchView({ allProjects }: { allProjects: typeof PROJECTS }) {
     : allProjects;
 
   const tiles = [...visible];
-  while (tiles.length < 6) tiles.push({ id: -tiles.length, tools: "", title: "", cat: "", age: "", grad: "none", link: "", img: "", body: "" });
 
   return (
     <div className="flz-view" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 14, overflow: "hidden" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 20, background: "#1c1a17", border: "1px solid rgba(255,255,255,.10)" }}>
+      <div className="flz-search-shell" style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 20, background: "#1c1a17", border: "1px solid rgba(255,255,255,.10)" }}>
         <IconSearch />
         <input
           autoFocus
           value={query}
           onChange={e => setQuery(e.target.value)}
           placeholder="Search projects, tools, categories…"
+          className="flz-search-input"
           style={{ flex: 1, background: "none", border: "none", outline: "none", font: `400 15px/1 var(--flz-font-sans)`, color: "var(--flz-text-primary)", caretColor: "var(--flz-text-primary)" }}
         />
         {query && (
@@ -756,15 +1002,14 @@ function SearchView({ allProjects }: { allProjects: typeof PROJECTS }) {
         )}
       </div>
       <div className="flz-grid" style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "grid", gridTemplateColumns: "repeat(3,1fr)", gridAutoRows: "minmax(180px, 1fr)", gap: 12 }}>
+        {tiles.length === 0 && <div className="flz-empty-state">No projects match this search.</div>}
         {tiles.map((p, i) => (
           <div
             key={p.title ? p.id : `empty${i}`}
             className="flz-tile-in"
             style={{ "--flz-delay": `${i * 45}ms`, display: "flex", minWidth: 0, minHeight: 0 } as React.CSSProperties}
           >
-            {p.title
-              ? <ProjectTile project={p as typeof PROJECTS[number]} />
-              : <div style={{ flex: 1, borderRadius: 28, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)" }} />}
+            <ProjectTile project={p as typeof PROJECTS[number]} />
           </div>
         ))}
       </div>
@@ -971,17 +1216,10 @@ function MainSlab({
     flex: 1, minWidth: 0, minHeight: 0, overflow: "hidden", display: "flex", flexDirection: "column", gap: 14,
   };
 
-  // Pad to 6 tiles (show empty placeholders)
   const tiles = visibleProjects.slice(safeProjectPage * 6, safeProjectPage * 6 + 6);
-  while (tiles.length < 6) tiles.push({ id: -tiles.length, tools: "", title: "", cat: "", age: "", grad: "none", link: "", img: "", body: "" });
 
   return (
     <div className="flz-slab" style={slabStyle}>
-      {/* Glass sheen overlay */}
-      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 3, background: "linear-gradient(180deg,rgba(255,255,255,.14) 0%,rgba(255,255,255,.03) 7%,rgba(255,255,255,0) 22%),linear-gradient(0deg,rgba(255,255,255,.08) 0%,rgba(255,255,255,0) 10%),linear-gradient(105deg,rgba(255,255,255,.06) 0%,rgba(255,255,255,0) 26%)" }} />
-      <div style={{ position: "absolute", top: -16, left: "6%", width: 190, height: 52, borderRadius: "50%", background: "radial-gradient(closest-side,rgba(255,255,255,.5),rgba(255,255,255,0))", filter: "blur(11px)", pointerEvents: "none", zIndex: 3 }} />
-      <div style={{ position: "absolute", bottom: -14, right: "9%", width: 230, height: 46, borderRadius: "50%", background: "radial-gradient(closest-side,rgba(255,255,255,.32),rgba(255,255,255,0))", filter: "blur(13px)", pointerEvents: "none", zIndex: 3 }} />
-
       {/* Nav row */}
       <div className="flz-enter" style={{ display: "flex", alignItems: "center", gap: 20 }}>
         <span style={{ font: `500 22px/1 var(--flz-font-display)`, letterSpacing: "-.04em", color: "var(--flz-text-primary)" }}>
@@ -1041,15 +1279,14 @@ function MainSlab({
                 </div>
               </div>
               <div className="flz-grid" style={{ flex: 1, minHeight: 0, display: "grid", gridTemplateColumns: "repeat(3,1fr)", gridTemplateRows: "1fr 1fr", gap: 12 }}>
+                {tiles.length === 0 && <div className="flz-empty-state">No published projects in this category yet.</div>}
                 {tiles.slice(0, 6).map((p, i) => (
                   <div
                     key={`${activeFilter}-${p.title ? p.id : `empty${i}`}`}
                     className="flz-tile-in"
                     style={{ "--flz-delay": `${i * 45}ms`, display: "flex", minWidth: 0, minHeight: 0 } as React.CSSProperties}
                   >
-                    {p.title
-                      ? <ProjectTile project={p as typeof PROJECTS[number]} />
-                      : <div style={{ flex: 1, borderRadius: 28, background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)" }} />}
+                    <ProjectTile project={p as typeof PROJECTS[number]} />
                   </div>
                 ))}
               </div>
