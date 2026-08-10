@@ -6,6 +6,15 @@ import { Lock, Mail, User, Loader2 } from "lucide-react";
 import type { Dictionary, Locale } from "@/lib/i18n";
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+const GOOGLE_FEDCM_CONFIG_URL = "https://accounts.google.com/gsi/fedcm.json";
+
+type FedCmCredential = Credential & { token?: string };
+type FedCmRequestOptions = CredentialRequestOptions & {
+  identity: {
+    mode: "active";
+    providers: Array<{ configURL: string; clientId: string }>;
+  };
+};
 
 export function GoogleSignInButton({
   redirectTo,
@@ -23,11 +32,13 @@ export function GoogleSignInButton({
   const [loading, setLoading] = useState(false);
   const [denied, setDenied] = useState(false);
   const [error, setError] = useState("");
+  const [prompting, setPrompting] = useState(false);
   const initializedRef = useRef(false);
 
   const handleCredentialResponse = useCallback(
     async (response: GoogleCredentialResponse) => {
       setLoading(true);
+      setPrompting(false);
       setError("");
       if (onStart) onStart();
 
@@ -68,6 +79,36 @@ export function GoogleSignInButton({
     [router, redirectTo, locale, onStart, onError],
   );
 
+  const openGooglePrompt = useCallback(async () => {
+    setError("");
+    setPrompting(true);
+
+    try {
+      if (!GOOGLE_CLIENT_ID || !navigator.credentials?.get) {
+        throw new Error("This browser does not support the secure Google account prompt.");
+      }
+
+      const request: FedCmRequestOptions = {
+        identity: {
+          mode: "active",
+          providers: [{ configURL: GOOGLE_FEDCM_CONFIG_URL, clientId: GOOGLE_CLIENT_ID }],
+        },
+      };
+      const credential = (await navigator.credentials.get(request)) as FedCmCredential | null;
+
+      if (!credential?.token) {
+        throw new Error("Google did not return an account credential.");
+      }
+
+      await handleCredentialResponse({ credential: credential.token, select_by: "fedcm-direct" });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Google account prompt could not open.";
+      setError(message);
+      if (onError) onError(message);
+      setPrompting(false);
+    }
+  }, [handleCredentialResponse, onError]);
+
   useEffect(() => {
     if (!GOOGLE_CLIENT_ID || !buttonRef.current || initializedRef.current) return;
 
@@ -82,6 +123,9 @@ export function GoogleSignInButton({
         // third-party-cookie restrictions that can leave the legacy button inert.
         use_fedcm_for_button: true,
         button_auto_select: true,
+        auto_select: true,
+        cancel_on_tap_outside: false,
+        context: "signin",
         itp_support: true,
       });
 
@@ -92,6 +136,10 @@ export function GoogleSignInButton({
         text: "signin_with",
         shape: "pill",
         width: 320,
+        click_listener: () => {
+          setError("");
+          setPrompting(true);
+        },
       });
 
       initializedRef.current = true;
@@ -125,6 +173,15 @@ export function GoogleSignInButton({
   return (
     <div className="flex flex-col items-center gap-2">
       <div ref={buttonRef} className="min-h-[44px]" />
+      {!loading && (
+        <button
+          type="button"
+          onClick={openGooglePrompt}
+          className="mt-1 rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+        >
+          {prompting ? "Waiting for Google…" : "Open secure Google sign-in"}
+        </button>
+      )}
       {loading && (
         <div className="flex items-center gap-2 text-sm text-slate-500">
           <Loader2 className="h-4 w-4 animate-spin" />
