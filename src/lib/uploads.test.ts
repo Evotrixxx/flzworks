@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { MAX_PHOTO_SIZE_BYTES, validatePhotoMeta } from "@/lib/uploads";
+import {
+  MAX_PHOTO_SIZE_BYTES,
+  contentTypeForPhoto,
+  validatePhotoMeta,
+} from "@/lib/uploads";
 
 describe("photo upload validation", () => {
   it("accepts supported image types within the size limit", () => {
@@ -14,5 +18,14 @@ describe("photo upload validation", () => {
     expect(validatePhotoMeta({ type: "image/png", size: MAX_PHOTO_SIZE_BYTES + 1 })).toMatchObject({
       ok: false,
     });
+  });
+});
+
+describe("uploaded photo content types", () => {
+  it("preserves supported media types", () => {
+    expect(contentTypeForPhoto("image.jpg")).toBe("image/jpeg");
+    expect(contentTypeForPhoto("legacy.jpeg")).toBe("image/jpeg");
+    expect(contentTypeForPhoto("image.png")).toBe("image/png");
+    expect(contentTypeForPhoto("image.webp")).toBe("image/webp");
   });
 });

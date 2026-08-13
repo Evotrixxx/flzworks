@@ -2,35 +2,48 @@ import { describe, expect, it } from "vitest";
 import { validateProductionStorageEnv } from "./verify-production-storage.mjs";
 
 describe("production storage guard", () => {
-  it("passes with Railway persistent volume paths", () => {
+  const productionEnv = {
+    NODE_ENV: "production",
+    DATABASE_URL: "postgresql://postgres:secret@postgres.railway.internal:5432/railway",
+    S3_BUCKET: "flz-media-example",
+    S3_ENDPOINT: "https://storage.railway.app",
+    S3_REGION: "auto",
+    S3_ACCESS_KEY_ID: "access-key",
+    S3_SECRET_ACCESS_KEY: "secret-key",
+  };
+
+  it("passes with PostgreSQL and complete S3 configuration", () => {
     expect(
-      validateProductionStorageEnv({
-        NODE_ENV: "production",
-        DATABASE_URL: "file:/data/prod.db",
-        UPLOAD_DIR: "/data/uploads",
-      }),
+      validateProductionStorageEnv(productionEnv),
     ).toEqual({ ok: true });
   });
 
-  it("fails with an ephemeral database path", () => {
+  it("fails with a file-based database", () => {
     const result = validateProductionStorageEnv({
-      NODE_ENV: "production",
+      ...productionEnv,
       DATABASE_URL: "file:./prod.db",
-      UPLOAD_DIR: "/data/uploads",
     });
 
     expect(result.ok).toBe(false);
     expect(result.message).toContain("DATABASE_URL");
   });
 
-  it("fails with an ephemeral upload path", () => {
+  it("fails when object storage is incomplete", () => {
     const result = validateProductionStorageEnv({
-      NODE_ENV: "production",
-      DATABASE_URL: "file:/data/prod.db",
-      UPLOAD_DIR: "./uploads",
+      ...productionEnv,
+      S3_SECRET_ACCESS_KEY: "",
     });
 
     expect(result.ok).toBe(false);
-    expect(result.message).toContain("UPLOAD_DIR");
+    expect(result.message).toContain("S3_SECRET_ACCESS_KEY");
+  });
+
+  it("does not require production services during local development", () => {
+    expect(
+      validateProductionStorageEnv({
+        NODE_ENV: "development",
+        DATABASE_URL: "file:./dev.db",
+      }),
+    ).toEqual({ ok: true });
   });
 });

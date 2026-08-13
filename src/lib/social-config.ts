@@ -1,10 +1,9 @@
 import "server-only";
 
-import { mkdir, readFile, writeFile } from "fs/promises";
-import path from "path";
+import { prisma } from "@/lib/prisma";
 
 // Social "Transmissions" config for the Blueprint landing page. Persisted as a
-// small JSON file (no DB migration required) and edited from the internal
+// namespaced FlzSetting row and edited from the internal
 // Studio editor. Each entry points a platform card at a latest-post link + a
 // preview image; empty entries fall back to the drafting placeholder.
 
@@ -27,17 +26,7 @@ export const DEFAULT_SOCIAL: SocialEntry[] = [
   { platform: "linkedin", label: "LINKEDIN", postUrl: "", imageUrl: "" },
 ];
 
-function configPath() {
-  const configuredDir = process.env.SOCIAL_CONFIG_DIR?.trim();
-  if (configuredDir) return path.join(configuredDir, "social-config.json");
-
-  // Railway mounts its persistent volume at /data and UPLOAD_DIR points to a
-  // child of it. Keep social configuration beside uploads in production,
-  // while preserving the existing local development path.
-  const uploadDir = process.env.UPLOAD_DIR?.trim();
-  const dataDir = uploadDir ? path.join(path.dirname(uploadDir), "config") : path.join(process.cwd(), "data");
-  return path.join(dataDir, "social-config.json");
-}
+export const SOCIAL_CONFIG_KEY = "studio:social-config";
 
 /**
  * Read the saved config, always returning exactly the four known platforms in
@@ -46,7 +35,11 @@ function configPath() {
 export async function readSocialConfig(): Promise<SocialEntry[]> {
   let saved: unknown = null;
   try {
-    saved = JSON.parse(await readFile(configPath(), "utf8"));
+    const setting = await prisma.flzSetting.findUnique({
+      where: { key: SOCIAL_CONFIG_KEY },
+      select: { value: true },
+    });
+    saved = setting ? JSON.parse(setting.value) : null;
   } catch {
     return DEFAULT_SOCIAL;
   }
@@ -66,7 +59,9 @@ export async function readSocialConfig(): Promise<SocialEntry[]> {
 }
 
 export async function writeSocialConfig(entries: SocialEntry[]): Promise<void> {
-  const target = configPath();
-  await mkdir(path.dirname(target), { recursive: true });
-  await writeFile(target, JSON.stringify(entries, null, 2), "utf8");
+  await prisma.flzSetting.upsert({
+    where: { key: SOCIAL_CONFIG_KEY },
+    create: { key: SOCIAL_CONFIG_KEY, value: JSON.stringify(entries) },
+    update: { value: JSON.stringify(entries) },
+  });
 }

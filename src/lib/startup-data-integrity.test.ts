@@ -3,15 +3,16 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("production startup data integrity", () => {
-  it("runs the guarded insert-only Instagram recovery before application startup", () => {
+  it("starts only after storage validation and migrations", () => {
     const packageJson = JSON.parse(
       readFileSync(path.join(process.cwd(), "package.json"), "utf8"),
     ) as { scripts?: { start?: string } };
 
     expect(packageJson.scripts?.start).toBe(
-      "node scripts/verify-production-storage.mjs && prisma migrate deploy && node scripts/bootstrap-instagram-projects.mjs && next start",
+      "node scripts/verify-production-storage.mjs && prisma migrate deploy && next start",
     );
     expect(packageJson.scripts?.start).not.toContain("seed");
+    expect(packageJson.scripts?.start).not.toContain("bootstrap");
   });
 
   it("keeps the manual Instagram bootstrap insert-only", () => {
