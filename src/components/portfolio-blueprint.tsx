@@ -533,7 +533,6 @@ function Lightbox({
    image is configured for that platform (managed in the Studio editor).
    ───────────────────────────────────────────────────────────────────────── */
 const PLACEHOLDER_TAG: Record<SocialPlatform, string> = {
-  x: "x_embed",
   instagram: "ig_embed",
   tiktok: "tt_embed",
   linkedin: "li_embed",

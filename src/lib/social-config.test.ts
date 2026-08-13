@@ -65,7 +65,8 @@ describe("Studio social configuration persistence", () => {
     });
 
     const result = await readSocialConfig();
-    expect(result).toHaveLength(4);
+    expect(result).toHaveLength(3);
+    expect(result.some((entry) => (entry.platform as string) === "x")).toBe(false);
     expect(result.find((entry) => entry.platform === "instagram")).toMatchObject({
       label: "IG — @VISION.FLZ",
       imageUrl: "/media/instagram.webp",

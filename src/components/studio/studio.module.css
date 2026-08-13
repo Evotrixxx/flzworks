@@ -370,6 +370,30 @@
   text-transform: uppercase;
   color: var(--st-fg-3);
 }
+.telemetryScope {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+  margin-top: 10px;
+  padding: 3px;
+  border: 1px solid var(--st-line);
+  border-radius: var(--st-r-pill);
+  background: rgba(255, 255, 255, 0.03);
+}
+.telemetryScope button {
+  min-height: 24px;
+  border: 0;
+  border-radius: var(--st-r-pill);
+  background: transparent;
+  color: var(--st-fg-3);
+  font: 600 9px/1 var(--st-mono);
+  cursor: pointer;
+}
+.telemetryScope button.telemetryScopeActive {
+  background: var(--st-panel-2);
+  color: var(--st-fg);
+  box-shadow: inset 0 0 0 1px var(--st-line-2);
+}
 .telemetryHero {
   display: flex;
   align-items: baseline;

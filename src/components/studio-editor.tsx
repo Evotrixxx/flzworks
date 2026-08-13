@@ -105,10 +105,10 @@ export function StudioEditor({
   }, []);
 
   const nav: { id: Section; label: string; icon: React.ReactNode; count?: number }[] = [
-    { id: "projects", label: "Projects", icon: <Layers size={16} />, count: projects.length },
+    { id: "projects", label: "Posts", icon: <Layers size={16} />, count: projects.length },
     { id: "messages", label: "Messages", icon: <Mail size={16} />, count: messages.filter((item) => item.status === "NEW").length },
     { id: "settings", label: "Site & hero", icon: <SlidersHorizontal size={16} /> },
-    { id: "articles", label: "Articles", icon: <FolderOpen size={16} />, count: articles.length },
+    { id: "articles", label: "Autosalon", icon: <FolderOpen size={16} />, count: articles.length },
     { id: "social", label: "Social", icon: <Radio size={16} />, count: social.length },
   ];
 
@@ -216,6 +216,7 @@ export function StudioEditor({
           <div className={`${s.sectionPane} ${section === "social" ? "" : s.sectionHidden}`}>
             <SocialPanel
               initial={social}
+              initialMetrics={socialMetrics}
               importConfiguration={socialImportConfiguration}
               onProjectsChanged={refreshProjects}
               notify={notify}

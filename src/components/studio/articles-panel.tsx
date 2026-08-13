@@ -153,7 +153,7 @@ export function ArticlesPanel({
     <>
       <SectionHead
         eyebrow="media library · portfolio"
-        title="Articles"
+        title="Autosalon"
         description={`Folders under Media/Portfolio, picked up automatically. ${liveCount} of ${articles.length} are visible in the sheet index.`}
       />
 
@@ -172,7 +172,7 @@ export function ArticlesPanel({
                 value={filter}
                 options={FILTERS}
                 onChange={setFilter}
-                ariaLabel="Filter articles"
+                ariaLabel="Filter Autosalon entries"
               />
             </div>
           </div>

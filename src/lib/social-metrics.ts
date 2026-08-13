@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { SocialPlatform } from "@/lib/social-config";
+import { prisma } from "@/lib/prisma";
 
 export interface SocialMetric {
   platform: SocialPlatform;
@@ -14,7 +15,8 @@ export interface SocialMetricsSnapshot {
   updatedAt: string | null;
 }
 
-const PLATFORMS: SocialPlatform[] = ["instagram", "tiktok", "x", "linkedin"];
+const PLATFORMS: SocialPlatform[] = ["instagram", "tiktok", "linkedin"];
+const SOCIAL_METRICS_KEY = "studio:social-metrics";
 
 function unavailable(platform: SocialPlatform): SocialMetric {
   return { platform, followers: null, likes: null, available: false };
@@ -90,42 +92,6 @@ async function tiktokMetrics(): Promise<SocialMetric> {
   }
 }
 
-async function xMetrics(): Promise<SocialMetric> {
-  const platform = "x" as const;
-  const token = process.env.X_BEARER_TOKEN;
-  const username = process.env.X_USERNAME;
-  if (!token || !username) return unavailable(platform);
-
-  const headers = { Authorization: `Bearer ${token}` };
-  const userUrl = new URL(`https://api.x.com/2/users/by/username/${encodeURIComponent(username)}`);
-  userUrl.searchParams.set("user.fields", "public_metrics");
-
-  try {
-    const profile = await fetchJson(userUrl, headers) as {
-      data?: { id?: string; public_metrics?: { followers_count?: number } };
-    };
-    const userId = profile.data?.id;
-    if (!userId) return unavailable(platform);
-
-    const postsUrl = new URL(`https://api.x.com/2/users/${userId}/tweets`);
-    postsUrl.searchParams.set("max_results", "100");
-    postsUrl.searchParams.set("exclude", "replies,retweets");
-    postsUrl.searchParams.set("tweet.fields", "public_metrics");
-    const posts = await fetchJson(postsUrl, headers) as {
-      data?: Array<{ public_metrics?: { like_count?: number } }>;
-    };
-
-    const followers = numeric(profile.data?.public_metrics?.followers_count);
-    const likes = Array.isArray(posts.data)
-      ? posts.data.reduce((sum, post) => sum + (numeric(post.public_metrics?.like_count) ?? 0), 0)
-      : null;
-    return { platform, followers, likes, available: followers !== null || likes !== null };
-  } catch (error) {
-    console.warn("X metrics fetch failed.", error);
-    return unavailable(platform);
-  }
-}
-
 async function linkedinMetrics(): Promise<SocialMetric> {
   const platform = "linkedin" as const;
   const token = process.env.LINKEDIN_ACCESS_TOKEN;
@@ -163,14 +129,51 @@ async function linkedinMetrics(): Promise<SocialMetric> {
 }
 
 export async function getSocialMetricsSnapshot(): Promise<SocialMetricsSnapshot> {
-  const accounts = await Promise.all([
+  const [liveAccounts, stored] = await Promise.all([
+    Promise.all([
     instagramMetrics(),
     tiktokMetrics(),
-    xMetrics(),
     linkedinMetrics(),
+    ]),
+    readStoredSocialMetrics(),
   ]);
+  const accounts = liveAccounts.map((live) => {
+    if (live.available) return live;
+    return stored.find((account) => account.platform === live.platform) ?? live;
+  });
   return {
     accounts,
     updatedAt: accounts.some((account) => account.available) ? new Date().toISOString() : null,
   };
+}
+
+export async function readStoredSocialMetrics(): Promise<SocialMetric[]> {
+  try {
+    const setting = await prisma.flzSetting.findUnique({ where: { key: SOCIAL_METRICS_KEY } });
+    const parsed = setting ? JSON.parse(setting.value) as Partial<SocialMetric>[] : [];
+    return PLATFORMS.map((platform) => {
+      const match = Array.isArray(parsed)
+        ? parsed.find((account) => account.platform === platform)
+        : undefined;
+      const followers = numeric(match?.followers);
+      const likes = numeric(match?.likes);
+      return { platform, followers, likes, available: followers !== null || likes !== null };
+    });
+  } catch {
+    return PLATFORMS.map(unavailable);
+  }
+}
+
+export async function writeStoredSocialMetrics(accounts: SocialMetric[]): Promise<void> {
+  const normalized = PLATFORMS.map((platform) => {
+    const match = accounts.find((account) => account.platform === platform);
+    const followers = numeric(match?.followers);
+    const likes = numeric(match?.likes);
+    return { platform, followers, likes, available: followers !== null || likes !== null };
+  });
+  await prisma.flzSetting.upsert({
+    where: { key: SOCIAL_METRICS_KEY },
+    create: { key: SOCIAL_METRICS_KEY, value: JSON.stringify(normalized) },
+    update: { value: JSON.stringify(normalized) },
+  });
 }

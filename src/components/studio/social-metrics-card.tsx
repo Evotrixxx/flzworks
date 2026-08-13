@@ -8,14 +8,12 @@ import s from "@/components/studio/studio.module.css";
 const PLATFORM_LABELS: Record<SocialPlatform, string> = {
   instagram: "Instagram",
   tiktok: "TikTok",
-  x: "X",
   linkedin: "LinkedIn",
 };
 
 const PLATFORM_MARKS: Record<SocialPlatform, string> = {
   instagram: "IG",
   tiktok: "TT",
-  x: "X",
   linkedin: "in",
 };
 
@@ -54,9 +52,11 @@ export function SocialMetricsCard({
 
     void refresh();
     const interval = window.setInterval(refresh, 60_000);
+    window.addEventListener("flz-social-metrics-updated", refresh);
     return () => {
       cancelled = true;
       window.clearInterval(interval);
+      window.removeEventListener("flz-social-metrics-updated", refresh);
     };
   }, [live]);
 

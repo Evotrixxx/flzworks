@@ -1137,11 +1137,6 @@ const IconTikTok = () => (
     <path d="M14 3c.5 2.7 2.2 4.3 5 4.7" />
   </svg>
 );
-const IconX = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.451-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z" />
-  </svg>
-);
 const IconMessage = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M4.5 5.5h15a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-4.5 3v-3a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2Z" />
@@ -1238,9 +1233,6 @@ function IconRail({ contactOpen, setContactOpen, activeView, setActiveView }: {
       </span>
       <span className="flz-railbtn">
         <a className="flz-iconbtn ghost" href="https://www.tiktok.com/@vision.flz" target="_blank" rel="noopener noreferrer" aria-label="TikTok" onClick={() => trackTelemetryEvent("social_open", "main", "tiktok")}><IconTikTok /></a>
-      </span>
-      <span className="flz-railbtn">
-        <a className="flz-iconbtn ghost" href="https://x.com/flzworks" target="_blank" rel="noopener noreferrer" aria-label="X.com — FLZ Works" onClick={() => trackTelemetryEvent("social_open", "main", "x")}><IconX /></a>
       </span>
       <span className="flz-railbtn"><button className={`flz-iconbtn ${activeView === "message" ? "solid" : "ghost"}`} type="button" aria-label="Message me" aria-pressed={activeView === "message"} onClick={() => setActiveView("message")}><IconMessage /></button></span>
       <span className="flz-railbtn"><button className={`flz-iconbtn ${contactOpen ? "solid" : "ghost"}`} type="button" aria-label="Open ID card" aria-expanded={contactOpen} aria-controls="flz-id-card-dialog" onClick={() => setContactOpen(!contactOpen)}><IconIdCard /></button></span>

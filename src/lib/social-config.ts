@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 // Studio editor. Each entry points a platform card at a latest-post link + a
 // preview image; empty entries fall back to the drafting placeholder.
 
-export type SocialPlatform = "x" | "instagram" | "tiktok" | "linkedin";
+export type SocialPlatform = "instagram" | "tiktok" | "linkedin";
 
 export interface SocialEntry {
   platform: SocialPlatform;
@@ -20,7 +20,6 @@ export interface SocialEntry {
 }
 
 export const DEFAULT_SOCIAL: SocialEntry[] = [
-  { platform: "x", label: "X — @FLZWORKS", postUrl: "", imageUrl: "" },
   { platform: "instagram", label: "IG — @FLZWORKS", postUrl: "", imageUrl: "" },
   { platform: "tiktok", label: "TIKTOK", postUrl: "", imageUrl: "" },
   { platform: "linkedin", label: "LINKEDIN", postUrl: "", imageUrl: "" },
@@ -29,7 +28,7 @@ export const DEFAULT_SOCIAL: SocialEntry[] = [
 export const SOCIAL_CONFIG_KEY = "studio:social-config";
 
 /**
- * Read the saved config, always returning exactly the four known platforms in
+ * Read the saved config, always returning exactly the supported platforms in
  * a stable order (merging any saved values over the defaults).
  */
 export async function readSocialConfig(): Promise<SocialEntry[]> {

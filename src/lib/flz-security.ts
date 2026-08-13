@@ -26,8 +26,24 @@ export function isFlzWorksDomainEmail(email: string): boolean {
   return email.toLowerCase().endsWith("@flz.works");
 }
 
+export function getLocalStudioAdmin() {
+  if (
+    process.env.NODE_ENV !== "production" &&
+    process.env.ALLOW_LOCAL_STUDIO_BYPASS === "1"
+  ) {
+    return {
+      id: "local-studio-admin",
+      email: "local-studio@localhost",
+      name: "Local Studio Admin",
+      role: "ADMIN",
+    };
+  }
+
+  return null;
+}
+
 export async function verifyAdminUser() {
-  const user = await getCurrentUser();
+  const user = getLocalStudioAdmin() ?? (await getCurrentUser());
   if (!user) {
     return { error: "Unauthenticated", status: 401, user: null };
   }

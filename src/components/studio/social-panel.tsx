@@ -4,11 +4,11 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import { ExternalLink, ImageOff, Radio, RefreshCw, Save, Undo2, X } from "lucide-react";
 import type { SocialEntry } from "@/lib/social-config";
+import type { SocialMetricsSnapshot } from "@/lib/social-metrics";
 import { Field, Panel, SectionHead, Spinner, type Notify } from "./ui";
 import s from "./studio.module.css";
 
 const PLATFORM_LABEL: Record<string, string> = {
-  x: "X",
   instagram: "Instagram",
   tiktok: "TikTok",
   linkedin: "LinkedIn",
@@ -21,11 +21,13 @@ function isUrlish(value: string) {
 
 export function SocialPanel({
   initial,
+  initialMetrics,
   importConfiguration,
   onProjectsChanged,
   notify,
 }: {
   initial: SocialEntry[];
+  initialMetrics: SocialMetricsSnapshot;
   importConfiguration: { instagram: boolean; tiktok: boolean };
   onProjectsChanged: () => Promise<void>;
   notify: Notify;
@@ -34,6 +36,13 @@ export function SocialPanel({
   const [entries, setEntries] = useState<SocialEntry[]>(initial);
   const [saving, setSaving] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [metricsSaving, setMetricsSaving] = useState(false);
+  const [manualMetrics, setManualMetrics] = useState(() =>
+    Object.fromEntries(initialMetrics.accounts.map((account) => [account.platform, {
+      followers: account.followers?.toString() ?? "",
+      likes: account.likes?.toString() ?? "",
+    }])),
+  );
 
   const update = (platform: string, patch: Partial<SocialEntry>) =>
     setEntries((prev) => prev.map((e) => (e.platform === platform ? { ...e, ...patch } : e)));
@@ -79,13 +88,46 @@ export function SocialPanel({
         );
       } else {
         notify(
-          `Imported ${data.created ?? 0} new public posts. Existing Studio projects were preserved.`,
+          `Imported ${data.created ?? 0} new public posts. Existing Studio posts were preserved.`,
         );
       }
     } catch (err) {
       notify(err instanceof Error ? err.message : "Could not sync social projects", "error");
     } finally {
       setSyncing(false);
+    }
+  };
+
+  const saveManualMetrics = async () => {
+    setMetricsSaving(true);
+    try {
+      const accounts = entries.map(({ platform }) => ({
+        platform,
+        followers: manualMetrics[platform]?.followers.trim() === ""
+          ? null
+          : Number(manualMetrics[platform].followers),
+        likes: manualMetrics[platform]?.likes.trim() === ""
+          ? null
+          : Number(manualMetrics[platform].likes),
+      }));
+      if (accounts.some((account) =>
+        (account.followers !== null && (!Number.isInteger(account.followers) || account.followers < 0)) ||
+        (account.likes !== null && (!Number.isInteger(account.likes) || account.likes < 0)))) {
+        throw new Error("Follower and like counts must be positive whole numbers.");
+      }
+      const response = await fetch("/api/flz/social-metrics", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accounts }),
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.success) throw new Error(data?.error || "Could not save social metrics");
+      window.dispatchEvent(new Event("flz-social-metrics-updated"));
+      notify("Social pulse saved");
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Could not save social metrics", "error");
+    } finally {
+      setMetricsSaving(false);
     }
   };
 
@@ -107,10 +149,10 @@ export function SocialPanel({
           </p>
         </Panel>
 
-        <Panel icon={<RefreshCw size={16} />} title="Project auto-import">
+        <Panel icon={<RefreshCw size={16} />} title="Post auto-import">
           <p className={s.panelNote}>
-            Every public Instagram post and TikTok video becomes a project on the main board.
-            Sync imports only posts that do not have a card yet. Existing Studio projects are never changed or hidden.
+            Every public Instagram post and TikTok video becomes a post on the main board.
+            Sync imports only posts that do not have a card yet. Existing Studio posts are never changed or hidden.
           </p>
           <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 10, marginTop: 14 }}>
             <span className={s.navCount}>
@@ -127,6 +169,48 @@ export function SocialPanel({
               onClick={syncProjects}
             >
               {syncing ? <Spinner /> : <RefreshCw size={15} />} {syncing ? "Syncing…" : "Sync posts now"}
+            </button>
+          </div>
+        </Panel>
+
+        <Panel icon={<Radio size={16} />} title="Social pulse">
+          <p className={s.panelNote}>
+            These persisted values keep the production sidebar useful until official provider API
+            credentials are connected. Connected API values automatically take precedence.
+          </p>
+          <div className={s.grid3} style={{ marginTop: 14 }}>
+            {entries.map(({ platform }) => (
+              <div key={platform} className={s.panelStack}>
+                <strong>{PLATFORM_LABEL[platform]}</strong>
+                <Field label="Followers">
+                  <input
+                    className={s.input}
+                    inputMode="numeric"
+                    value={manualMetrics[platform]?.followers ?? ""}
+                    onChange={(event) => setManualMetrics((previous) => ({
+                      ...previous,
+                      [platform]: { ...previous[platform], followers: event.target.value },
+                    }))}
+                  />
+                </Field>
+                <Field label="Likes">
+                  <input
+                    className={s.input}
+                    inputMode="numeric"
+                    value={manualMetrics[platform]?.likes ?? ""}
+                    onChange={(event) => setManualMetrics((previous) => ({
+                      ...previous,
+                      [platform]: { ...previous[platform], likes: event.target.value },
+                    }))}
+                  />
+                </Field>
+              </div>
+            ))}
+          </div>
+          <div className={s.saveBar}>
+            <span className={s.saveBarText}>Stored in the production database.</span>
+            <button type="button" className={`${s.btn} ${s.btnPrimary}`} disabled={metricsSaving} onClick={saveManualMetrics}>
+              {metricsSaving ? <Spinner /> : <Save size={15} />} Save social pulse
             </button>
           </div>
         </Panel>

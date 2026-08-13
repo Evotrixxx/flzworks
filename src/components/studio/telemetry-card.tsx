@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Activity, Clock3, ContactRound, MousePointerClick } from "lucide-react";
-import type { TelemetrySnapshot } from "@/lib/telemetry";
+import type { TelemetryRangeKey, TelemetrySnapshot } from "@/lib/telemetry";
 import s from "@/components/studio/studio.module.css";
 
 function formatDuration(seconds: number): string {
@@ -18,19 +18,16 @@ function MetricRow({
   icon,
   label,
   value,
-  total,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string | number;
-  total?: number;
 }) {
   return (
     <div className={s.telemetryRow}>
       <span className={s.telemetryIcon}>{icon}</span>
       <span className={s.telemetryLabel}>{label}</span>
       <span className={s.telemetryValue}>{value}</span>
-      {total !== undefined && <span className={s.telemetryTotal}>{total} total</span>}
     </div>
   );
 }
@@ -43,6 +40,7 @@ export function TelemetryCard({
   live?: boolean;
 }) {
   const [data, setData] = useState(initial);
+  const [range, setRange] = useState<TelemetryRangeKey>("24h");
 
   useEffect(() => {
     if (!live) return;
@@ -70,21 +68,37 @@ export function TelemetryCard({
     };
   }, [live]);
 
+  const scoped = data.ranges[range];
+  const rangeLabel = range === "24h" ? "24h" : range === "30d" ? "1mo" : "1yr";
+
   return (
     <section className={s.telemetry} aria-label="Live site telemetry">
       <div className={s.telemetryHead}>
         <span className={s.telemetryTitle}>Live telemetry</span>
+      </div>
+      <div className={s.telemetryScope} aria-label="Telemetry period">
+        {(["24h", "30d", "1y"] as TelemetryRangeKey[]).map((option) => (
+          <button
+            key={option}
+            type="button"
+            aria-pressed={range === option}
+            className={range === option ? s.telemetryScopeActive : ""}
+            onClick={() => setRange(option)}
+          >
+            {option === "24h" ? "24h" : option === "30d" ? "1mo" : "1yr"}
+          </button>
+        ))}
       </div>
       <div className={s.telemetryHero}>
         <span className={s.telemetryHeroValue}>{data.liveVisitors}</span>
         <span className={s.telemetryHeroLabel}>on site now</span>
       </div>
       <div className={s.telemetryRows}>
-        <MetricRow icon={<Activity size={13} />} label="Visits (24h)" value={data.visits24h} />
-        <MetricRow icon={<Clock3 size={13} />} label="Avg. visit (24h)" value={formatDuration(data.averageVisitSeconds24h)} />
-        <MetricRow icon={<MousePointerClick size={13} />} label="Social opens (24h)" value={data.socialOpens24h} total={data.socialOpensTotal} />
-        <MetricRow icon={<ContactRound size={13} />} label="vCard main" value={data.vcardViews24h.main} total={data.vcardViewsTotal.main} />
-        <MetricRow icon={<ContactRound size={13} />} label="vCard salon" value={data.vcardViews24h.autosalon} total={data.vcardViewsTotal.autosalon} />
+        <MetricRow icon={<Activity size={13} />} label={`Visits (${rangeLabel})`} value={scoped.visits} />
+        <MetricRow icon={<Clock3 size={13} />} label={`Avg. visit (${rangeLabel})`} value={formatDuration(scoped.averageVisitSeconds)} />
+        <MetricRow icon={<MousePointerClick size={13} />} label={`Social opens (${rangeLabel})`} value={scoped.socialOpens} />
+        <MetricRow icon={<ContactRound size={13} />} label="vCard main" value={scoped.vcardViews.main} />
+        <MetricRow icon={<ContactRound size={13} />} label="vCard salon" value={scoped.vcardViews.autosalon} />
       </div>
     </section>
   );

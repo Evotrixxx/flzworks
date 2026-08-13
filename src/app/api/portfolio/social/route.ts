@@ -4,7 +4,7 @@ import { verifyAdminUser } from "@/lib/flz-security";
 import { readSocialConfig, writeSocialConfig } from "@/lib/social-config";
 
 const EntrySchema = z.object({
-  platform: z.enum(["x", "instagram", "tiktok", "linkedin"]),
+  platform: z.enum(["instagram", "tiktok", "linkedin"]),
   label: z.string().max(80),
   postUrl: z.string().max(1000),
   imageUrl: z.string().max(2000),

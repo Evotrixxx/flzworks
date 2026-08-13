@@ -34,7 +34,7 @@ type StatusFilter = "all" | "live" | "hidden" | "featured";
 
 const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
   { value: "all", label: "All" },
-  { value: "live", label: "Live" },
+  { value: "live", label: "Visible" },
   { value: "hidden", label: "Hidden" },
   { value: "featured", label: "Featured" },
 ];
@@ -177,7 +177,7 @@ export function ProjectsPanel({
         },
       );
       const data = await res.json().catch(() => null);
-      if (!res.ok || !data?.project) throw new Error(data?.error || "Could not save the project");
+      if (!res.ok || !data?.project) throw new Error(data?.error || "Could not save the post");
 
       // Re-sort so the #N badges, the reorder arrows and the public grid all
       // agree with the sortOrder that was just stored.
@@ -190,7 +190,7 @@ export function ProjectsPanel({
       setEditing(null);
       notify(isEdit ? `“${data.project.title}” updated` : `“${data.project.title}” created`);
     } catch (err) {
-      notify(err instanceof Error ? err.message : "Could not save the project", "error");
+      notify(err instanceof Error ? err.message : "Could not save the post", "error");
     } finally {
       setSaving(false);
     }
@@ -200,12 +200,12 @@ export function ProjectsPanel({
     setSaving(true);
     try {
       const res = await fetch(`/api/flz/projects/${project.id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Could not delete the project");
+      if (!res.ok) throw new Error("Could not delete the post");
       setProjects((prev) => prev.filter((p) => p.id !== project.id));
       setDeleting(null);
       notify(`“${project.title}” deleted`);
     } catch (err) {
-      notify(err instanceof Error ? err.message : "Could not delete the project", "error");
+      notify(err instanceof Error ? err.message : "Could not delete the post", "error");
     } finally {
       setSaving(false);
     }
@@ -214,10 +214,10 @@ export function ProjectsPanel({
   return (
     <>
       <SectionHead
-        title="Projects"
+        title="Posts"
       >
         <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={() => setEditing(blankProject(projects.length + 1))}>
-          <Plus size={15} strokeWidth={2.5} /> New project
+          <Plus size={15} strokeWidth={2.5} /> New post
         </button>
       </SectionHead>
 
@@ -250,10 +250,10 @@ export function ProjectsPanel({
       {visibleList.length === 0 ? (
         <EmptyState
           icon={<Layers size={26} />}
-          title={projects.length === 0 ? "No projects yet" : "Nothing matches those filters"}
+          title={projects.length === 0 ? "No posts yet" : "Nothing matches those filters"}
           body={
             projects.length === 0
-              ? "Add your first project and it appears in the grid on flz.works right away."
+              ? "Add your first post and it appears on flz.works right away."
               : "Try a different category or clear the filters to see the whole grid again."
           }
         >
@@ -271,7 +271,7 @@ export function ProjectsPanel({
             </button>
           )}
           <button type="button" className={`${s.btn} ${s.btnPrimary}`} onClick={() => setEditing(blankProject(projects.length + 1))}>
-            <Plus size={15} strokeWidth={2.5} /> New project
+            <Plus size={15} strokeWidth={2.5} /> New post
           </button>
         </EmptyState>
       ) : (
@@ -335,13 +335,13 @@ export function ProjectsPanel({
                       patch(
                         p,
                         { visible: !p.visible },
-                        p.visible ? `“${p.title}” hidden` : `“${p.title}” is live`,
+                        p.visible ? `“${p.title}” hidden` : `“${p.title}” visible`,
                       )
                     }
                     title={p.visible ? "Hide from flz.works" : "Show on flz.works"}
                   >
-                    {busy ? <Spinner size={11} /> : <span className={s.pillDot} />}
-                    {p.visible ? "Live" : "Hidden"}
+                    {busy && <Spinner size={11} />}
+                    {p.visible ? "Visible" : "Hidden"}
                   </button>
 
                   <button
@@ -421,7 +421,7 @@ export function ProjectsPanel({
 
       {deleting && (
         <Modal
-          title="Delete project"
+          title="Delete post"
           narrow
           onClose={() => setDeleting(null)}
           footer={
@@ -510,9 +510,9 @@ function ProjectDialog({
 
   return (
     <Modal
-      title={initial.id ? "Edit project" : "New project"}
+      title={initial.id ? "Edit post" : "New post"}
       onClose={onClose}
-      confirmCloseMessage={dirty ? "Discard the unsaved project changes?" : undefined}
+      confirmCloseMessage={dirty ? "Discard the unsaved post changes?" : undefined}
       footer={
         <>
           <span className={s.helper}>
@@ -528,7 +528,7 @@ function ProjectDialog({
             disabled={saving}
             onClick={submit}
           >
-            {saving ? <Spinner /> : <Save size={15} />} Save project
+            {saving ? <Spinner /> : <Save size={15} />} Save post
           </button>
         </>
       }
@@ -695,7 +695,7 @@ function ProjectDialog({
           checked={form.featured ?? false}
           onChange={(v) => set("featured", v)}
           label="Featured"
-          hint="Flags the project as the current highlight."
+          hint="Flags the post as the current highlight."
         />
       </div>
     </Modal>

@@ -9,7 +9,7 @@ import { readSocialConfig, DEFAULT_SOCIAL, SocialEntry } from "@/lib/social-conf
 import { StudioEditor } from "@/components/studio-editor";
 import type { FlzProjectData } from "@/components/studio/types";
 import type { MessageStatus, StudioMessage } from "@/components/studio/messages-panel";
-import { checkIsAdminEmail } from "@/lib/flz-security";
+import { checkIsAdminEmail, getLocalStudioAdmin } from "@/lib/flz-security";
 import { emptyTelemetrySnapshot, getTelemetrySnapshot } from "@/lib/telemetry";
 import { emptySocialMetricsSnapshot, getSocialMetricsSnapshot } from "@/lib/social-metrics";
 import { getSocialImportConfiguration } from "@/lib/social-project-sync";
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 };
 
 export default async function StudioPage() {
-  const user = await getCurrentUser();
+  const user = getLocalStudioAdmin() ?? (await getCurrentUser());
 
   if (!user) {
     redirect("/login?redirect=/studio");
