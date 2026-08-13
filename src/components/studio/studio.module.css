@@ -37,12 +37,12 @@
   --st-r-lg: 28px;
   --st-r-pill: 999px;
 
-  /* Keep every typography role on the same SF Pro family. These tokens remain
+  /* Keep every typography role on the same Inter family. These tokens remain
      separate so sizing, weight and tracking can still vary by role. */
-  --st-sf-pro: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
-  --st-display: var(--st-sf-pro);
-  --st-sans: var(--st-sf-pro);
-  --st-mono: var(--st-sf-pro);
+  --st-font-primary: var(--font-sans), "Inter", Arial, sans-serif;
+  --st-display: var(--st-font-primary);
+  --st-sans: var(--st-font-primary);
+  --st-mono: var(--st-font-primary);
 
   --st-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --st-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
@@ -56,6 +56,11 @@
   color-scheme: dark;
   -webkit-font-smoothing: antialiased;
   overflow-x: clip;
+}
+
+.root,
+.root * {
+  font-family: var(--st-font-primary) !important;
 }
 
 /* Ambient warmth, same family as the public hub but calmer. */
