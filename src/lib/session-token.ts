@@ -6,7 +6,11 @@ export type SessionPayload = {
 };
 
 function getSecret() {
-  return process.env.AUTH_SECRET ?? "local-dev-autopiac-secret-change-before-production";
+  const secret = process.env.AUTH_SECRET;
+  if (!secret) {
+    throw new Error("AUTH_SECRET environment variable must be set.");
+  }
+  return secret;
 }
 
 function toBase64Url(value: string | Buffer) {

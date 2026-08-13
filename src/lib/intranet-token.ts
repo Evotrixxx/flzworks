@@ -11,7 +11,11 @@ export type IntranetAccessPayload = {
 };
 
 function getSecret() {
-  return process.env.INTRANET_ACCESS_SECRET ?? process.env.AUTH_SECRET ?? "local-dev-flz-intranet-secret-change-before-production";
+  const secret = process.env.INTRANET_ACCESS_SECRET ?? process.env.AUTH_SECRET;
+  if (!secret) {
+    throw new Error("INTRANET_ACCESS_SECRET or AUTH_SECRET environment variable must be set.");
+  }
+  return secret;
 }
 
 function signPayload(payload: string) {

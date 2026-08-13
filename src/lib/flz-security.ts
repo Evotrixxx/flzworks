@@ -16,7 +16,14 @@ export const ADMIN_EMAILS = [
 export function checkIsAdminEmail(email: string): boolean {
   if (!email) return false;
   const lower = email.toLowerCase();
-  return ADMIN_EMAILS.includes(lower) || lower.endsWith("@flz.works");
+  return ADMIN_EMAILS.includes(lower);
+}
+
+// Only safe to call right after a Google Sign-In email has been verified
+// (see api/auth/google/route.ts) — an unverified email must never reach this check.
+export function isFlzWorksDomainEmail(email: string): boolean {
+  if (!email) return false;
+  return email.toLowerCase().endsWith("@flz.works");
 }
 
 export async function verifyAdminUser() {

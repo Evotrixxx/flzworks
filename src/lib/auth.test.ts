@@ -1,7 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { createSessionToken, verifySessionToken } from "@/lib/session-token";
 
 describe("session token", () => {
+  beforeAll(() => {
+    process.env.AUTH_SECRET ??= "test-secret-for-session-token-tests";
+  });
+
   it("round-trips a signed user id", () => {
     const token = createSessionToken("user-1", 60);
 

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { OAuth2Client } from "google-auth-library";
 import { prisma } from "@/lib/prisma";
 import { setSessionCookie } from "@/lib/auth";
-import { checkIsAdminEmail } from "@/lib/flz-security";
+import { checkIsAdminEmail, isFlzWorksDomainEmail } from "@/lib/flz-security";
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     const email = payload.email.trim().toLowerCase();
     const name = payload.name || payload.given_name || "Google User";
 
-    if (!checkIsAdminEmail(email)) {
+    if (!checkIsAdminEmail(email) && !isFlzWorksDomainEmail(email)) {
       return NextResponse.json(
         { error: "NO_ADMIN", message: "You do not have admin privileges." },
         { status: 403 },

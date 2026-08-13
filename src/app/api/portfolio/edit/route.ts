@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
+import { verifyAdminUser } from "@/lib/flz-security";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
-  const user = await getCurrentUser();
-  const isAdmin = user && (user.role === "ADMIN" || user.email === "seller@autopiac.test");
+  const auth = await verifyAdminUser();
 
-  if (!user || !isAdmin) {
-    return NextResponse.json({ error: "Unauthorized." }, { status: 403 });
+  if (auth.error) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
   try {
