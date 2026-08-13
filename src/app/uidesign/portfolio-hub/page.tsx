@@ -10,9 +10,11 @@ import { PUBLIC_CONTACT_PROFILE, PUBLIC_CONTACT_ROWS } from "@/lib/public-contac
 // ── Design token CSS (flz-works DS, scoped to this page) ─────────────────────
 const DS_TOKENS = `
   .flz-hub-root {
-    --flz-font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
-    --flz-font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-    --flz-font-mono: "SFMono-Regular", "SF Mono", ui-monospace, Menlo, Monaco, Consolas, monospace;
+    --flz-font-sf-pro: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+    --flz-font-display: var(--flz-font-sf-pro);
+    --flz-font-sans: var(--flz-font-sf-pro);
+    --flz-font-mono: var(--flz-font-sf-pro);
+    font-family: var(--flz-font-sf-pro);
     font-synthesis: none;
 
     --flz-text-primary: #F4F2EF;
