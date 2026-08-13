@@ -37,11 +37,12 @@
   --st-r-lg: 28px;
   --st-r-pill: 999px;
 
-  /* Every var() keeps a fallback: an undefined font variable would otherwise
-     invalidate the whole declaration and drop the text back to a serif. */
-  --st-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
-  --st-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-  --st-mono: "SFMono-Regular", "SF Mono", ui-monospace, Menlo, Monaco, Consolas, monospace;
+  /* Keep every typography role on the same SF Pro family. These tokens remain
+     separate so sizing, weight and tracking can still vary by role. */
+  --st-sf-pro: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+  --st-display: var(--st-sf-pro);
+  --st-sans: var(--st-sf-pro);
+  --st-mono: var(--st-sf-pro);
 
   --st-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --st-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
